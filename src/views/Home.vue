@@ -39,37 +39,50 @@
               >
                 <div class="px-3" style="height: 48px;">
                   <v-select
-                    label="Standard"
+                    label="Флорист"
+                    :items="floristsList"
+                    item-text="name"
+                    item-value="id"
                     solo
                     flat
                     hide-details
+                    v-model="florist"
                   ></v-select>
                 </div>
                 <v-divider></v-divider>
                 <div class="px-3" style="height: 48px;">
                   <v-select
-                    label="Standard"
+                    label="Клиент"
+                    :items="clientsList"
+                    item-text="name"
+                    item-value="id"
                     solo
                     flat
                     hide-details
+                    v-model="client"
                   ></v-select>
                 </div>
                 <v-divider></v-divider>
                 <div class="px-3" style="height: 48px;">
                   <v-select
-                    label="Standard"
+                    label="Заказ"
+                    :items="clientOrdersList"
+                    item-text="id"
+                    item-value="id"
                     solo
                     flat
                     hide-details
+                    v-model="order"
                   ></v-select>
                 </div>
                 <v-divider></v-divider>
                 <div class="px-3" style="height: 48px;">
                   <v-text-field
-                    label="Solo"
+                    label="Оформление, %"
                     solo
                     flat
                     hide-details
+                    v-model="decorPersent"
                   ></v-text-field>
                 </div>
                 <v-divider></v-divider>
@@ -79,10 +92,11 @@
                 <v-divider></v-divider>
                 <div class="px-3" style="height: 48px;">
                   <v-text-field
-                    label="Solo"
+                    label="Доставка"
                     solo
                     flat
                     hide-details
+                    v-model="delivery"
                   ></v-text-field>
                 </div>
                 <v-divider></v-divider>
@@ -92,10 +106,11 @@
                 <v-divider></v-divider>
                 <div class="px-3" style="height: 48px;">
                   <v-text-field
-                    label="Solo"
+                    label="Скидка, %"
                     solo
                     flat
                     hide-details
+                    v-model="salePersent"
                   ></v-text-field>
                 </div>
                 <v-divider></v-divider>
@@ -259,7 +274,86 @@ export default {
           sortable: false,
         },
       ],
+      client: '',
+      florist: '',
+      order: '',
+      decorPersent: 10,
+      delivery: 0,
+      salePersent: 0,
+      clientsList: [
+        {
+          name: 'Клиент 1',
+          id: 1,
+        },
+        {
+          name: 'Клиент 2',
+          id: 2,
+        },
+        {
+          name: 'Клиент 3',
+          id: 3,
+        },
+        {
+          name: 'Клиент 4',
+          id: 4,
+        },
+        {
+          name: 'Клиент 5',
+          id: 5,
+        },
+      ],
+      floristsList: [
+        {
+          name: 'Флорист 1',
+          id: 1,
+        },
+        {
+          name: 'Флорист 2',
+          id: 2,
+        },
+        {
+          name: 'Флорист 3',
+          id: 3,
+        },
+      ],
+      ordersList: [
+        {
+          client: 2,
+          id: 214,
+        },
+        {
+          client: 1,
+          id: 215,
+        },
+        {
+          client: 5,
+          id: 216,
+        },
+        {
+          client: 5,
+          id: 217,
+        },
+        {
+          client: 4,
+          id: 218,
+        },
+        {
+          client: 1,
+          id: 219,
+        },
+        {
+          client: 2,
+          id: 220,
+        },
+      ],
     };
+  },
+  computed: {
+    clientOrdersList: function clientOrdersList() {
+      const ordersList = this.ordersList.filter(item => item.client === this.client);
+
+      return ordersList;
+    },
   },
   methods: {
     onScroll: function onScroll(e) {

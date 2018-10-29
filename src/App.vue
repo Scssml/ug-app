@@ -3,6 +3,7 @@
     <v-toolbar
       app
       color="blue-grey lighten-4"
+      height="42px"
     >
       <v-toolbar-items>
         <template
@@ -12,6 +13,8 @@
             :to="item.link"
             :key="index"
             flat
+            ripple
+            exact
           >
             {{ item.title }}
           </v-btn>
@@ -24,10 +27,8 @@
       </transition>
     </v-content>
     <v-footer
-      :fixed="false"
       height="auto"
       color="blue-grey darken-3"
-      app
       dark
     >
       <v-layout

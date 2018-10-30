@@ -55,7 +55,7 @@
     </div>
     <v-divider></v-divider>
     <div class="pa-3" style="height: 48px;">
-      <span class="px-3">1200</span>
+      <span class="px-3">{{ sumFlowers }}</span>
     </div>
     <v-divider></v-divider>
     <div class="px-3" style="height: 48px;">
@@ -69,7 +69,7 @@
     </div>
     <v-divider></v-divider>
     <div class="pa-3" style="height: 48px;">
-      <span class="px-3">240</span>
+      <span class="px-3">{{ sumDecor }}</span>
     </div>
     <v-divider></v-divider>
     <div class="px-3" style="height: 48px;">
@@ -79,15 +79,16 @@
         flat
         hide-details
         v-model="salePersent"
+        :background-color="(salePersent > 0) ? 'deep-orange lighten-4' : ''"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
     <div class="pa-3" style="height: 48px;">
-      <span class="px-3">144</span>
+      <span class="px-3">{{ sumSale }}</span>
     </div>
     <v-divider></v-divider>
     <div class="pa-3" style="height: 48px;">
-      <span class="px-3">1296</span>
+      <span class="px-3">{{ sumPay }}</span>
     </div>
     <v-divider></v-divider>
     <div class="px-3 text-xs-center" style="height: 48px;">
@@ -113,6 +114,10 @@ export default {
       type: Array,
       required: true,
     },
+    sumFlowers: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {
@@ -121,7 +126,7 @@ export default {
       order: '',
       decorPersent: 10,
       delivery: 0,
-      salePersent: 0,
+      salePersent: null,
     };
   },
   computed: {
@@ -129,6 +134,20 @@ export default {
       const ordersList = this.ordersList.filter(item => item.client === this.client);
       return ordersList;
     },
+    sumDecor: function decorSum() {
+      return Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+    },
+    sumSale: function decorSum() {
+      return Math.ceil((this.sumFlowers + this.sumDecor) * (this.salePersent / 100));
+    },
+    sumPay: function decorSum() {
+      return (this.sumFlowers + this.sumDecor + +this.delivery) - this.sumSale;
+    },
+  },
+  updated() {
+    if (this.salePersent === null && (this.sumFlowers + this.sumDecor) >= 5000) {
+      this.salePersent = 10;
+    }
   },
 };
 </script>

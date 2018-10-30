@@ -36,7 +36,21 @@
                 :florists-list="$store.state.Floristslist"
                 :clients-list="$store.state.ClientsList"
                 :orders-list="$store.state.Orderslist"
+                :sumFlowers="item.sum"
               ></created-bouquet-card>
+            </v-flex>
+            <v-flex
+              style="align-self: center;"
+            >
+              <v-btn
+                fab
+                large
+                color="info"
+                class="mx-4"
+                @click="addCard"
+              >
+                <v-icon dark>add</v-icon>
+              </v-btn>
             </v-flex>
           </v-layout>
         </v-container>
@@ -115,7 +129,7 @@
       </v-flex>
       <v-flex
         xs8
-        style="padding-left: 5px;"
+        style="padding-left: 6px;"
       >
         <v-container
           id="scroll-block-bottom"
@@ -129,7 +143,11 @@
             >
               <select-count-goods
                 :goods-list="$store.state.GoodsList"
+                @changeSum="setSum(index, $event)"
               ></select-count-goods>
+            </v-flex>
+            <v-flex>
+              <div style="width: 120px;"></div>
             </v-flex>
           </v-layout>
         </v-container>
@@ -164,28 +182,11 @@ export default {
         'Всего к оплате',
         '',
       ],
-      cardsList: [
-        {
-          selectedGods: [],
-        },
-        {
-          selectedGods: [],
-        },
-        {
-          selectedGods: [],
-        },
-        {
-          selectedGods: [],
-        },
-        {
-          selectedGods: [],
-        },
-      ],
+      cardsList: [],
     };
   },
   methods: {
     onScroll: function onScroll(e) {
-      console.log(e);
       const scroll = e.target.scrollLeft;
 
       if (e.target.id === 'scroll-block-top') {
@@ -194,6 +195,19 @@ export default {
         // document.getElementById('scroll-block-top').scrollLeft = scroll;
       }
     },
+    setSum: function setSum(index, sum) {
+      const item = this.cardsList[index];
+      item.sum = sum;
+      this.$set(this.cardsList, index, item);
+    },
+    addCard: function addCard() {
+      this.cardsList.push({ sum: 0 });
+    },
+  },
+  mounted() {
+    for (let i = 0; i < 5; i += 1) {
+      this.addCard();
+    }
   },
 };
 </script>

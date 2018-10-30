@@ -19,7 +19,6 @@
       </div>
       <v-divider :key="'divider-' + index"></v-divider>
     </template>
-    {{ selectedGoods }}
   </v-card>
 </template>
 
@@ -42,6 +41,14 @@ export default {
       const goodsList = this.goods.filter(item => item.value > 0);
       return goodsList;
     },
+    sumSelectedGoods: function sumSelectedGoods() {
+      const goods = this.selectedGoods;
+      let sum = 0;
+      for (let i = 0; i < goods.length; i += 1) {
+        sum += goods[i].price * goods[i].value;
+      }
+      return sum;
+    },
   },
   methods: {
     setValueGoods: function setValueGoods() {
@@ -56,6 +63,10 @@ export default {
       const item = this.goods[index];
       item.value = +value;
       this.$set(this.goods, index, item);
+      this.changeSum();
+    },
+    changeSum: function changeSum() {
+      this.$emit('changeSum', this.sumSelectedGoods);
     },
   },
   created() {

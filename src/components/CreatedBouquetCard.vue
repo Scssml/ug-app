@@ -92,9 +92,75 @@
     </div>
     <v-divider></v-divider>
     <div class="px-3 text-xs-center" style="height: 48px;">
-      <v-btn color="info">Оплатить</v-btn>
+      <v-btn
+        color="info"
+        @click.native="dialogPay = true"
+      >Оплатить</v-btn>
     </div>
     <v-divider></v-divider>
+    <v-dialog
+      v-model="dialogPay"
+      persistent
+      max-width="420px"
+    >
+      <v-card>
+        <v-alert
+          :value="createdSuccess"
+          type="success"
+          class="my-0"
+        >
+          Букет создан
+        </v-alert>
+        <v-form
+          ref="form"
+          lazy-validation
+        >
+          <v-card-title
+            class="px-4"
+          >
+            <span class="headline">Оплата заказа</span>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-card-text
+            class="px-4"
+          >
+            <v-text-field
+              label="К оплате"
+              readonly
+              :value="sumPay"
+            ></v-text-field>
+            <v-text-field
+              label="Сумма"
+              :rules="[v => v >= sumPay || 'Заполните поле']"
+              v-model="sumClient"
+            ></v-text-field>
+            <v-text-field
+              label="Сдача"
+              readonly
+              :value="sumChange"
+            ></v-text-field>
+            <v-select
+              label="Тип оплаты"
+              :items="typePayList"
+              :rules="[v => !!v || 'Заполните поле']"
+              v-model="typePay"
+            ></v-select>
+          </v-card-text>
+          <v-card-actions
+            class="px-4 pb-4"
+          >
+            <v-btn
+              @click.native="dialogPay = false"
+            >Отмена</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="info"
+              @click="submitForm"
+            >Оплатить</v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -121,12 +187,20 @@ export default {
   },
   data() {
     return {
+      createdSuccess: false,
       florist: '',
       client: '',
       order: '',
       decorPersent: 10,
       delivery: 0,
       salePersent: null,
+      dialogPay: false,
+      sumClient: 0,
+      typePay: '',
+      typePayList: [
+        'Наличные',
+        'Безнал',
+      ],
     };
   },
   computed: {
@@ -142,6 +216,23 @@ export default {
     },
     sumPay: function decorSum() {
       return (this.sumFlowers + this.sumDecor + +this.delivery) - this.sumSale;
+    },
+    sumChange: function sumChange() {
+      const sum = this.sumClient - this.sumPay;
+      return (sum > 0) ? sum : 0;
+    },
+  },
+  methods: {
+    submitForm: function submitForm() {
+      const validate = this.$refs.form.validate();
+      if (validate) {
+        this.createdSuccess = true;
+
+        setTimeout(() => {
+          this.dialogPay = false;
+          this.$emit('createdSuccess', true);
+        }, 1000);
+      }
     },
   },
   updated() {

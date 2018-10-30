@@ -28,17 +28,20 @@
             row
             v-scroll:#scroll-block-top="onScroll"
           >
-            <v-flex
-              v-for="(item, index) in cardsList"
-              :key="index"
-            >
-              <created-bouquet-card
-                :florists-list="$store.state.Floristslist"
-                :clients-list="$store.state.ClientsList"
-                :orders-list="$store.state.Orderslist"
-                :sumFlowers="item.sum"
-              ></created-bouquet-card>
-            </v-flex>
+            <template v-for="(item, index) in cardsList">
+              <v-flex
+                :key="index"
+                v-if="!item.success"
+              >
+                <created-bouquet-card
+                  :florists-list="$store.state.Floristslist"
+                  :clients-list="$store.state.ClientsList"
+                  :orders-list="$store.state.Orderslist"
+                  :sumFlowers="item.sum"
+                  @createdSuccess="createdSuccess(index, $event)"
+                ></created-bouquet-card>
+              </v-flex>
+            </template>
             <v-flex
               style="align-self: center;"
             >
@@ -137,15 +140,17 @@
           class="scroll-y pa-0 right-block"
         >
           <v-layout row>
-            <v-flex
-              v-for="(item, index) in cardsList"
-              :key="index"
-            >
-              <select-count-goods
-                :goods-list="$store.state.GoodsList"
-                @changeSum="setSum(index, $event)"
-              ></select-count-goods>
-            </v-flex>
+            <template v-for="(item, index) in cardsList">
+              <v-flex
+                :key="index"
+                v-if="!item.success"
+              >
+                <select-count-goods
+                  :goods-list="$store.state.GoodsList"
+                  @changeSum="setSum(index, $event)"
+                ></select-count-goods>
+              </v-flex>
+            </template>
             <v-flex>
               <div style="width: 120px;"></div>
             </v-flex>
@@ -201,7 +206,18 @@ export default {
       this.$set(this.cardsList, index, item);
     },
     addCard: function addCard() {
-      this.cardsList.push({ sum: 0 });
+      this.cardsList.push({
+        sum: 0,
+        success: false,
+      });
+    },
+    createdSuccess: function createdSuccess(index, data) {
+      if (data) {
+        const item = this.cardsList[index];
+        item.success = true;
+        this.$set(this.cardsList, index, item);
+        this.addCard();
+      }
     },
   },
   mounted() {

@@ -148,6 +148,7 @@
                 <select-count-goods
                   :goods-list="$store.state.GoodsList"
                   @changeSum="setSum(index, $event)"
+                  :key="index"
                 ></select-count-goods>
               </v-flex>
             </template>

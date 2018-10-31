@@ -6,18 +6,18 @@
   >
     <div class="pa-3 text-xs-center" style="height: 48px;">Кол-во</div>
     <v-divider></v-divider>
-    <template v-for="(item, index) in goods">
-      <div class="px-3" style="height: 48px;" :key="index">
+    <template v-for="(item, i) in goods">
+      <div class="px-3" style="height: 48px;" :key="i">
         <v-text-field
           label="0"
           solo
           flat
           hide-details
-          @input="setCountGood(index, $event)"
+          @input="setCountGood(i, $event)"
         ></v-text-field>
         {{ item.value }}
       </div>
-      <v-divider :key="'divider-' + index"></v-divider>
+      <v-divider :key="'divider-' + i"></v-divider>
     </template>
   </v-card>
 </template>
@@ -52,9 +52,10 @@ export default {
   },
   methods: {
     setValueGoods: function setValueGoods() {
-      let item = [];
-      for (let i = 0; i < this.goodsList.length; i += 1) {
-        item = this.goodsList[i];
+      const goods = this.goodsList;
+      let item = {};
+      for (let i = 0; i < goods.length; i += 1) {
+        item = Object.assign({}, goods[i]);
         item.value = 0;
         this.goods.push(item);
       }

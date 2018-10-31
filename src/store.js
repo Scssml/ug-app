@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
-const clientsList = [
+const clientsListResponse = [
   {
     name: 'Клиент 1',
     id: 1,
@@ -26,7 +26,7 @@ const clientsList = [
   },
 ];
 
-const floristsList = [
+const floristsListResponse = [
   {
     name: 'Флорист 1',
     id: 1,
@@ -41,7 +41,7 @@ const floristsList = [
   },
 ];
 
-const ordersList = [
+const ordersListResponse = [
   {
     client: 2,
     id: 214,
@@ -72,7 +72,7 @@ const ordersList = [
   },
 ];
 
-const goodsList = [
+const goodsListResponse = [
   {
     name: 'Цветок 1',
     id: 1,
@@ -147,15 +147,91 @@ const goodsList = [
 
 export default new Vuex.Store({
   state: {
-    ClientsList: clientsList,
-    Floristslist: floristsList,
-    Orderslist: ordersList,
-    GoodsList: goodsList,
+
   },
   mutations: {
 
   },
   actions: {
+    getClientsList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const clientsList = clientsListResponse;
+          const errorData = {
+            text: 'Ошибка получения клиентов!',
+          };
+          const successData = {
+            text: 'Клиенты получены!',
+          };
 
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ clientsList, successData });
+          }
+        }, 1000);
+      });
+    },
+    getFloristsList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const floristsList = floristsListResponse;
+          const errorData = {
+            text: 'Ошибка получения флористов!',
+          };
+          const successData = {
+            text: 'Флористы получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ floristsList, successData });
+          }
+        }, 1500);
+      });
+    },
+    getOrdersList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const ordersList = ordersListResponse;
+          const errorData = {
+            text: 'Ошибка получения заказов!',
+          };
+          const successData = {
+            text: 'Заказы получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ ordersList, successData });
+          }
+        }, 2000);
+      });
+    },
+    getGoodsList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const goodsList = goodsListResponse;
+          const errorData = {
+            text: 'Ошибка получения товаров!',
+          };
+          const successData = {
+            text: 'Товары получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ goodsList, successData });
+          }
+        }, 2500);
+      });
+    },
   },
 });

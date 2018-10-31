@@ -3,7 +3,38 @@
     fluid
     class="pa-0"
   >
-    <v-layout row wrap>
+    <v-dialog
+      :value="loadingDialog"
+      persistent
+      max-width="320px"
+    >
+      <v-list>
+        <v-list-tile
+          v-for="(item, index) in loadingData"
+          :key="index"
+          avatar
+          :color="(item.error) ? 'red' : item.color"
+        >
+          <v-list-tile-avatar>
+            <v-progress-circular
+              :value="100"
+              :size="30"
+              :color="(item.error) ? 'red' : item.color"
+              :indeterminate="item.loading"
+            ></v-progress-circular>
+          </v-list-tile-avatar>
+
+          <v-list-tile-content>
+            <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+    </v-dialog>
+    <v-layout
+      row
+      wrap
+      v-if="!loadingDialog"
+    >
       <v-flex
         xs4
       >
@@ -34,9 +65,9 @@
                 v-if="!item.success"
               >
                 <created-bouquet-card
-                  :florists-list="$store.state.Floristslist"
-                  :clients-list="$store.state.ClientsList"
-                  :orders-list="$store.state.Orderslist"
+                  :florists-list="floristsList"
+                  :clients-list="clientsList"
+                  :orders-list="ordersList"
                   :sumFlowers="item.sum"
                   @createdSuccess="createdSuccess(index, $event)"
                 ></created-bouquet-card>
@@ -59,7 +90,12 @@
         </v-container>
       </v-flex>
     </v-layout>
-    <v-layout row wrap style="min-height: 100px; height: 380px; overflow-y: scroll;">
+    <v-layout
+      row
+      wrap
+      style="min-height: 100px; height: 380px; overflow-y: scroll;"
+      v-if="!loadingDialog"
+    >
       <v-flex
         xs4
       >
@@ -70,7 +106,7 @@
             >
               <div class="pa-3 text-xs-center" style="height: 48px;">Остаток</div>
               <v-divider></v-divider>
-              <template v-for="(item, index) in $store.state.GoodsList">
+              <template v-for="(item, index) in goodsList">
                 <div
                   class="pa-3 text-xs-center"
                   style="height: 48px;"
@@ -86,7 +122,7 @@
             >
               <div class="pa-3 text-xs-center" style="height: 48px;">Тип</div>
               <v-divider></v-divider>
-              <template v-for="(item, index) in $store.state.GoodsList">
+              <template v-for="(item, index) in goodsList">
                 <div
                   class="pa-3 text-xs-center"
                   style="height: 48px;"
@@ -102,7 +138,7 @@
             >
               <div class="pa-3 text-xs-center" style="height: 48px;">Наименование</div>
               <v-divider></v-divider>
-              <template v-for="(item, index) in $store.state.GoodsList">
+              <template v-for="(item, index) in goodsList">
                 <div
                   class="pa-3 text-xs-center"
                   style="height: 48px;"
@@ -118,7 +154,7 @@
             >
               <div class="pa-3 text-xs-center" style="height: 48px;">Цена</div>
               <v-divider></v-divider>
-              <template v-for="(item, index) in $store.state.GoodsList">
+              <template v-for="(item, index) in goodsList">
                 <div
                   class="pa-3 text-xs-center"
                   style="height: 48px;"
@@ -146,7 +182,7 @@
                 v-if="!item.success"
               >
                 <select-count-goods
-                  :goods-list="$store.state.GoodsList"
+                  :goods-list="goodsList"
                   @changeSum="setSum(index, $event)"
                   :key="index"
                 ></select-count-goods>
@@ -174,6 +210,36 @@ export default {
   },
   data() {
     return {
+      loadingData: [
+        {
+          title: 'Получение клиентов',
+          error: false,
+          loading: true,
+          color: 'indigo',
+          id: 'clients',
+        },
+        {
+          title: 'Получение флористов',
+          error: false,
+          loading: true,
+          color: 'cyan',
+          id: 'florists',
+        },
+        {
+          title: 'Получение заказов',
+          error: false,
+          loading: true,
+          color: 'amber',
+          id: 'orders',
+        },
+        {
+          title: 'Получение товаров',
+          error: false,
+          loading: true,
+          color: 'blue-grey',
+          id: 'goods',
+        },
+      ],
       offsetLeft: 0,
       propsBouquet: [
         'Флорист',
@@ -189,7 +255,17 @@ export default {
         '',
       ],
       cardsList: [],
+      floristsList: [],
+      clientsList: [],
+      ordersList: [],
+      goodsList: [],
     };
+  },
+  computed: {
+    loadingDialog: function loadingDialog() {
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
+      return (loadData.length === this.loadingData.length) ? 0 : 1;
+    },
   },
   methods: {
     onScroll: function onScroll(e) {
@@ -220,11 +296,71 @@ export default {
         this.addCard();
       }
     },
+    getClientsList: function getClientsList() {
+      this.$store.dispatch('getClientsList').then((response) => {
+        this.clientsList = response.clientsList;
+
+        const loadData = this.loadingData.find(item => item.id === 'clients');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'clients');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
+    getFloristsList: function getFloristsList() {
+      this.$store.dispatch('getFloristsList').then((response) => {
+        this.floristsList = response.floristsList;
+
+        const loadData = this.loadingData.find(item => item.id === 'florists');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'florists');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
+    getOrdersList: function getOrdersList() {
+      this.$store.dispatch('getOrdersList').then((response) => {
+        this.ordersList = response.ordersList;
+
+        const loadData = this.loadingData.find(item => item.id === 'orders');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'orders');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
+    getGoodsList: function getGoodsList() {
+      this.$store.dispatch('getGoodsList').then((response) => {
+        this.goodsList = response.goodsList;
+
+        const loadData = this.loadingData.find(item => item.id === 'goods');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'goods');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
+    getDataProps: function getDataProps() {
+      this.getClientsList();
+      this.getFloristsList();
+      this.getOrdersList();
+      this.getGoodsList();
+    },
   },
   mounted() {
     for (let i = 0; i < 5; i += 1) {
       this.addCard();
     }
+
+    this.getDataProps();
   },
 };
 </script>

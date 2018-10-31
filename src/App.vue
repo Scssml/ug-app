@@ -58,35 +58,35 @@ export default {
         },
         {
           title: 'Заказы',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Клиенты',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Товары',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Оплаты',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Букеты',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Флористы',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Пользователи',
-          link: '/',
+          link: '#',
         },
         {
           title: 'Выход',
-          link: '/',
+          link: '#',
         },
       ],
       yearNow: new Date().getFullYear(),

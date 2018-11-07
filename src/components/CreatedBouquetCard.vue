@@ -95,6 +95,7 @@
       <v-btn
         color="info"
         @click.native="dialogPay = true"
+        :disabled="!activePayBtn"
       >Оплатить</v-btn>
     </div>
     <v-divider></v-divider>
@@ -220,6 +221,10 @@ export default {
     sumChange: function sumChange() {
       const sum = this.sumClient - this.sumPay;
       return (sum > 0) ? sum : 0;
+    },
+    activePayBtn: function activePayBtn() {
+      const active = (!!this.florist && !!this.client) ? 1 : 0;
+      return active;
     },
   },
   methods: {

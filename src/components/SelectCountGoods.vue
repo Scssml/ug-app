@@ -4,16 +4,17 @@
     width="300"
     style="border-left: 1px solid #ccc; font-size: 16px;"
   >
-    <div class="pa-3 text-xs-center" style="height: 48px;">Кол-во</div>
+    <div class="py-1 px-3 text-xs-center" style="height: 30px;">Кол-во</div>
     <v-divider></v-divider>
     <template v-for="(item, i) in goods">
-      <div class="px-3" style="height: 48px;" :key="i">
+      <div class="px-3" style="height: 30px;" :key="i">
         <v-text-field
           label="0"
           solo
           flat
           hide-details
           @input="setCountGood(i, $event)"
+          class="scs-small"
         ></v-text-field>
         {{ item.value }}
       </div>

@@ -4,7 +4,7 @@
     width="300"
     style="border-left: 1px solid #ccc; font-size: 16px;"
   >
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-select
         label="Флорист"
         :items="floristsList"
@@ -14,10 +14,11 @@
         flat
         hide-details
         v-model="florist"
+        class="scs-small"
       ></v-select>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-select
         label="Клиент"
         :items="clientsList"
@@ -27,10 +28,11 @@
         flat
         hide-details
         v-model="client"
+        class="scs-small"
       ></v-select>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-select
         label="Заказ"
         :items="clientOrdersList"
@@ -41,38 +43,63 @@
         hide-details
         no-data-text="Нет заказов"
         v-model="order"
+        class="scs-small"
       ></v-select>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-text-field
         label="Оформление, %"
         solo
         flat
         hide-details
         v-model="decorPersent"
+        class="scs-small"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="pa-3" style="height: 48px;">
+    <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumFlowers }}</span>
+    </div> -->
+    <div class="px-3" style="height: 30px;">
+      <v-text-field
+        label="0"
+        solo
+        flat
+        hide-details
+        :value="sumFlowers"
+        class="scs-small"
+        readonly
+      ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-text-field
         label="Доставка"
         solo
         flat
         hide-details
         v-model="delivery"
+        class="scs-small"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="pa-3" style="height: 48px;">
+    <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumDecor }}</span>
+    </div> -->
+    <div class="px-3" style="height: 30px;">
+      <v-text-field
+        label="0"
+        solo
+        flat
+        hide-details
+        :value="sumDecor"
+        class="scs-small"
+        readonly
+      ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 48px;">
+    <div class="px-3" style="height: 30px;">
       <v-text-field
         label="Скидка, %"
         solo
@@ -80,22 +107,46 @@
         hide-details
         v-model="salePersent"
         :background-color="(salePersent > 0) ? 'deep-orange lighten-4' : ''"
+        class="scs-small"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="pa-3" style="height: 48px;">
+    <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumSale }}</span>
+    </div> -->
+    <div class="px-3" style="height: 30px;">
+      <v-text-field
+        label="0"
+        solo
+        flat
+        hide-details
+        :value="sumSale"
+        class="scs-small"
+        readonly
+      ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="pa-3" style="height: 48px;">
+    <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumPay }}</span>
+    </div> -->
+    <div class="px-3" style="height: 30px;">
+      <v-text-field
+        label="0"
+        solo
+        flat
+        hide-details
+        :value="sumPay"
+        class="scs-small"
+        readonly
+      ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-3 text-xs-center" style="height: 48px;">
+    <div class="px-3 text-xs-center" style="height: 40px;">
       <v-btn
         color="info"
         @click.native="dialogPay = true"
         :disabled="!activePayBtn"
+        small
       >Оплатить</v-btn>
     </div>
     <v-divider></v-divider>
@@ -210,13 +261,16 @@ export default {
       return ordersList;
     },
     sumDecor: function decorSum() {
-      return Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+      const sum = Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+      return this.priceRound(sum);
     },
-    sumSale: function decorSum() {
-      return Math.ceil((this.sumFlowers + this.sumDecor) * (this.salePersent / 100));
+    sumSale: function sumSale() {
+      const sum = Math.ceil((this.sumFlowers + this.sumDecor) * (this.salePersent / 100));
+      return this.priceRound(sum);
     },
-    sumPay: function decorSum() {
-      return (this.sumFlowers + this.sumDecor + +this.delivery) - this.sumSale;
+    sumPay: function sumPay() {
+      const sum = (this.sumFlowers + this.sumDecor + +this.delivery) - this.sumSale;
+      return this.priceRound(sum);
     },
     sumChange: function sumChange() {
       const sum = this.sumClient - this.sumPay;
@@ -238,6 +292,10 @@ export default {
           this.$emit('createdSuccess', true);
         }, 1000);
       }
+    },
+    priceRound: function priceRound(sum) {
+      const remainder = (sum % 10 <= 5 && sum > 0) ? -5 : 0;
+      return (Math.ceil(sum / 10) * 10) + remainder;
     },
   },
   updated() {

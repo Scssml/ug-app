@@ -43,7 +43,10 @@
           v-for="(item, index) in propsBouquet"
           :key="index"
         >
-          <div class="pa-3 text-xs-right" style="height: 48px;">{{ item }}</div>
+          <div
+            class="py-1 px-3 text-xs-right"
+            :style="'height: ' + ((!!item) ? 30 : 40) + 'px;'"
+          >{{ item }}</div>
           <v-divider></v-divider>
         </v-card>
       </v-flex>
@@ -93,7 +96,7 @@
     <v-layout
       row
       wrap
-      style="min-height: 100px; height: 380px; overflow-y: scroll;"
+      style="min-height: 100px; height: 528px; overflow-y: scroll;"
       v-if="!loadingDialog"
     >
       <v-flex
@@ -104,12 +107,12 @@
             <v-card
               flat
             >
-              <div class="pa-3 text-xs-center" style="height: 48px;">Остаток</div>
+              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Остаток</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="pa-3 text-xs-center"
-                  style="height: 48px;"
+                  class="py-1 px-3 text-xs-center"
+                  style="height: 30px;"
                   :key="index"
                 >{{ item.store }}</div>
                 <v-divider :key="'divider-' + index"></v-divider>
@@ -120,12 +123,12 @@
             <v-card
               flat
             >
-              <div class="pa-3 text-xs-center" style="height: 48px;">Тип</div>
+              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Тип</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="pa-3 text-xs-center"
-                  style="height: 48px;"
+                  class="py-1 px-3 text-xs-center"
+                  style="height: 30px;"
                   :key="index"
                 >{{ item.type }}</div>
                 <v-divider :key="'divider-' + index"></v-divider>
@@ -136,12 +139,12 @@
             <v-card
               flat
             >
-              <div class="pa-3 text-xs-center" style="height: 48px;">Наименование</div>
+              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Наименование</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="pa-3 text-xs-center"
-                  style="height: 48px;"
+                  class="py-1 px-3 text-xs-center"
+                  style="height: 30px;"
                   :key="index"
                 >{{ item.name }}</div>
                 <v-divider :key="'divider-' + index"></v-divider>
@@ -152,12 +155,12 @@
             <v-card
               flat
             >
-              <div class="pa-3 text-xs-center" style="height: 48px;">Цена</div>
+              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Цена</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="pa-3 text-xs-center"
-                  style="height: 48px;"
+                  class="py-1 px-3 text-xs-center"
+                  style="height: 30px;"
                   :key="index"
                 >{{ item.price }}</div>
                 <v-divider :key="'divider-' + index"></v-divider>
@@ -364,3 +367,20 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  .scs-small {
+    &.v-text-field {
+      .v-input__control {
+        min-height: 30px;
+      }
+      input {
+        max-height: 30px;
+        padding: 5px 0;
+      }
+      .v-select__selection--comma {
+        margin: 6px 4px 6px 0;
+      }
+    }
+  }
+</style>

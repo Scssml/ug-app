@@ -7,22 +7,37 @@ const clientsListResponse = [
   {
     name: 'Клиент 1',
     id: 1,
+    bill: 2000,
+    sale: 10,
+    active: 1,
   },
   {
     name: 'Клиент 2',
     id: 2,
+    bill: 5000,
+    sale: 7,
+    active: 1,
   },
   {
     name: 'Клиент 3',
     id: 3,
+    bill: 0,
+    sale: 0,
+    active: 1,
   },
   {
     name: 'Клиент 4',
     id: 4,
+    bill: 10000,
+    sale: 0,
+    active: 1,
   },
   {
     name: 'Клиент 5',
     id: 5,
+    bill: 9000,
+    sale: 20,
+    active: 1,
   },
 ];
 

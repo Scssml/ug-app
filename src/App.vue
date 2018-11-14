@@ -62,7 +62,7 @@ export default {
         },
         {
           title: 'Клиенты',
-          link: '#',
+          link: '/clients/',
         },
         {
           title: 'Товары',

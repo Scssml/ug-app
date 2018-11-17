@@ -45,14 +45,17 @@ const floristsListResponse = [
   {
     name: 'Флорист 1',
     id: 1,
+    active: 1,
   },
   {
     name: 'Флорист 2',
     id: 2,
+    active: 1,
   },
   {
     name: 'Флорист 3',
     id: 3,
+    active: 1,
   },
 ];
 

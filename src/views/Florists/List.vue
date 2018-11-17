@@ -101,14 +101,6 @@
                     :rules="[v => !!v || 'Заполните поле']"
                     v-model="editedItem.name"
                   ></v-text-field>
-                  <v-text-field
-                    label="Счет"
-                    v-model="editedItem.bill"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Скидка"
-                    v-model="editedItem.sale"
-                  ></v-text-field>
                   <v-checkbox
                     label="Активность"
                     v-model="editedItem.active"
@@ -134,17 +126,15 @@
 
         <v-data-table
           :headers="headersTable"
-          :items="clientsList"
+          :items="floristsList"
           hide-actions
-          no-data-text="Клиентов не найдено"
-          no-results-text="Клиентов не найдено"
+          no-data-text="Флористов не найдено"
+          no-results-text="Флористов не найдено"
           :search="search"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
             <td style="width: 60%;">{{ props.item.name }}</td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.bill }}</td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.sale }}</td>
             <td class="text-xs-right" style="width: 10%;">
               {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
@@ -175,11 +165,11 @@ export default {
     return {
       loadingData: [
         {
-          title: 'Получение клиентов',
+          title: 'Получение флористов',
           error: false,
           loading: true,
-          color: 'indigo',
-          id: 'clients',
+          color: 'cyan',
+          id: 'florists',
         },
       ],
       search: '',
@@ -190,19 +180,9 @@ export default {
           value: 'id',
         },
         {
-          text: 'Клиент',
+          text: 'Флорист',
           align: 'left',
           value: 'name',
-        },
-        {
-          text: 'Счет',
-          align: 'right',
-          value: 'bill',
-        },
-        {
-          text: 'Скидка',
-          align: 'right',
-          value: 'sale',
         },
         {
           text: 'Активность',
@@ -217,20 +197,16 @@ export default {
         },
       ],
       dialogForm: false,
-      clientsList: [],
+      floristsList: [],
       editedIndex: -1,
       editedItem: {
         name: '',
         id: 0,
-        bill: 0,
-        sale: 0,
         active: 1,
       },
       defaultItem: {
         name: '',
         id: 0,
-        bill: 0,
-        sale: 0,
         active: 1,
       },
       createdSuccess: false,
@@ -244,22 +220,22 @@ export default {
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
     formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Новый клиент' : 'Изменение клиента';
+      return this.editedIndex === -1 ? 'Новый флорист' : 'Изменение флориста';
     },
     formAlertTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Клиент создан' : 'Клиент изменен';
+      return this.editedIndex === -1 ? 'Флорист создан' : 'Флорист изменен';
     },
   },
   methods: {
-    getClientsList: function getClientsList() {
-      this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.clientsList;
+    getFloristsList: function getFloristsList() {
+      this.$store.dispatch('getFloristsList').then((response) => {
+        this.floristsList = response.floristsList;
 
-        const loadData = this.loadingData.find(item => item.id === 'clients');
+        const loadData = this.loadingData.find(item => item.id === 'florists');
         loadData.title = response.successData.text;
         loadData.loading = false;
       }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'clients');
+        const loadData = this.loadingData.find(item => item.id === 'florists');
         loadData.title = error.text;
         loadData.error = true;
       });
@@ -268,9 +244,9 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         if (this.editedIndex > -1) {
-          Object.assign(this.clientsList[this.editedIndex], this.editedItem);
+          Object.assign(this.floristsList[this.editedIndex], this.editedItem);
         } else {
-          this.clientsList.push(this.editedItem);
+          this.floristsList.push(this.editedItem);
         }
 
         this.createdSuccess = true;
@@ -289,16 +265,16 @@ export default {
       }, 300);
     },
     editItem: function editItem(item) {
-      this.editedIndex = this.clientsList.indexOf(item);
+      this.editedIndex = this.floristsList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
     },
     confirmDeleted: function confirmDeleted(item) {
       this.dialogDeleted = true;
-      this.deletedIndex = this.clientsList.indexOf(item);
+      this.deletedIndex = this.floristsList.indexOf(item);
     },
     deletedItem: function deletedItem(index) {
-      this.clientsList.splice(index, 1);
+      this.floristsList.splice(index, 1);
       this.closeConfirm();
     },
     closeConfirm: function closeDialog() {
@@ -309,7 +285,7 @@ export default {
     },
   },
   mounted() {
-    this.getClientsList();
+    this.getFloristsList();
   },
 };
 </script>

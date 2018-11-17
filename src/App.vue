@@ -78,7 +78,7 @@ export default {
         },
         {
           title: 'Флористы',
-          link: '#',
+          link: '/florists/',
         },
         {
           title: 'Пользователи',

@@ -70,11 +70,11 @@ export default {
         },
         {
           title: 'Оплаты',
-          link: '#',
+          link: '/pays/',
         },
         {
           title: 'Букеты',
-          link: '#',
+          link: '/bouquets/',
         },
         {
           title: 'Флористы',
@@ -82,7 +82,7 @@ export default {
         },
         {
           title: 'Пользователи',
-          link: '#',
+          link: '/users/',
         },
         {
           title: 'Выход',

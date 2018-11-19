@@ -3,6 +3,38 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
+const usersGroupsListResponse = [
+  {
+    id: 1,
+    name: 'Админинистраторы',
+  },
+  {
+    id: 2,
+    name: 'Менеджеры',
+  },
+];
+
+const usersListResponse = [
+  {
+    name: 'Админ',
+    id: 1,
+    active: 1,
+    groups: [1],
+  },
+  {
+    name: 'Менеджер 1',
+    id: 2,
+    active: 1,
+    groups: [2],
+  },
+  {
+    name: 'Менеджер 2',
+    id: 3,
+    active: 1,
+    groups: [2],
+  },
+];
+
 const clientsListResponse = [
   {
     name: 'Клиент 1',
@@ -303,6 +335,87 @@ const goodsListResponse = [
   },
 ];
 
+const bouquetsListResponse = [
+  {
+    id: 1,
+    date: '09.11.2018',
+    florist: 2,
+    user: 2,
+    client: 4,
+    order: 218,
+    sum: 5000,
+    decorPersent: 10,
+    sumDecor: 500,
+    delivery: 200,
+    salePersent: 0,
+    sumSale: 0,
+    sumPay: 5000,
+    typePay: 'Нал',
+    goods: [
+      {
+        id: 5,
+        count: 4,
+      },
+      {
+        id: 7,
+        count: 3,
+      },
+    ],
+  },
+  {
+    id: 2,
+    date: '11.11.2018',
+    florist: 2,
+    user: 2,
+    client: 4,
+    order: 218,
+    sum: 5000,
+    decorPersent: 10,
+    sumDecor: 500,
+    delivery: 200,
+    salePersent: 0,
+    sumSale: 0,
+    sumPay: 5000,
+    typePay: 'Безнал',
+    goods: [
+      {
+        id: 5,
+        count: 4,
+      },
+      {
+        id: 7,
+        count: 3,
+      },
+    ],
+  },
+  {
+    id: 3,
+    date: '12.11.2018',
+    florist: 2,
+    user: 2,
+    client: 4,
+    order: 218,
+    sum: 5000,
+    decorPersent: 10,
+    sumDecor: 500,
+    delivery: 200,
+    salePersent: 0,
+    sumSale: 0,
+    sumPay: 5000,
+    typePay: 'Нал',
+    goods: [
+      {
+        id: 5,
+        count: 4,
+      },
+      {
+        id: 7,
+        count: 3,
+      },
+    ],
+  },
+];
+
 export default new Vuex.Store({
   state: {
 
@@ -311,6 +424,66 @@ export default new Vuex.Store({
 
   },
   actions: {
+    getUsersList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const usersList = usersListResponse;
+          const errorData = {
+            text: 'Ошибка получения пользователей!',
+          };
+          const successData = {
+            text: 'Пользователи получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ usersList, successData });
+          }
+        }, 1000);
+      });
+    },
+    getUsersGroupsList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const usersGroupsList = usersGroupsListResponse;
+          const errorData = {
+            text: 'Ошибка получения групп пользователей!',
+          };
+          const successData = {
+            text: 'Группы пользователей получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ usersGroupsList, successData });
+          }
+        }, 1500);
+      });
+    },
+    getBouquetsList() {
+      return new Promise((resolve, rejected) => {
+        setTimeout(() => {
+          const bouquetsList = bouquetsListResponse;
+          const errorData = {
+            text: 'Ошибка получения букетов!',
+          };
+          const successData = {
+            text: 'Букеты получены!',
+          };
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ bouquetsList, successData });
+          }
+        }, 1500);
+      });
+    },
     getClientsList() {
       return new Promise((resolve, rejected) => {
         setTimeout(() => {

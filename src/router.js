@@ -21,6 +21,21 @@ export default new Router({
       component: () => import('./views/Florists/List.vue'),
     },
     {
+      path: '/users/',
+      name: 'users',
+      component: () => import('./views/Users/List.vue'),
+    },
+    {
+      path: '/bouquets/',
+      name: 'bouquets',
+      component: () => import('./views/Bouquets/List.vue'),
+    },
+    {
+      path: '/pays/',
+      name: 'pays',
+      component: () => import('./views/Pays/List.vue'),
+    },
+    {
       path: '/requests/',
       name: 'requests',
       component: () => import('./views/Requests/index.vue'),

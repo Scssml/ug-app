@@ -111,7 +111,7 @@
                   class="px-4 pb-4"
                 >
                   <v-btn
-                    @click.native="dialogForm = false"
+                    @click.native="closeDialog()"
                   >Отмена</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn

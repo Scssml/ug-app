@@ -102,6 +102,14 @@
                     v-model="editedItem.name"
                   ></v-text-field>
                   <v-text-field
+                    label="Телефон"
+                    v-model="editedItem.phone"
+                  ></v-text-field>
+                  <v-text-field
+                    label="День рождения"
+                    v-model="editedItem.birthDay"
+                  ></v-text-field>
+                  <v-text-field
                     label="Счет"
                     v-model="editedItem.bill"
                   ></v-text-field>
@@ -119,7 +127,7 @@
                   class="px-4 pb-4"
                 >
                   <v-btn
-                    @click.native="dialogForm = false"
+                    @click.native="closeDialog()"
                   >Отмена</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn
@@ -142,7 +150,9 @@
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
-            <td style="width: 60%;">{{ props.item.name }}</td>
+            <td style="width: 30%;">{{ props.item.name }}</td>
+            <td style="width: 15%;">{{ props.item.phone }}</td>
+            <td style="width: 15%;">{{ props.item.birthDay }}</td>
             <td class="text-xs-right" style="width: 10%;">{{ props.item.bill }}</td>
             <td class="text-xs-right" style="width: 10%;">{{ props.item.sale }}</td>
             <td class="text-xs-right" style="width: 10%;">
@@ -193,6 +203,16 @@ export default {
           text: 'Клиент',
           align: 'left',
           value: 'name',
+        },
+        {
+          text: 'Телефон',
+          align: 'left',
+          value: 'phone',
+        },
+        {
+          text: 'День рождения',
+          align: 'left',
+          value: 'birthDay',
         },
         {
           text: 'Счет',

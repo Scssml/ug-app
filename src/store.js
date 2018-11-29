@@ -42,6 +42,8 @@ const clientsListResponse = [
     bill: 2000,
     sale: 10,
     active: 1,
+    phone: '8 (999) 999-99-99',
+    birthDay: '01.01.2018',
   },
   {
     name: 'Клиент 2',
@@ -49,6 +51,8 @@ const clientsListResponse = [
     bill: 5000,
     sale: 7,
     active: 1,
+    phone: '8 (999) 999-99-99',
+    birthDay: '01.01.2018',
   },
   {
     name: 'Клиент 3',
@@ -56,6 +60,8 @@ const clientsListResponse = [
     bill: 0,
     sale: 0,
     active: 1,
+    phone: '8 (999) 999-99-99',
+    birthDay: '01.01.2018',
   },
   {
     name: 'Клиент 4',
@@ -63,6 +69,8 @@ const clientsListResponse = [
     bill: 10000,
     sale: 0,
     active: 1,
+    phone: '8 (999) 999-99-99',
+    birthDay: '01.01.2018',
   },
   {
     name: 'Клиент 5',
@@ -70,6 +78,8 @@ const clientsListResponse = [
     bill: 9000,
     sale: 20,
     active: 1,
+    phone: '8 (999) 999-99-99',
+    birthDay: '01.01.2018',
   },
 ];
 
@@ -109,6 +119,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 2,
   },
   {
     id: 215,
@@ -127,6 +138,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 4,
   },
   {
     id: 216,
@@ -145,6 +157,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 1,
   },
   {
     id: 217,
@@ -163,6 +176,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 4,
   },
   {
     id: 218,
@@ -181,6 +195,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 3,
   },
   {
     id: 219,
@@ -199,6 +214,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 2,
   },
   {
     id: 220,
@@ -217,6 +233,7 @@ const ordersListResponse = [
     addresseeName: 'Иван Иванов',
     addresseePhone: '8 (777) 777 77 77',
     address: 'ул. Самарская д. 2',
+    status: 1,
   },
 ];
 

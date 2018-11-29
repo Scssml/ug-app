@@ -72,7 +72,7 @@
           <v-dialog
             v-model="dialogForm"
             persistent
-            max-width="420px"
+            max-width="1200px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
             <v-card>
@@ -96,77 +96,108 @@
                 <v-card-text
                   class="px-4"
                 >
-                  <v-select
-                    label="Клиент"
-                    :items="clientsList"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    item-text="name"
-                    item-value="id"
-                    v-model="editedItem.client"
-                  ></v-select>
-                  <v-text-field
-                    label="Телефон"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.phone"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Курьер"
-                    v-model="editedItem.courier"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Дата доставки"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.deliveryDate"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Время доставки"
-                    v-model="editedItem.deliveryTime"
-                  ></v-text-field>
-                  <v-checkbox
-                    label="Доставлен"
-                    v-model="editedItem.delivered"
-                    color="primary"
-                  ></v-checkbox>
-                  <v-text-field
-                    label="КТО"
-                    v-model="editedItem.kto"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Т/С"
-                    v-model="editedItem.ts"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Д/П"
-                    v-model="editedItem.dp"
-                  ></v-text-field>
-                  <v-textarea
-                    label="Состав заказа"
-                    auto-grow
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.orderText"
-                  ></v-textarea>
-                  <v-text-field
-                    label="Сумма"
-                    v-model="editedItem.sum"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Получатель"
-                    v-model="editedItem.addresseeName"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Телефон получателя"
-                    v-model="editedItem.addresseePhone"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Адрес"
-                    v-model="editedItem.address"
-                  ></v-text-field>
+                  <v-layout
+                    row
+                    wrap
+                  >
+                    <v-flex
+                      xs7
+                      style="padding-right: 15px;"
+                    >
+                      <v-select
+                        label="Статус"
+                        :items="statusList"
+                        :rules="[v => !!v || 'Заполните поле']"
+                        item-text="name"
+                        item-value="id"
+                        v-model="editedItem.status"
+                      ></v-select>
+                      <v-select
+                        label="Клиент"
+                        :items="clientsList"
+                        :rules="[v => !!v || 'Заполните поле']"
+                        item-text="name"
+                        item-value="id"
+                        v-model="editedItem.client"
+                      ></v-select>
+                      <v-text-field
+                        label="Телефон"
+                        :rules="[v => !!v || 'Заполните поле']"
+                        v-model="editedItem.phone"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Курьер"
+                        v-model="editedItem.courier"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Дата доставки"
+                        :rules="[v => !!v || 'Заполните поле']"
+                        v-model="editedItem.deliveryDate"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Время доставки"
+                        v-model="editedItem.deliveryTime"
+                      ></v-text-field>
+                      <v-checkbox
+                        label="Доставлен"
+                        v-model="editedItem.delivered"
+                        color="primary"
+                      ></v-checkbox>
+                      <v-text-field
+                        label="КТО"
+                        v-model="editedItem.kto"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Т/С"
+                        v-model="editedItem.ts"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Д/П"
+                        v-model="editedItem.dp"
+                      ></v-text-field>
+                      <v-textarea
+                        label="Состав заказа"
+                        auto-grow
+                        :rules="[v => !!v || 'Заполните поле']"
+                        v-model="editedItem.orderText"
+                      ></v-textarea>
+                      <v-text-field
+                        label="Сумма"
+                        v-model="editedItem.sum"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Получатель"
+                        v-model="editedItem.addresseeName"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Телефон получателя"
+                        v-model="editedItem.addresseePhone"
+                      ></v-text-field>
+                      <v-text-field
+                        label="Адрес"
+                        v-model="editedItem.address"
+                      ></v-text-field>
+                    </v-flex>
+
+                    <v-flex
+                      xs5
+                    >
+                      <yandex-map
+                        :coords="[53.05, 50.101783]"
+                        zoom="10"
+                        style="height: 100%;"
+                        :controls="['trafficControl']"
+                        :placemarks="placemarks"
+                      >
+                      </yandex-map>
+                    </v-flex>
+                  </v-layout>
                 </v-card-text>
                 <v-card-actions
                   class="px-4 pb-4"
                 >
                   <v-btn
-                    @click.native="dialogForm = false"
+                    @click.native="closeDialog()"
                   >Отмена</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn
@@ -190,15 +221,18 @@
         >
           <template slot="items" slot-scope="props">
             <td style="width: 5%;">{{ props.item.date }}</td>
-            <td style="width: 10%;">{{ props.item.id }}</td>
+            <td style="width: 9%;">{{ props.item.id }}</td>
             <td style="width: 15%;">
               {{ clientsList.find(item => item.id === props.item.client).name }}
             </td>
             <td style="width: 10%;">{{ props.item.phone }}</td>
             <td style="width: 15%;">{{ props.item.orderText }}</td>
-            <td style="width: 10%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
-            <td style="width: 10%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.sum }}</td>
+            <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
+            <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
+            <td class="text-xs-right" style="width: 9%;">{{ props.item.sum }}</td>
+            <td class="text-xs-right" style="width: 9%;">
+              {{ statusList.find(item => item.id === props.item.status).name }}
+            </td>
             <td class="text-xs-right" style="width: 10%;">
               <v-icon
                 class="mr-2"
@@ -220,10 +254,60 @@
 </template>
 
 <script>
+import { yandexMap, ymapMarker } from 'vue-yandex-maps';
+
 export default {
   name: 'Orders',
+  components: {
+    yandexMap,
+    ymapMarker,
+  },
   data() {
     return {
+      placemarks: [
+        {
+          coords: [53.195538, 50.101783],
+          properties: {},
+          options: {},
+          clusterName: '1',
+        },
+        {
+          coords: [53.224519, 50.174861],
+          properties: {},
+          options: {},
+          clusterName: '1',
+        },
+        {
+          coords: [53.233279, 50.270361],
+          properties: {},
+          options: {},
+          clusterName: '1',
+        },
+        {
+          coords: [53.216179, 50.196250],
+          properties: {},
+          options: {},
+          clusterName: '1',
+        },
+      ],
+      statusList: [
+        {
+          id: 1,
+          name: 'Принят',
+        },
+        {
+          id: 2,
+          name: 'Выполнен',
+        },
+        {
+          id: 3,
+          name: 'Доставка',
+        },
+        {
+          id: 4,
+          name: 'Отменен',
+        },
+      ],
       loadingData: [
         {
           title: 'Получение клиентов',
@@ -283,6 +367,11 @@ export default {
           value: 'sumPay',
         },
         {
+          text: 'Статус',
+          align: 'right',
+          value: 'status',
+        },
+        {
           text: '',
           align: 'right',
           sortable: false,
@@ -310,6 +399,7 @@ export default {
         addresseeName: '',
         addresseePhone: '',
         address: '',
+        status: '',
       },
       defaultItem: {
         id: 0,
@@ -328,6 +418,7 @@ export default {
         addresseeName: '',
         addresseePhone: '',
         address: '',
+        status: '',
       },
       createdSuccess: false,
       dialogDeleted: false,

@@ -69,20 +69,13 @@
           ></v-text-field>
           <v-spacer></v-spacer>
 
-          <!-- <v-dialog
+          <v-dialog
             v-model="dialogForm"
+            v-if="dialogForm"
             persistent
             max-width="420px"
           >
-            <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
             <v-card>
-              <v-alert
-                :value="createdSuccess"
-                type="success"
-                class="my-0"
-              >
-                {{ formAlertTitle }}
-              </v-alert>
               <v-form
                 ref="form"
                 lazy-validation
@@ -90,49 +83,54 @@
                 <v-card-title
                   class="px-4"
                 >
-                  <span class="headline">{{ formTitle }}</span>
+                  <span class="headline">Просмотр оплаты</span>
                 </v-card-title>
                 <v-divider></v-divider>
                 <v-card-text
                   class="px-4"
                 >
-                  <v-text-field
-                    label="Имя"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.name"
-                  ></v-text-field>
-                  <v-select
-                    label="Группы"
-                    :items="usersGroupsList"
-                    :rules="[v => v.length > 0 || 'Заполните поле']"
-                    multiple
-                    chips
-                    deletable-chips
-                    item-text="name"
-                    item-value="id"
-                    v-model="editedItem.groups"
-                  ></v-select>
-                  <v-checkbox
-                    label="Активность"
-                    v-model="editedItem.active"
-                    color="primary"
-                  ></v-checkbox>
+                  <p><b>Номер букета:</b> {{ editedItem.id }}</p>
+                  <p><b>Дата создания:</b> {{ editedItem.date }}</p>
+                  <p>
+                    <b>Флорист:</b>
+                    {{ floristsList.find(item => item.id === editedItem.florist).name }}
+                  </p>
+                  <p>
+                    <b>Менеджер:</b>
+                    {{ usersList.find(item => item.id === editedItem.user).name }}
+                  </p>
+                  <p>
+                    <b>Клиент:</b>
+                    {{ clientsList.find(item => item.id === editedItem.client).name }}
+                  </p>
+                  <p><b>Заказ:</b> {{ editedItem.order }}</p>
+                  <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
+                  <p><b>Процент оформления:</b> {{ editedItem.decorPersent }}</p>
+                  <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
+                  <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
+                  <p><b>Процент скидки:</b> {{ editedItem.salePersent }}</p>
+                  <p><b>Сумма скидки:</b> {{ editedItem.sumSale }}</p>
+                  <p><b>Оплачено:</b> {{ editedItem.sumPay }}</p>
+                  <p><b>Тип оплаты:</b> {{ editedItem.typePay }}</p>
+                  <div><b>Состав:</b></div>
+                  <ul>
+                    <li v-for="(good, index) in editedItem.goods" :key="index">
+                      {{ goodsList.find(item => item.id === good.id).name }}:
+                      {{ good.count }}шт
+                    </li>
+                  </ul>
                 </v-card-text>
                 <v-card-actions
                   class="px-4 pb-4"
                 >
-                  <v-btn
-                    @click.native="dialogForm = false"
-                  >Отмена</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn
-                    color="info"
-                    @click="submitForm"
-                  >Сохранить</v-btn>
+                    @click.native="dialogForm = false"
+                  >Закрыть</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card>
-          </v-dialog> -->
+          </v-dialog>
         </v-card-title>
 
         <v-data-table
@@ -159,12 +157,12 @@
             <td class="text-xs-right" style="width: 10%;">{{ props.item.sumPay }}</td>
             <td class="text-xs-right" style="width: 10%;">{{ props.item.typePay }}</td>
             <td class="text-xs-right" style="width: 7%;">
-              <!-- <v-icon
+              <v-icon
                 class="mr-2"
                 @click="editItem(props.item)"
               >
-                edit
-              </v-icon> -->
+                visibility
+              </v-icon>
               <v-icon
                 @click="confirmDeleted(props.item)"
               >
@@ -278,20 +276,41 @@ export default {
       clientsList: [],
       ordersList: [],
       goodsList: [],
-      // editedIndex: -1,
-      // editedItem: {
-      //   name: '',
-      //   id: 0,
-      //   active: 1,
-      //   groups: [],
-      // },
-      // defaultItem: {
-      //   name: '',
-      //   id: 0,
-      //   active: 1,
-      //   groups: [],
-      // },
-      // createdSuccess: false,
+      editedIndex: -1,
+      editedItem: {
+        id: 0,
+        date: '',
+        florist: '',
+        user: '',
+        client: '',
+        order: '',
+        sum: '',
+        decorPersent: '',
+        sumDecor: '',
+        delivery: '',
+        salePersent: '',
+        sumSale: '',
+        sumPay: '',
+        typePay: '',
+        goods: [],
+      },
+      defaultItem: {
+        id: 0,
+        date: '',
+        florist: '',
+        user: '',
+        client: '',
+        order: '',
+        sum: '',
+        decorPersent: '',
+        sumDecor: '',
+        delivery: '',
+        salePersent: '',
+        sumSale: '',
+        sumPay: '',
+        typePay: '',
+        goods: [],
+      },
       dialogDeleted: false,
       deletedIndex: -1,
     };
@@ -301,12 +320,6 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
-    // formTitle: function formTitle() {
-    //   return this.editedIndex === -1 ? 'Новый пользователь' : 'Изменение пользователя';
-    // },
-    // formAlertTitle: function formTitle() {
-    //   return this.editedIndex === -1 ? 'Пользователь создан' : 'Пользователь изменен';
-    // },
   },
   methods: {
     getBouquetsList: function getBouquetsList() {
@@ -395,35 +408,18 @@ export default {
       this.getOrdersList();
       this.getGoodsList();
     },
-    // submitForm: function submitForm() {
-    //   const validate = this.$refs.form.validate();
-    //   if (validate) {
-    //     if (this.editedIndex > -1) {
-    //       Object.assign(this.usersList[this.editedIndex], this.editedItem);
-    //     } else {
-    //       this.usersList.push(this.editedItem);
-    //     }
-
-    //     this.createdSuccess = true;
-
-    //     setTimeout(() => {
-    //       this.closeDialog();
-    //     }, 1000);
-    //   }
-    // },
-    // closeDialog: function closeDialog() {
-    //   this.dialogForm = false;
-    //   setTimeout(() => {
-    //     this.editedItem = Object.assign({}, this.defaultItem);
-    //     this.editedIndex = -1;
-    //     this.createdSuccess = false;
-    //   }, 300);
-    // },
-    // editItem: function editItem(item) {
-    //   this.editedIndex = this.usersList.indexOf(item);
-    //   this.editedItem = Object.assign({}, item);
-    //   this.dialogForm = true;
-    // },
+    closeDialog: function closeDialog() {
+      this.dialogForm = false;
+      setTimeout(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+      }, 300);
+    },
+    editItem: function editItem(item) {
+      this.editedIndex = this.usersList.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialogForm = true;
+    },
     confirmDeleted: function confirmDeleted(item) {
       this.dialogDeleted = true;
       this.deletedIndex = this.bouquetsList.indexOf(item);

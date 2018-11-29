@@ -36,6 +36,11 @@ export default new Router({
       component: () => import('./views/Pays/List.vue'),
     },
     {
+      path: '/orders/',
+      name: 'orders',
+      component: () => import('./views/Orders/List.vue'),
+    },
+    {
       path: '/requests/',
       name: 'requests',
       component: () => import('./views/Requests/index.vue'),

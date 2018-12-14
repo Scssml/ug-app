@@ -15,6 +15,7 @@
         hide-details
         v-model="florist"
         class="scs-small"
+        @change="updateProps()"
       ></v-select>
     </div>
     <v-divider></v-divider>
@@ -29,6 +30,7 @@
         hide-details
         v-model="client"
         class="scs-small"
+        @change="updateProps()"
       ></v-select>
     </div>
     <v-divider></v-divider>
@@ -44,6 +46,7 @@
         no-data-text="Нет заказов"
         v-model="order"
         class="scs-small"
+        @change="updateProps()"
       ></v-select>
     </div>
     <v-divider></v-divider>
@@ -55,6 +58,7 @@
         hide-details
         v-model="decorPersent"
         class="scs-small"
+        @change="updateProps()"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
@@ -81,6 +85,7 @@
         hide-details
         v-model="delivery"
         class="scs-small"
+        @change="updateProps()"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
@@ -108,6 +113,7 @@
         v-model="salePersent"
         :background-color="(salePersent > 0) ? 'deep-orange lighten-4' : ''"
         class="scs-small"
+        @change="updateProps()"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
@@ -236,6 +242,9 @@ export default {
       type: Number,
       required: true,
     },
+    propsDefault: {
+      type: Object,
+    },
   },
   data() {
     return {
@@ -293,15 +302,40 @@ export default {
         }, 1000);
       }
     },
+    updateProps: function updateProps() {
+      const props = {
+        florist: this.florist,
+        client: this.client,
+        order: this.order,
+        decorPersent: this.decorPersent,
+        delivery: this.delivery,
+        salePersent: this.salePersent,
+      };
+
+      this.$emit('updateProps', props);
+    },
     priceRound: function priceRound(sum) {
       const remainder = (sum % 10 <= 5 && sum > 0) ? -5 : 0;
       return (Math.ceil(sum / 10) * 10) + remainder;
+    },
+    setValueDefault: function setValueDefault() {
+      if (Object.keys(this.propsDefault).length > 0) {
+        this.florist = this.propsDefault.florist;
+        this.client = this.propsDefault.client;
+        this.order = this.propsDefault.order;
+        this.decorPersent = this.propsDefault.decorPersent;
+        this.delivery = this.propsDefault.delivery;
+        this.salePersent = this.propsDefault.salePersent;
+      }
     },
   },
   updated() {
     if (this.salePersent === null && (this.sumFlowers + this.sumDecor) >= 5000) {
       this.salePersent = 10;
     }
+  },
+  created() {
+    this.setValueDefault();
   },
 };
 </script>

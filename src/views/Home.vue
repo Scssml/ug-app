@@ -72,7 +72,9 @@
                   :clients-list="clientsList"
                   :orders-list="ordersList"
                   :sumFlowers="item.sum"
+                  :propsDefault="item.props"
                   @createdSuccess="createdSuccess(index, $event)"
+                  @updateProps="updateProps(index, $event)"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -186,7 +188,9 @@
               >
                 <select-count-goods
                   :goods-list="goodsList"
+                  :selected-goods-default="item.goods"
                   @changeSum="setSum(index, $event)"
+                  @changeGoods="setGoods(index, $event)"
                   :key="index"
                 ></select-count-goods>
               </v-flex>
@@ -285,10 +289,22 @@ export default {
       item.sum = sum;
       this.$set(this.cardsList, index, item);
     },
+    setGoods: function setSum(index, goods) {
+      const item = this.cardsList[index];
+      item.goods = goods;
+      this.$set(this.cardsList, index, item);
+
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
+        && elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+    },
     addCard: function addCard() {
       this.cardsList.push({
         sum: 0,
         success: false,
+        props: {},
+        goods: [],
       });
     },
     createdSuccess: function createdSuccess(index, data) {
@@ -297,7 +313,22 @@ export default {
         item.success = true;
         this.$set(this.cardsList, index, item);
         this.addCard();
+
+        const cardNoEmpty = this.cardsList.filter(elem =>
+          (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
+          && elem.success !== true);
+        localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
       }
+    },
+    updateProps: function updateProps(index, props) {
+      const item = this.cardsList[index];
+      item.props = props;
+      this.$set(this.cardsList, index, item);
+
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
+        && elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     getClientsList: function getClientsList() {
       this.$store.dispatch('getClientsList').then((response) => {
@@ -359,7 +390,11 @@ export default {
     },
   },
   mounted() {
-    for (let i = 0; i < 5; i += 1) {
+    const cardsList = JSON.parse(localStorage.getItem('cardsList'));
+    this.cardsList = (cardsList !== null) ? cardsList : [];
+    const addCountElem = 5 - this.cardsList.length;
+
+    for (let i = 0; i < addCountElem; i += 1) {
       this.addCard();
     }
 

@@ -88,99 +88,207 @@
                 lazy-validation
               >
                 <v-card-title
-                  class="px-4"
+                  class="px-4 py-2"
                 >
                   <span class="headline">{{ formTitle }}</span>
                 </v-card-title>
                 <v-divider></v-divider>
                 <v-card-text
-                  class="px-4"
+                  class="px-4 py-1"
                 >
                   <v-layout
                     row
                     wrap
                   >
                     <v-flex
-                      xs7
+                      :xs7="editedItem.delivery != 1"
                       style="padding-right: 15px;"
                     >
-                      <v-select
-                        label="Статус"
-                        :items="statusList"
-                        :rules="[v => !!v || 'Заполните поле']"
-                        item-text="name"
-                        item-value="id"
-                        v-model="editedItem.status"
-                      ></v-select>
-                      <v-select
-                        label="Клиент"
-                        :items="clientsList"
-                        :rules="[v => !!v || 'Заполните поле']"
-                        item-text="name"
-                        item-value="id"
-                        v-model="editedItem.client"
-                      ></v-select>
-                      <v-text-field
-                        label="Телефон"
-                        :rules="[v => !!v || 'Заполните поле']"
-                        v-model="editedItem.phone"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Курьер"
-                        v-model="editedItem.courier"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Дата доставки"
-                        :rules="[v => !!v || 'Заполните поле']"
-                        v-model="editedItem.deliveryDate"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Время доставки"
-                        v-model="editedItem.deliveryTime"
-                      ></v-text-field>
-                      <v-checkbox
-                        label="Доставлен"
-                        v-model="editedItem.delivered"
-                        color="primary"
-                      ></v-checkbox>
-                      <v-text-field
-                        label="КТО"
-                        v-model="editedItem.kto"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Т/С"
-                        v-model="editedItem.ts"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Д/П"
-                        v-model="editedItem.dp"
-                      ></v-text-field>
-                      <v-textarea
-                        label="Состав заказа"
-                        auto-grow
-                        :rules="[v => !!v || 'Заполните поле']"
-                        v-model="editedItem.orderText"
-                      ></v-textarea>
-                      <v-text-field
-                        label="Сумма"
-                        v-model="editedItem.sum"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Получатель"
-                        v-model="editedItem.addresseeName"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Телефон получателя"
-                        v-model="editedItem.addresseePhone"
-                      ></v-text-field>
-                      <v-text-field
-                        label="Адрес"
-                        v-model="editedItem.address"
-                      ></v-text-field>
+                      <v-layout
+                        row
+                        wrap
+                      >
+                        <v-flex
+                          :xs6="editedItem.delivery != 1"
+                        >
+                          <v-select
+                            label="Способ доставки"
+                            :items="deliveryList"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.delivery"
+                            hide-details
+                            class="mb-4"
+                          ></v-select>
+
+                          <v-select
+                            label="Статус"
+                            :items="statusList"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.status"
+                            hide-details
+                            class="mb-4"
+                          ></v-select>
+
+                          <v-autocomplete
+                            label="Клиент"
+                            :items="clientsList"
+                            :filter="clientsFilter"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.client"
+                            hide-details
+                            class="mb-4"
+                            no-data-text="Не надено"
+                          ></v-autocomplete>
+                          <!-- <v-select
+                            label="Клиент"
+                            :items="clientsList"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.client"
+                          ></v-select> -->
+
+                          <v-text-field
+                            label="Телефон"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            v-model="editedItem.phone"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="КТО"
+                            v-model="editedItem.kto"
+                            readonly
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-select
+                            label="Т/С"
+                            :items="tsList"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.ts"
+                            hide-details
+                            class="mb-4"
+                          ></v-select>
+
+                          <v-text-field
+                            label="Д/П"
+                            v-model="editedItem.date"
+                            readonly
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-textarea
+                            label="Состав заказа"
+                            auto-grow
+                            :rules="[v => !!v || 'Заполните поле']"
+                            v-model="editedItem.orderText"
+                            height="50"
+                            hide-details
+                            class="mb-4"
+                          ></v-textarea>
+
+                          <v-text-field
+                            label="Сумма"
+                            v-model="editedItem.sum"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+                        </v-flex>
+
+                        <v-flex
+                          xs6
+                          v-if="editedItem.delivery != 1"
+                          style="padding-left: 15px;"
+                        >
+                          <v-text-field
+                            label="Курьер"
+                            v-model="editedItem.courier"
+                            v-if="editedItem.status === 3"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-menu
+                            :close-on-content-click="false"
+                            v-model="dataPicker"
+                            :nudge-right="40"
+                            lazy
+                            transition="scale-transition"
+                            offset-y
+                            full-width
+                            min-width="290px"
+                            class="mb-4"
+                          >
+                            <v-text-field
+                              slot="activator"
+                              label="Дата доставки"
+                              :rules="[v => !!v || 'Заполните поле']"
+                              v-model="editedItem.deliveryDate"
+                              prepend-icon="event"
+                              readonly
+                              hide-details
+                            ></v-text-field>
+                            <v-date-picker
+                              v-model="editedItem.deliveryDate"
+                              @input="dataPicker = false"
+                              no-title
+                              scrollable
+                            ></v-date-picker>
+                          </v-menu>
+
+                          <v-text-field
+                            label="Время доставки"
+                            v-model="editedItem.deliveryTime"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-checkbox
+                            label="Доставлен"
+                            v-model="editedItem.delivered"
+                            color="primary"
+                            hide-details
+                            class="mb-4"
+                          ></v-checkbox>
+
+                          <v-text-field
+                            label="Получатель"
+                            v-model="editedItem.addresseeName"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="Телефон получателя"
+                            v-model="editedItem.addresseePhone"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="Адрес"
+                            v-model="editedItem.address"
+                            hide-details
+                            class="mb-4"
+                          ></v-text-field>
+                        </v-flex>
+                      </v-layout>
                     </v-flex>
 
                     <v-flex
                       xs5
+                      v-if="editedItem.delivery != 1"
                     >
                       <yandex-map
                         :coords="[53.05, 50.101783]"
@@ -220,18 +328,24 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td style="width: 5%;">{{ props.item.date }}</td>
+            <td style="width: 8%;">{{ props.item.date }}</td>
             <td style="width: 9%;">{{ props.item.id }}</td>
-            <td style="width: 15%;">
+            <td style="width: 12%;">
               {{ clientsList.find(item => item.id === props.item.client).name }}
             </td>
             <td style="width: 10%;">{{ props.item.phone }}</td>
-            <td style="width: 15%;">{{ props.item.orderText }}</td>
+            <td style="width: 12%;">{{ props.item.orderText }}</td>
             <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
             <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
             <td class="text-xs-right" style="width: 9%;">{{ props.item.sum }}</td>
-            <td class="text-xs-right" style="width: 9%;">
-              {{ statusList.find(item => item.id === props.item.status).name }}
+            <td class="text-xs-right" style="width: 15%;">
+              <v-select
+                label="Статус"
+                :items="statusList"
+                item-text="name"
+                item-value="id"
+                v-model="props.item.status"
+              ></v-select>
             </td>
             <td class="text-xs-right" style="width: 10%;">
               <v-icon
@@ -301,11 +415,51 @@ export default {
         },
         {
           id: 3,
-          name: 'Доставка',
+          name: 'Отдан в доставку',
         },
         {
           id: 4,
+          name: 'Доставлен',
+        },
+        {
+          id: 5,
           name: 'Отменен',
+        },
+      ],
+      tsList: [
+        {
+          id: 1,
+          name: 'Телефон',
+        },
+        {
+          id: 2,
+          name: 'Сайт',
+        },
+        {
+          id: 3,
+          name: 'Чаты',
+        },
+        {
+          id: 4,
+          name: 'Инстаграм',
+        },
+        {
+          id: 5,
+          name: 'Вайбер',
+        },
+        {
+          id: 6,
+          name: 'Whatsapp',
+        },
+      ],
+      deliveryList: [
+        {
+          id: 1,
+          name: 'Самовывоз',
+        },
+        {
+          id: 2,
+          name: 'Доставка',
         },
       ],
       loadingData: [
@@ -324,6 +478,7 @@ export default {
           id: 'orders',
         },
       ],
+      dataPicker: false,
       search: '',
       headersTable: [
         {
@@ -400,6 +555,7 @@ export default {
         addresseePhone: '',
         address: '',
         status: '',
+        delivery: '',
       },
       defaultItem: {
         id: 0,
@@ -419,6 +575,7 @@ export default {
         addresseePhone: '',
         address: '',
         status: '',
+        delivery: '',
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -438,6 +595,14 @@ export default {
     },
   },
   methods: {
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
+    },
     getClientsList: function getClientsList() {
       this.$store.dispatch('getClientsList').then((response) => {
         this.clientsList = response.clientsList;

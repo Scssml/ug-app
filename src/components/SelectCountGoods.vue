@@ -13,6 +13,7 @@
           solo
           flat
           hide-details
+          :value="(item.value > 0) ? item.value : ''"
           @input="setCountGood(i, $event)"
           class="scs-small"
         ></v-text-field>
@@ -30,6 +31,9 @@ export default {
     goodsList: {
       type: Array,
       required: true,
+    },
+    selectedGoodsDefault: {
+      type: Array,
     },
   },
   data() {
@@ -55,9 +59,18 @@ export default {
     setValueGoods: function setValueGoods() {
       const goods = this.goodsList;
       let item = {};
+
+      function compareId(elem) {
+        return elem.id === item.id;
+      }
+
       for (let i = 0; i < goods.length; i += 1) {
         item = Object.assign({}, goods[i]);
-        item.value = 0;
+
+        const findElem = this.selectedGoodsDefault.find(compareId);
+        console.log(findElem);
+        item.value = (findElem !== undefined) ? findElem.value : 0;
+
         this.goods.push(item);
       }
     },
@@ -69,6 +82,7 @@ export default {
     },
     changeSum: function changeSum() {
       this.$emit('changeSum', this.sumSelectedGoods);
+      this.$emit('changeGoods', this.selectedGoods);
     },
   },
   created() {

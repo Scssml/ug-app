@@ -440,3 +440,22 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+  .v-table {
+
+    tr:nth-child(even) {
+
+      td {
+        background: #fbfbfb;
+      }
+
+      &:hover {
+
+        td {
+          background: #eee;
+        }
+      }
+    }
+  }
+</style>

@@ -20,7 +20,7 @@
     </div>
     <v-divider></v-divider>
     <div class="px-3" style="height: 30px;">
-      <v-select
+      <!-- <v-select
         label="Клиент"
         :items="clientsList"
         item-text="name"
@@ -31,7 +31,21 @@
         v-model="client"
         class="scs-small"
         @change="updateProps()"
-      ></v-select>
+      ></v-select> -->
+      <v-autocomplete
+        label="Клиент"
+        :items="clientsList"
+        :filter="clientsFilter"
+        item-text="name"
+        item-value="id"
+        solo
+        flat
+        v-model="client"
+        hide-details
+        class="mb-4 scs-small"
+        no-data-text="Не надено"
+        @change="updateProps()"
+      ></v-autocomplete>
     </div>
     <v-divider></v-divider>
     <div class="px-3" style="height: 30px;">
@@ -113,6 +127,7 @@
         v-model="salePersent"
         :background-color="(salePersent > 0) ? 'deep-orange lighten-4' : ''"
         class="scs-small"
+        readonly
         @change="updateProps()"
       ></v-text-field>
     </div>
@@ -291,6 +306,14 @@ export default {
     },
   },
   methods: {
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
+    },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -330,8 +353,14 @@ export default {
     },
   },
   updated() {
-    if (this.salePersent === null && (this.sumFlowers + this.sumDecor) >= 5000) {
+    // if ((this.salePersent === null || this.salePersent === '')
+    //   && (this.sumFlowers + this.sumDecor) >= 5000) {
+    //   this.salePersent = 10;
+    // }
+    if ((this.sumFlowers + this.sumDecor) >= 3000) {
       this.salePersent = 10;
+    } else {
+      this.salePersent = null;
     }
   },
   created() {

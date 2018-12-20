@@ -68,7 +68,6 @@ export default {
         item = Object.assign({}, goods[i]);
 
         const findElem = this.selectedGoodsDefault.find(compareId);
-        console.log(findElem);
         item.value = (findElem !== undefined) ? findElem.value : 0;
 
         this.goods.push(item);

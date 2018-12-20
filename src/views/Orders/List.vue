@@ -111,6 +111,33 @@
                         <v-flex
                           :xs6="editedItem.delivery != 1"
                         >
+                          <v-text-field
+                            label="КТО"
+                            v-model="editedItem.kto"
+                            hide-details
+                            class="mb-4"
+                            readonly
+                          ></v-text-field>
+
+                          <v-select
+                            label="Т/С"
+                            :items="tsList"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.ts"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-select>
+
+                          <v-text-field
+                            label="Д/П"
+                            v-model="editedItem.date"
+                            hide-details
+                            class="mb-4"
+                            readonly
+                          ></v-text-field>
+
                           <v-select
                             label="Способ доставки"
                             :items="deliveryList"
@@ -120,6 +147,7 @@
                             v-model="editedItem.delivery"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-select>
 
                           <v-select
@@ -131,6 +159,7 @@
                             v-model="editedItem.status"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-select>
 
                           <v-autocomplete
@@ -144,6 +173,7 @@
                             hide-details
                             class="mb-4"
                             no-data-text="Не надено"
+                            :readonly="editedItemReadOnly"
                           ></v-autocomplete>
                           <!-- <v-select
                             label="Клиент"
@@ -160,32 +190,7 @@
                             v-model="editedItem.phone"
                             hide-details
                             class="mb-4"
-                          ></v-text-field>
-
-                          <v-text-field
-                            label="КТО"
-                            v-model="editedItem.kto"
-                            readonly
-                            hide-details
-                            class="mb-4"
-                          ></v-text-field>
-
-                          <v-select
-                            label="Т/С"
-                            :items="tsList"
-                            item-text="name"
-                            item-value="id"
-                            v-model="editedItem.ts"
-                            hide-details
-                            class="mb-4"
-                          ></v-select>
-
-                          <v-text-field
-                            label="Д/П"
-                            v-model="editedItem.date"
-                            readonly
-                            hide-details
-                            class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
 
                           <v-textarea
@@ -193,9 +198,10 @@
                             auto-grow
                             :rules="[v => !!v || 'Заполните поле']"
                             v-model="editedItem.orderText"
-                            height="50"
+                            row-height="12"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-textarea>
 
                           <v-text-field
@@ -203,6 +209,7 @@
                             v-model="editedItem.sum"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
                         </v-flex>
 
@@ -217,6 +224,7 @@
                             v-if="editedItem.status === 3"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
 
                           <v-menu
@@ -236,14 +244,15 @@
                               :rules="[v => !!v || 'Заполните поле']"
                               v-model="editedItem.deliveryDate"
                               prepend-icon="event"
-                              readonly
                               hide-details
+                              readonly
                             ></v-text-field>
                             <v-date-picker
                               v-model="editedItem.deliveryDate"
                               @input="dataPicker = false"
                               no-title
                               scrollable
+                              :readonly="editedItemReadOnly"
                             ></v-date-picker>
                           </v-menu>
 
@@ -252,6 +261,7 @@
                             v-model="editedItem.deliveryTime"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
 
                           <v-checkbox
@@ -260,6 +270,7 @@
                             color="primary"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-checkbox>
 
                           <v-text-field
@@ -267,6 +278,7 @@
                             v-model="editedItem.addresseeName"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
 
                           <v-text-field
@@ -274,6 +286,7 @@
                             v-model="editedItem.addresseePhone"
                             hide-details
                             class="mb-4"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
 
                           <v-text-field
@@ -281,6 +294,35 @@
                             v-model="editedItem.address"
                             hide-details
                             class="mb-4"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="Квартира"
+                            v-model="editedItem.flat"
+                            hide-details
+                            class="mb-4"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="Подъезд"
+                            v-model="editedItem.entrance"
+                            hide-details
+                            class="mb-4"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
+
+                          <v-text-field
+                            label="Этаж"
+                            v-model="editedItem.floor"
+                            hide-details
+                            class="mb-4"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            :readonly="editedItemReadOnly"
                           ></v-text-field>
                         </v-flex>
                       </v-layout>
@@ -311,6 +353,7 @@
                   <v-btn
                     color="info"
                     @click="submitForm"
+                    v-if="!editedItemReadOnly"
                   >Сохранить</v-btn>
                 </v-card-actions>
               </v-form>
@@ -328,38 +371,47 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td style="width: 8%;">{{ props.item.date }}</td>
-            <td style="width: 9%;">{{ props.item.id }}</td>
-            <td style="width: 12%;">
-              {{ clientsList.find(item => item.id === props.item.client).name }}
-            </td>
-            <td style="width: 10%;">{{ props.item.phone }}</td>
-            <td style="width: 12%;">{{ props.item.orderText }}</td>
-            <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
-            <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
-            <td class="text-xs-right" style="width: 9%;">{{ props.item.sum }}</td>
-            <td class="text-xs-right" style="width: 15%;">
-              <v-select
-                label="Статус"
-                :items="statusList"
-                item-text="name"
-                item-value="id"
-                v-model="props.item.status"
-              ></v-select>
-            </td>
-            <td class="text-xs-right" style="width: 10%;">
-              <v-icon
-                class="mr-2"
-                @click="editItem(props.item)"
-              >
-                edit
-              </v-icon>
-              <v-icon
-                @click="confirmDeleted(props.item)"
-              >
-                delete
-              </v-icon>
-            </td>
+            <tr @dblclick="editItem(props.item, true)">
+              <td style="width: 8%;">{{ props.item.date }}</td>
+              <td style="width: 9%;">{{ props.item.id }}</td>
+              <td style="width: 10%;">
+                {{ clientsList.find(item => item.id === props.item.client).name }}
+              </td>
+              <td style="width: 10%;">{{ props.item.phone }}</td>
+              <td style="width: 12%;">{{ props.item.orderText }}</td>
+              <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
+              <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
+              <td class="text-xs-right" style="width: 9%;">{{ props.item.sum }}</td>
+              <td class="text-xs-right" style="width: 15%;">
+                <v-select
+                  label="Статус"
+                  :items="statusList"
+                  item-text="name"
+                  item-value="id"
+                  v-model="props.item.status"
+                ></v-select>
+              </td>
+              <td class="text-xs-right" style="width: 15%;">
+                <v-icon
+                  class="mr-2"
+                  @click="createdBouquet(props.item)"
+                  v-if="props.item.status === 1"
+                >
+                  playlist_add
+                </v-icon>
+                <v-icon
+                  class="mr-2"
+                  @click="editItem(props.item)"
+                >
+                  edit
+                </v-icon>
+                <v-icon
+                  @click="confirmDeleted(props.item)"
+                >
+                  delete
+                </v-icon>
+              </td>
+            </tr>
           </template>
         </v-data-table>
       </v-card>
@@ -369,6 +421,12 @@
 
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
+
+const dateNow = new Date().toLocaleString('ru', {
+  day: 'numeric',
+  month: 'numeric',
+  year: 'numeric',
+});
 
 export default {
   name: 'Orders',
@@ -537,9 +595,10 @@ export default {
       clientsList: [],
       ordersList: [],
       editedIndex: -1,
+      editedItemReadOnly: false,
       editedItem: {
         id: 0,
-        date: '',
+        date: dateNow,
         client: '',
         phone: '',
         courier: '',
@@ -554,12 +613,15 @@ export default {
         addresseeName: '',
         addresseePhone: '',
         address: '',
-        status: '',
+        status: 1,
         delivery: '',
+        entrance: '',
+        flat: '',
+        floor: '',
       },
       defaultItem: {
         id: 0,
-        date: '',
+        date: dateNow,
         client: '',
         phone: '',
         courier: '',
@@ -574,8 +636,11 @@ export default {
         addresseeName: '',
         addresseePhone: '',
         address: '',
-        status: '',
+        status: 1,
         delivery: '',
+        entrance: '',
+        flat: '',
+        floor: '',
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -588,7 +653,15 @@ export default {
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
     formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Новый заказ' : 'Изменение заказа';
+      let title = '';
+      if (this.editedIndex === -1) {
+        title = 'Новый заказ';
+      } else if (this.editedItemReadOnly) {
+        title = 'Просмотр заказа';
+      } else {
+        title = 'Изменение заказа';
+      }
+      return title;
     },
     formAlertTitle: function formTitle() {
       return this.editedIndex === -1 ? 'Заказ создан' : 'Заказ изменен';
@@ -639,11 +712,11 @@ export default {
         if (this.editedIndex > -1) {
           Object.assign(this.ordersList[this.editedIndex], this.editedItem);
         } else {
-          this.editedItem.date = new Date().toLocaleString('ru', {
-            day: 'numeric',
-            month: 'numeric',
-            year: 'numeric',
-          });
+          // this.editedItem.date = new Date().toLocaleString('ru', {
+          //   day: 'numeric',
+          //   month: 'numeric',
+          //   year: 'numeric',
+          // });
           this.editedItem.id = this.ordersList.sort((a, b) => b.id - a.id)[0].id + 1;
 
           this.ordersList.push(this.editedItem);
@@ -662,12 +735,14 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
         this.createdSuccess = false;
+        this.editedItemReadOnly = false;
       }, 300);
     },
-    editItem: function editItem(item) {
+    editItem: function editItem(item, readonly = false) {
       this.editedIndex = this.ordersList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
+      this.editedItemReadOnly = readonly;
     },
     confirmDeleted: function confirmDeleted(item) {
       this.dialogDeleted = true;
@@ -683,9 +758,55 @@ export default {
         this.deletedIndex = -1;
       }, 300);
     },
+    createdBouquet: function createdBouquet(item) {
+      let cardsList = JSON.parse(localStorage.getItem('cardsList'));
+      cardsList = (cardsList !== null) ? cardsList : [];
+
+      const index = cardsList.findIndex(card => card.props.order === item.id);
+
+      if (index === -1) {
+        cardsList.push({
+          sum: 0,
+          success: false,
+          props: {
+            florist: null,
+            order: item.id,
+            client: item.client,
+            decorPersent: 10,
+            delivery: 0,
+            salePersent: 0,
+          },
+          goods: [],
+        });
+      } else {
+        cardsList[index].props.client = item.client;
+      }
+
+      localStorage.setItem('cardsList', JSON.stringify(cardsList));
+      this.$router.push('/');
+    },
   },
   mounted() {
     this.getDataProps();
   },
 };
 </script>
+
+<style lang="scss" scoped>
+  .v-table {
+
+    tr:nth-child(even) {
+
+      td {
+        background: #fbfbfb;
+      }
+
+      &:hover {
+
+        td {
+          background: #eee;
+        }
+      }
+    }
+  }
+</style>

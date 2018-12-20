@@ -169,6 +169,10 @@
         :disabled="!activePayBtn"
         small
       >Оплатить</v-btn>
+      <v-btn
+        @click.native="dialogClear = true"
+        small
+      >Отчистить</v-btn>
     </div>
     <v-divider></v-divider>
     <v-dialog
@@ -213,7 +217,7 @@
               :value="sumChange"
             ></v-text-field>
             <v-select
-              label="Тип оплаты"
+              label="Способ оплаты"
               :items="typePayList"
               :rules="[v => !!v || 'Заполните поле']"
               v-model="typePay"
@@ -232,6 +236,33 @@
             >Оплатить</v-btn>
           </v-card-actions>
         </v-form>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog
+      v-model="dialogClear"
+      persistent
+      max-width="320px"
+    >
+      <v-card>
+        <v-card-title
+          class="px-4"
+        >
+          <span class="headline">Отчистить?</span>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-actions
+          class="px-4 py-3"
+        >
+          <v-btn
+            @click.native="dialogClear = false"
+          >Отмена</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            @click="clearProps()"
+          >Отчистить</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-card>
@@ -275,8 +306,12 @@ export default {
       typePay: '',
       typePayList: [
         'Наличные',
-        'Безнал',
+        'На баланс',
+        'Яндекс',
+        'Карта',
+        'Терминал',
       ],
+      dialogClear: false,
     };
   },
   computed: {
@@ -306,6 +341,17 @@ export default {
     },
   },
   methods: {
+    clearProps() {
+      this.florist = '';
+      this.client = '';
+      this.order = '';
+      this.decorPersent = 10;
+      this.delivery = 0;
+      this.salePersent = null;
+
+      this.dialogClear = false;
+      this.updateProps();
+    },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
       const textTwo = item.phone.replace(/[^0-9]/gim, '');
@@ -338,7 +384,7 @@ export default {
       this.$emit('updateProps', props);
     },
     priceRound: function priceRound(sum) {
-      const remainder = (sum % 10 <= 5 && sum > 0) ? -5 : 0;
+      const remainder = (sum % 10 <= 5 && sum % 10 > 0 && sum > 0) ? -5 : 0;
       return (Math.ceil(sum / 10) * 10) + remainder;
     },
     setValueDefault: function setValueDefault() {

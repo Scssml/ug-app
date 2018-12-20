@@ -371,7 +371,10 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <tr @dblclick="editItem(props.item, true)">
+            <tr
+              @dblclick="editItem(props.item, true)"
+              :class="statusList.find(elem => elem.id === props.item.status).color"
+            >
               <td style="width: 8%;">{{ props.item.date }}</td>
               <td style="width: 9%;">{{ props.item.id }}</td>
               <td style="width: 10%;">
@@ -389,6 +392,7 @@
                   item-text="name"
                   item-value="id"
                   v-model="props.item.status"
+                  color="grey darken-2"
                 ></v-select>
               </td>
               <td class="text-xs-right" style="width: 15%;">
@@ -466,22 +470,27 @@ export default {
         {
           id: 1,
           name: 'Принят',
+          color: 'orange lighten-4',
         },
         {
           id: 2,
           name: 'Выполнен',
+          color: 'green lighten-4',
         },
         {
           id: 3,
           name: 'Отдан в доставку',
+          color: 'blue lighten-4',
         },
         {
           id: 4,
           name: 'Доставлен',
+          color: 'deep-purple lighten-4',
         },
         {
           id: 5,
           name: 'Отменен',
+          color: 'red lighten-4',
         },
       ],
       tsList: [
@@ -668,6 +677,11 @@ export default {
     },
   },
   methods: {
+    statusColor(statusId) {
+      const colorStatus = this.statusList.find(elem => elem.id === statusId).color;
+      console.log(1);
+      return colorStatus;
+    },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
       const textTwo = item.phone.replace(/[^0-9]/gim, '');
@@ -791,22 +805,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-  .v-table {
-
-    tr:nth-child(even) {
-
-      td {
-        background: #fbfbfb;
-      }
-
-      &:hover {
-
-        td {
-          background: #eee;
-        }
-      }
-    }
-  }
-</style>

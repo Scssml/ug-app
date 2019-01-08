@@ -105,10 +105,36 @@
                     label="Телефон"
                     v-model="editedItem.phone"
                   ></v-text-field>
-                  <v-text-field
+                  <v-menu
+                    :close-on-content-click="false"
+                    v-model="dataPicker"
+                    :nudge-right="40"
+                    lazy
+                    transition="scale-transition"
+                    offset-y
+                    full-width
+                    min-width="290px"
+                    class="mb-4"
+                  >
+                    <v-text-field
+                      slot="activator"
+                      label="День рождения"
+                      v-model="editedItem.birthDay"
+                      prepend-icon="event"
+                      hide-details
+                      readonly
+                    ></v-text-field>
+                    <v-date-picker
+                      v-model="editedItem.birthDay"
+                      @input="dataPicker = false"
+                      no-title
+                      scrollable
+                    ></v-date-picker>
+                  </v-menu>
+                  <!-- <v-text-field
                     label="День рождения"
                     v-model="editedItem.birthDay"
-                  ></v-text-field>
+                  ></v-text-field> -->
                   <v-text-field
                     label="Счет"
                     v-model="editedItem.bill"
@@ -183,6 +209,7 @@ export default {
   name: 'Clients',
   data() {
     return {
+      dataPicker: false,
       loadingData: [
         {
           title: 'Получение клиентов',
@@ -244,14 +271,14 @@ export default {
         id: 0,
         bill: 0,
         sale: 0,
-        active: 1,
+        active: true,
       },
       defaultItem: {
         name: '',
         id: 0,
         bill: 0,
         sale: 0,
-        active: 1,
+        active: true,
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -290,8 +317,16 @@ export default {
         if (this.editedIndex > -1) {
           Object.assign(this.clientsList[this.editedIndex], this.editedItem);
         } else {
+          if (this.clientsList.length > 0) {
+            this.editedItem.id = this.clientsList[this.clientsList.length - 1].id + 1;
+          } else {
+            this.editedItem.id = 1;
+          }
+
           this.clientsList.push(this.editedItem);
         }
+
+        localStorage.setItem('clients', JSON.stringify(this.clientsList));
 
         this.createdSuccess = true;
 
@@ -319,6 +354,9 @@ export default {
     },
     deletedItem: function deletedItem(index) {
       this.clientsList.splice(index, 1);
+
+      localStorage.setItem('clients', JSON.stringify(this.clientsList));
+
       this.closeConfirm();
     },
     closeConfirm: function closeDialog() {
@@ -340,7 +378,7 @@ export default {
     tr:nth-child(even) {
 
       td {
-        background: #fbfbfb;
+        background: #f9f9f9;
       }
 
       &:hover {

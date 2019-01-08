@@ -73,7 +73,7 @@
                   :orders-list="ordersList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
-                  @createdSuccess="createdSuccess(index, $event)"
+                  @saveProps="saveProps(index, $event)"
                   @updateProps="updateProps(index, $event)"
                 ></created-bouquet-card>
               </v-flex>
@@ -246,6 +246,13 @@ export default {
           color: 'blue-grey',
           id: 'goods',
         },
+        {
+          title: 'Получение букетов',
+          error: false,
+          loading: true,
+          color: 'deep-orange',
+          id: 'bouquets',
+        },
       ],
       offsetLeft: 0,
       propsBouquet: [
@@ -266,6 +273,7 @@ export default {
       clientsList: [],
       ordersList: [],
       goodsList: [],
+      bouquetsList: [],
     };
   },
   computed: {
@@ -307,12 +315,26 @@ export default {
         goods: [],
       });
     },
-    createdSuccess: function createdSuccess(index, data) {
-      if (data) {
+    saveProps: function saveProps(index, props) {
+      if (props) {
         const item = this.cardsList[index];
         item.success = true;
         this.$set(this.cardsList, index, item);
         this.addCard();
+
+        const newBouqet = props;
+
+        if (this.bouquetsList.length > 0) {
+          newBouqet.id = this.bouquetsList[this.bouquetsList.length - 1].id + 1;
+        } else {
+          newBouqet.id = 1;
+        }
+
+        newBouqet.goods = item.goods;
+
+        this.bouquetsList.push(newBouqet);
+
+        localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
         const cardNoEmpty = this.cardsList.filter(elem =>
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
@@ -356,8 +378,8 @@ export default {
         loadData.error = true;
       });
     },
-    getOrdersList: function getOrdersList() {
-      this.$store.dispatch('getOrdersList').then((response) => {
+    getOrdersList: function getOrdersWorksList() {
+      this.$store.dispatch('getOrdersWorksList').then((response) => {
         this.ordersList = response.ordersList;
 
         const loadData = this.loadingData.find(item => item.id === 'orders');
@@ -382,11 +404,25 @@ export default {
         loadData.error = true;
       });
     },
+    getBouquetsList: function getBouquetsList() {
+      this.$store.dispatch('getBouquetsList').then((response) => {
+        this.bouquetsList = response.bouquetsList;
+
+        const loadData = this.loadingData.find(item => item.id === 'bouquets');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'bouquets');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
     getDataProps: function getDataProps() {
       this.getClientsList();
       this.getFloristsList();
       this.getOrdersList();
       this.getGoodsList();
+      this.getBouquetsList();
     },
   },
   mounted() {

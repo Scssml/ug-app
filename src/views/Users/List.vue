@@ -74,7 +74,7 @@
             persistent
             max-width="420px"
           >
-            <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
+            <!-- <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn> -->
             <v-card>
               <v-alert
                 :value="createdSuccess"
@@ -156,7 +156,7 @@
               {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
             <td class="text-xs-right" style="width: 7%;">
-              <v-icon
+              <!-- <v-icon
                 class="mr-2"
                 @click="editItem(props.item)"
               >
@@ -166,7 +166,7 @@
                 @click="confirmDeleted(props.item)"
               >
                 delete
-              </v-icon>
+              </v-icon> -->
             </td>
           </template>
         </v-data-table>
@@ -232,13 +232,13 @@ export default {
       editedItem: {
         name: '',
         id: 0,
-        active: 1,
+        active: true,
         groups: [],
       },
       defaultItem: {
         name: '',
         id: 0,
-        active: 1,
+        active: true,
         groups: [],
       },
       createdSuccess: false,
@@ -291,8 +291,16 @@ export default {
         if (this.editedIndex > -1) {
           Object.assign(this.usersList[this.editedIndex], this.editedItem);
         } else {
+          if (this.usersList.length > 0) {
+            this.editedItem.id = this.usersList[this.usersList.length - 1].id + 1;
+          } else {
+            this.editedItem.id = 1;
+          }
+
           this.usersList.push(this.editedItem);
         }
+
+        localStorage.setItem('users', JSON.stringify(this.usersList));
 
         this.createdSuccess = true;
 
@@ -320,6 +328,9 @@ export default {
     },
     deletedItem: function deletedItem(index) {
       this.usersList.splice(index, 1);
+
+      localStorage.setItem('users', JSON.stringify(this.usersList));
+
       this.closeConfirm();
     },
     closeConfirm: function closeDialog() {
@@ -342,7 +353,7 @@ export default {
     tr:nth-child(even) {
 
       td {
-        background: #fbfbfb;
+        background: #f9f9f9;
       }
 
       &:hover {

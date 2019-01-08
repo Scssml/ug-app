@@ -124,8 +124,8 @@
         solo
         flat
         hide-details
-        v-model="salePersent"
-        :background-color="(salePersent > 0) ? 'deep-orange lighten-4' : ''"
+        :value="clientSale"
+        :background-color="(clientSale > 0) ? 'deep-orange lighten-4' : ''"
         class="scs-small"
         readonly
         @change="updateProps()"
@@ -324,7 +324,7 @@ export default {
       return this.priceRound(sum);
     },
     sumSale: function sumSale() {
-      const sum = Math.ceil((this.sumFlowers + this.sumDecor) * (this.salePersent / 100));
+      const sum = Math.ceil((this.sumFlowers + this.sumDecor) * (this.clientSale / 100));
       return this.priceRound(sum);
     },
     sumPay: function sumPay() {
@@ -338,6 +338,18 @@ export default {
     activePayBtn: function activePayBtn() {
       const active = (!!this.florist && !!this.client) ? 1 : 0;
       return active;
+    },
+    clientSale: function clientSale() {
+      const client = this.clientsList.find(item => item.id === this.client);
+      let salePersent = 0;
+      if (client !== undefined && client.sale > 0) {
+        salePersent = client.sale;
+      } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
+        salePersent = 10;
+      } else {
+        salePersent = null;
+      }
+      return salePersent;
     },
   },
   methods: {
@@ -365,9 +377,25 @@ export default {
       if (validate) {
         this.createdSuccess = true;
 
+        const props = {
+          date: new Date().toISOString().split('T')[0],
+          florist: this.florist,
+          user: this.$store.state.authUser,
+          client: this.client,
+          order: this.order,
+          sum: this.sumFlowers,
+          decorPersent: this.decorPersent,
+          sumDecor: this.sumDecor,
+          delivery: this.delivery,
+          salePersent: this.clientSale,
+          sumSale: this.sumSale,
+          sumPay: this.sumPay,
+          typePay: this.typePay,
+        };
+
         setTimeout(() => {
           this.dialogPay = false;
-          this.$emit('createdSuccess', true);
+          this.$emit('saveProps', props);
         }, 1000);
       }
     },
@@ -403,11 +431,6 @@ export default {
     //   && (this.sumFlowers + this.sumDecor) >= 5000) {
     //   this.salePersent = 10;
     // }
-    if ((this.sumFlowers + this.sumDecor) >= 3000) {
-      this.salePersent = 10;
-    } else {
-      this.salePersent = null;
-    }
   },
   created() {
     this.setValueDefault();

@@ -202,12 +202,12 @@ export default {
       editedItem: {
         name: '',
         id: 0,
-        active: 1,
+        active: true,
       },
       defaultItem: {
         name: '',
         id: 0,
-        active: 1,
+        active: true,
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -246,8 +246,16 @@ export default {
         if (this.editedIndex > -1) {
           Object.assign(this.floristsList[this.editedIndex], this.editedItem);
         } else {
+          if (this.floristsList.length > 0) {
+            this.editedItem.id = this.floristsList[this.floristsList.length - 1].id + 1;
+          } else {
+            this.editedItem.id = 1;
+          }
+
           this.floristsList.push(this.editedItem);
         }
+
+        localStorage.setItem('florists', JSON.stringify(this.floristsList));
 
         this.createdSuccess = true;
 
@@ -275,6 +283,9 @@ export default {
     },
     deletedItem: function deletedItem(index) {
       this.floristsList.splice(index, 1);
+
+      localStorage.setItem('florists', JSON.stringify(this.floristsList));
+
       this.closeConfirm();
     },
     closeConfirm: function closeDialog() {
@@ -296,7 +307,7 @@ export default {
     tr:nth-child(even) {
 
       td {
-        background: #fbfbfb;
+        background: #f9f9f9;
       }
 
       &:hover {

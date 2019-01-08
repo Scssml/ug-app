@@ -30,7 +30,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!loadingDialog">
+    <template v-show="!loadingDialog">
       <v-dialog
         v-model="dialogDeleted"
         persistent
@@ -60,13 +60,105 @@
 
       <v-card>
         <v-card-title>
-          <v-text-field
-            v-model="search"
-            prepend-icon="search"
-            label="Поиск"
-            single-line
-            hide-details
-          ></v-text-field>
+          <v-layout
+            row
+            wrap
+          >
+            <v-flex
+              xs4
+              class="px-3"
+            >
+              <v-text-field
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                hide-details
+              ></v-text-field>
+            </v-flex>
+            <v-flex
+              xs3
+              class="px-3"
+            >
+              <v-select
+                label="Статус"
+                :items="[{id: '', name: 'Все'}].concat(statusList)"
+                item-text="name"
+                item-value="id"
+                v-model="filter.status"
+                @change="updateFilter"
+                hide-details
+              ></v-select>
+            </v-flex>
+            <v-flex
+              xs2
+              class="px-3"
+            >
+              <v-menu
+                :close-on-content-click="false"
+                v-model="dataStartPicker"
+                :nudge-right="40"
+                lazy
+                transition="scale-transition"
+                offset-y
+                full-width
+                min-width="290px"
+                class="mb-4"
+              >
+                <v-text-field
+                  slot="activator"
+                  label="Начальная дата"
+                  v-model="filter.dateStart"
+                  prepend-icon="event"
+                  hide-details
+                  readonly
+                  clearable
+                ></v-text-field>
+                <v-date-picker
+                  v-model="filter.dateStart"
+                  @input="dataStartPicker = false"
+                  no-title
+                  scrollable
+                  locale="ru-ru"
+                  first-day-of-week="1"
+                  :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                ></v-date-picker>
+              </v-menu>
+            </v-flex>
+            <v-flex
+              xs2
+            >
+              <v-menu
+                :close-on-content-click="false"
+                v-model="dataEndPicker"
+                :nudge-right="40"
+                lazy
+                transition="scale-transition"
+                offset-y
+                full-width
+                min-width="290px"
+                class="mb-4"
+              >
+                <v-text-field
+                  slot="activator"
+                  label="Конечная дата"
+                  v-model="filter.dateEnd"
+                  prepend-icon="event"
+                  hide-details
+                  readonly
+                  clearable
+                ></v-text-field>
+                <v-date-picker
+                  v-model="filter.dateEnd"
+                  @input="dataEndPicker = false"
+                  no-title
+                  locale="ru-ru"
+                  scrollable
+                  first-day-of-week="1"
+                  :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                ></v-date-picker>
+              </v-menu>
+            </v-flex>
+          </v-layout>
           <v-spacer></v-spacer>
 
           <v-dialog
@@ -111,13 +203,22 @@
                         <v-flex
                           :xs6="editedItem.delivery != 1"
                         >
-                          <v-text-field
+                          <!-- <v-text-field
                             label="КТО"
                             v-model="editedItem.kto"
                             hide-details
                             class="mb-4"
                             readonly
-                          ></v-text-field>
+                          ></v-text-field> -->
+                          <v-select
+                            label="КТО"
+                            :items="usersList"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.kto"
+                            readonly
+                          ></v-select>
 
                           <v-select
                             label="Т/С"
@@ -215,7 +316,7 @@
 
                         <v-flex
                           xs6
-                          v-if="editedItem.delivery != 1"
+                          v-show="editedItem.delivery != 1"
                           style="padding-left: 15px;"
                         >
                           <v-text-field
@@ -296,6 +397,8 @@
                             class="mb-4"
                             :rules="[v => !!v || 'Заполните поле']"
                             :readonly="editedItemReadOnly"
+                            ref="autocomplete"
+                            placeholder="Введите местоположение"
                           ></v-text-field>
 
                           <v-text-field
@@ -368,6 +471,7 @@
           no-data-text="Заказов не найдено"
           no-results-text="Заказов не найдено"
           :search="search"
+          :custom-filter="customFilter"
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
@@ -392,6 +496,7 @@
                   item-text="name"
                   item-value="id"
                   v-model="props.item.status"
+                  @change="updateStatus"
                   color="grey darken-2"
                 ></v-select>
               </td>
@@ -426,11 +531,13 @@
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 
-const dateNow = new Date().toLocaleString('ru', {
-  day: 'numeric',
-  month: 'numeric',
-  year: 'numeric',
-});
+// const dateNow = new Date().toLocaleString('us', {
+//   day: 'numeric',
+//   month: 'numeric',
+//   year: 'numeric',
+// });
+
+const dateNow = new Date().toISOString().split('T')[0];
 
 export default {
   name: 'Orders',
@@ -440,32 +547,38 @@ export default {
   },
   data() {
     return {
-      placemarks: [
-        {
-          coords: [53.195538, 50.101783],
-          properties: {},
-          options: {},
-          clusterName: '1',
-        },
-        {
-          coords: [53.224519, 50.174861],
-          properties: {},
-          options: {},
-          clusterName: '1',
-        },
-        {
-          coords: [53.233279, 50.270361],
-          properties: {},
-          options: {},
-          clusterName: '1',
-        },
-        {
-          coords: [53.216179, 50.196250],
-          properties: {},
-          options: {},
-          clusterName: '1',
-        },
-      ],
+      // placemarks: [
+      //   {
+      //     coords: [53.195538, 50.101783],
+      //     properties: {},
+      //     options: {},
+      //     clusterName: '1',
+      //   },
+      //   {
+      //     coords: [53.224519, 50.174861],
+      //     properties: {},
+      //     options: {},
+      //     clusterName: '1',
+      //   },
+      //   {
+      //     coords: [53.233279, 50.270361],
+      //     properties: {},
+      //     options: {},
+      //     clusterName: '1',
+      //   },
+      //   {
+      //     coords: [53.216179, 50.196250],
+      //     properties: {},
+      //     options: {},
+      //     clusterName: '1',
+      //   },
+      // ],
+      autocomplete: null,
+      filter: {
+        status: '',
+        dateStart: null,
+        dateEnd: null,
+      },
       statusList: [
         {
           id: 1,
@@ -544,8 +657,17 @@ export default {
           color: 'amber',
           id: 'orders',
         },
+        {
+          title: 'Получение пользователей',
+          error: false,
+          loading: true,
+          color: 'deep-orange',
+          id: 'users',
+        },
       ],
       dataPicker: false,
+      dataStartPicker: false,
+      dataEndPicker: false,
       search: '',
       headersTable: [
         {
@@ -603,6 +725,7 @@ export default {
       dialogForm: false,
       clientsList: [],
       ordersList: [],
+      usersList: [],
       editedIndex: -1,
       editedItemReadOnly: false,
       editedItem: {
@@ -614,7 +737,7 @@ export default {
         deliveryDate: '',
         deliveryTime: '',
         delivered: false,
-        kto: '',
+        kto: this.$store.state.authUser,
         ts: '',
         dp: '',
         orderText: '',
@@ -627,6 +750,7 @@ export default {
         entrance: '',
         flat: '',
         floor: '',
+        geo: [],
       },
       defaultItem: {
         id: 0,
@@ -637,7 +761,7 @@ export default {
         deliveryDate: '',
         deliveryTime: '',
         delivered: false,
-        kto: '',
+        kto: this.$store.state.authUser,
         ts: '',
         dp: '',
         orderText: '',
@@ -650,6 +774,7 @@ export default {
         entrance: '',
         flat: '',
         floor: '',
+        geo: [],
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -675,11 +800,70 @@ export default {
     formAlertTitle: function formTitle() {
       return this.editedIndex === -1 ? 'Заказ создан' : 'Заказ изменен';
     },
+    placemarks() {
+      const date = this.editedItem.deliveryDate;
+
+      const itemsFind = this.ordersList.filter((item) => {
+        let find = false;
+        if (item.deliveryDate === date && item.delivery === 2) {
+          find = true;
+        }
+
+        return find;
+      });
+
+      const placemarks = [];
+
+      itemsFind.forEach((item) => {
+        placemarks.push({
+          coords: item.geo,
+          properties: {
+            balloonContent: `${item.deliveryDate}, ${item.deliveryTime}<br>${item.address}`,
+          },
+          options: {},
+          clusterName: '1',
+        });
+      });
+
+      return placemarks;
+    },
   },
   methods: {
+    customFilter: function customFilter(items) {
+      const filterProps = this.filter;
+      let itemsFind = [];
+
+      itemsFind = items.filter((item) => {
+        let find = false;
+        if (item.status === filterProps.status || filterProps.status === '') {
+          find = true;
+        }
+
+        return find;
+      });
+
+      itemsFind = itemsFind.filter((item) => {
+        let find = false;
+        if (
+          (item.date >= filterProps.dateStart || filterProps.dateStart === null)
+          && (item.date <= filterProps.dateEnd || filterProps.dateEnd === null)
+        ) {
+          find = true;
+        }
+
+        return find;
+      });
+
+      return itemsFind;
+    },
+    updateStatus() {
+      localStorage.setItem('orders', JSON.stringify(this.ordersList));
+    },
+    updateFilter() {
+      console.log(this.filter);
+    },
     statusColor(statusId) {
       const colorStatus = this.statusList.find(elem => elem.id === statusId).color;
-      console.log(1);
       return colorStatus;
     },
     clientsFilter(item, queryText) {
@@ -716,9 +900,23 @@ export default {
         loadData.error = true;
       });
     },
+    getUsersList: function getUsersList() {
+      this.$store.dispatch('getUsersList').then((response) => {
+        this.usersList = response.usersList;
+
+        const loadData = this.loadingData.find(item => item.id === 'users');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'users');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
     getDataProps: function getDataProps() {
       this.getClientsList();
       this.getOrdersList();
+      this.getUsersList();
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
@@ -726,15 +924,17 @@ export default {
         if (this.editedIndex > -1) {
           Object.assign(this.ordersList[this.editedIndex], this.editedItem);
         } else {
-          // this.editedItem.date = new Date().toLocaleString('ru', {
-          //   day: 'numeric',
-          //   month: 'numeric',
-          //   year: 'numeric',
-          // });
-          this.editedItem.id = this.ordersList.sort((a, b) => b.id - a.id)[0].id + 1;
+          // this.editedItem.id = this.ordersList.sort((a, b) => b.id - a.id)[0].id + 1;
+          if (this.ordersList.length > 0) {
+            this.editedItem.id = this.ordersList[this.ordersList.length - 1].id + 1;
+          } else {
+            this.editedItem.id = 1;
+          }
 
           this.ordersList.push(this.editedItem);
         }
+
+        localStorage.setItem('orders', JSON.stringify(this.ordersList));
 
         this.createdSuccess = true;
 
@@ -764,6 +964,9 @@ export default {
     },
     deletedItem: function deletedItem(index) {
       this.ordersList.splice(index, 1);
+
+      localStorage.setItem('orders', JSON.stringify(this.ordersList));
+
       this.closeConfirm();
     },
     closeConfirm: function closeDialog() {
@@ -802,6 +1005,57 @@ export default {
   },
   mounted() {
     this.getDataProps();
+
+    const ref = this.$refs.autocomplete.$refs.input;
+    this.autocomplete = new google.maps.places.Autocomplete(ref, { types: ['address'] });
+
+    this.autocomplete.addListener('place_changed', () => {
+      const place = this.autocomplete.getPlace();
+      const address = place.address_components;
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+
+      const locationInfo = {
+        country: null,
+        state: null,
+        city: null,
+        postalCode: null,
+        street: null,
+        streetNumber: null,
+        geo: [lat, lng],
+      };
+
+      if (place.address_components !== undefined) {
+        for (let i = 0; i < address.length; i += 1) {
+          const component = address[i].types[0];
+          switch (component) {
+            case 'country':
+              locationInfo.country = address[i].long_name;
+              break;
+            case 'administrative_area_level_1':
+              locationInfo.state = address[i].long_name;
+              break;
+            case 'locality':
+              locationInfo.city = address[i].long_name;
+              break;
+            case 'postal_code':
+              locationInfo.postalCode = address[i].long_name;
+              break;
+            case 'route':
+              locationInfo.street = address[i].short_name;
+              break;
+            case 'street_number':
+              locationInfo.streetNumber = address[i].long_name;
+              break;
+            default:
+              break;
+          }
+        }
+
+        this.editedItem.address = `${locationInfo.city}, ${locationInfo.street} ${locationInfo.streetNumber}`;
+        this.editedItem.geo = locationInfo.geo;
+      }
+    });
   },
 };
 </script>

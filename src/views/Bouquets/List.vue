@@ -73,7 +73,7 @@
             v-model="dialogForm"
             v-if="dialogForm"
             persistent
-            max-width="420px"
+            max-width="720px"
           >
             <v-card>
               <v-form
@@ -89,36 +89,53 @@
                 <v-card-text
                   class="px-4"
                 >
-                  <p><b>Номер букета:</b> {{ editedItem.id }}</p>
-                  <p><b>Дата создания:</b> {{ editedItem.date }}</p>
-                  <p>
-                    <b>Флорист:</b>
-                    {{ floristsList.find(item => item.id === editedItem.florist).name }}
-                  </p>
-                  <p>
-                    <b>Менеджер:</b>
-                    {{ usersList.find(item => item.id === editedItem.user).name }}
-                  </p>
-                  <p>
-                    <b>Клиент:</b>
-                    {{ clientsList.find(item => item.id === editedItem.client).name }}
-                  </p>
-                  <p><b>Заказ:</b> {{ editedItem.order }}</p>
-                  <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
-                  <p><b>Процент оформления:</b> {{ editedItem.decorPersent }}</p>
-                  <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
-                  <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
-                  <p><b>Процент скидки:</b> {{ editedItem.salePersent }}</p>
-                  <p><b>Сумма скидки:</b> {{ editedItem.sumSale }}</p>
-                  <p><b>Оплачено:</b> {{ editedItem.sumPay }}</p>
-                  <p><b>Тип оплаты:</b> {{ editedItem.typePay }}</p>
-                  <div><b>Состав:</b></div>
-                  <ul>
-                    <li v-for="(good, index) in editedItem.goods" :key="index">
-                      {{ goodsList.find(item => item.id === good.id).name }}:
-                      {{ good.count }}шт
-                    </li>
-                  </ul>
+                  <v-layout
+                    row
+                    wrap
+                  >
+                    <v-flex
+                      xs6
+                    >
+                      <p><b>Номер букета:</b> {{ editedItem.id }}</p>
+                      <p>
+                        <b>Флорист:</b>
+                        {{ floristsList.find(item => item.id === editedItem.florist).name }}
+                      </p>
+                      <p>
+                        <b>Клиент:</b>
+                        {{ clientsList.find(item => item.id === editedItem.client).name }}
+                      </p>
+                      <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
+                      <p><b>Процент оформления:</b> {{ editedItem.decorPersent }}</p>
+                      <p><b>Процент скидки:</b> {{ editedItem.salePersent }}</p>
+                      <p><b>Оплачено:</b> {{ editedItem.sumPay }}</p>
+                    </v-flex>
+                    <v-flex
+                      xs6
+                    >
+                      <p><b>Дата создания:</b> {{ editedItem.date }}</p>
+                      <p>
+                        <b>Менеджер:</b>
+                        {{ usersList.find(item => item.id === editedItem.user).name }}
+                      </p>
+                      <p><b>Заказ:</b> {{ editedItem.order }}</p>
+                      <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
+                      <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
+                      <p><b>Сумма скидки:</b> {{ editedItem.sumSale }}</p>
+                      <p><b>Тип оплаты:</b> {{ editedItem.typePay }}</p>
+                    </v-flex>
+                    <v-flex
+                      xs12
+                    >
+                    <div><b>Состав:</b></div>
+                    <ul>
+                      <li v-for="(good, index) in editedItem.goods" :key="index">
+                        {{ goodsList.find(item => item.id === good.id).name }}:
+                        {{ good.value }}шт
+                      </li>
+                    </ul>
+                  </v-flex>
+                 </v-layout>
                 </v-card-text>
                 <v-card-actions
                   class="px-4 pb-4"
@@ -143,31 +160,35 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td style="width: 5%;">{{ props.item.date }}</td>
-            <td style="width: 15%;">Букет {{ props.item.id }}</td>
-            <td style="width: 21%;">
-              {{ usersList.find(item => item.id === props.item.user).name }}
-            </td>
-            <td style="width: 21%;">
-              {{ floristsList.find(item => item.id === props.item.florist).name }}
-            </td>
-            <td style="width: 21%;">
-              {{ clientsList.find(item => item.id === props.item.client).name }}
-            </td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.sumPay }}</td>
-            <td class="text-xs-right" style="width: 7%;">
-              <v-icon
-                class="mr-2"
-                @click="editItem(props.item)"
-              >
-                visibility
-              </v-icon>
-              <v-icon
-                @click="confirmDeleted(props.item)"
-              >
-                delete
-              </v-icon>
-            </td>
+            <tr
+              @dblclick="editItem(props.item)"
+            >
+              <td style="width: 5%;">{{ props.item.date }}</td>
+              <td style="width: 15%;">Букет {{ props.item.id }}</td>
+              <td style="width: 21%;">
+                {{ usersList.find(item => item.id === props.item.user).name }}
+              </td>
+              <td style="width: 21%;">
+                {{ floristsList.find(item => item.id === props.item.florist).name }}
+              </td>
+              <td style="width: 21%;">
+                {{ clientsList.find(item => item.id === props.item.client).name }}
+              </td>
+              <td class="text-xs-right" style="width: 10%;">{{ props.item.sumPay }}</td>
+              <td class="text-xs-right" style="width: 7%;">
+                <v-icon
+                  class="mr-2"
+                  @click="editItem(props.item)"
+                >
+                  visibility
+                </v-icon>
+                <v-icon
+                  @click="confirmDeleted(props.item)"
+                >
+                  delete
+                </v-icon>
+              </td>
+            </tr>
           </template>
         </v-data-table>
       </v-card>
@@ -441,7 +462,7 @@ export default {
     tr:nth-child(even) {
 
       td {
-        background: #fbfbfb;
+        background: #f9f9f9;
       }
 
       &:hover {

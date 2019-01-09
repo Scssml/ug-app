@@ -129,6 +129,8 @@
                       @input="dataPicker = false"
                       no-title
                       scrollable
+                      locale="ru-ru"
+                      first-day-of-week="1"
                     ></v-date-picker>
                   </v-menu>
                   <!-- <v-text-field

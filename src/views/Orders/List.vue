@@ -193,7 +193,7 @@
                     wrap
                   >
                     <v-flex
-                      :xs7="editedItem.delivery != 1"
+                      :xs7="editedItem.delivery === 2"
                       style="padding-right: 15px;"
                     >
                       <v-layout
@@ -201,7 +201,7 @@
                         wrap
                       >
                         <v-flex
-                          :xs6="editedItem.delivery != 1"
+                          :xs6="editedItem.delivery === 2"
                         >
                           <!-- <v-text-field
                             label="КТО"
@@ -217,6 +217,7 @@
                             item-text="name"
                             item-value="id"
                             v-model="editedItem.kto"
+                            hide-details
                             readonly
                           ></v-select>
 
@@ -267,7 +268,6 @@
                             label="Клиент"
                             :items="clientsList"
                             :filter="clientsFilter"
-                            :rules="[v => !!v || 'Заполните поле']"
                             item-text="name"
                             item-value="id"
                             v-model="editedItem.client"
@@ -275,6 +275,8 @@
                             class="mb-4"
                             no-data-text="Не надено"
                             :readonly="editedItemReadOnly"
+                            clearable
+                            @change="setDataClient()"
                           ></v-autocomplete>
                           <!-- <v-select
                             label="Клиент"
@@ -284,6 +286,15 @@
                             item-value="id"
                             v-model="editedItem.client"
                           ></v-select> -->
+
+                          <v-text-field
+                            label="Имя"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            v-model="editedItem.name"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
 
                           <v-text-field
                             label="Телефон"
@@ -316,7 +327,7 @@
 
                         <v-flex
                           xs6
-                          v-show="editedItem.delivery != 1"
+                          v-show="editedItem.delivery === 2"
                           style="padding-left: 15px;"
                         >
                           <v-text-field
@@ -337,7 +348,7 @@
                             offset-y
                             full-width
                             min-width="290px"
-                            class="mb-4"
+                            class="mb-2"
                           >
                             <v-text-field
                               slot="activator"
@@ -353,6 +364,8 @@
                               @input="dataPicker = false"
                               no-title
                               scrollable
+                              locale="ru-ru"
+                              first-day-of-week="1"
                               :readonly="editedItemReadOnly"
                             ></v-date-picker>
                           </v-menu>
@@ -433,7 +446,7 @@
 
                     <v-flex
                       xs5
-                      v-if="editedItem.delivery != 1"
+                      v-if="editedItem.delivery === 2"
                     >
                       <yandex-map
                         :coords="[53.05, 50.101783]"
@@ -547,32 +560,6 @@ export default {
   },
   data() {
     return {
-      // placemarks: [
-      //   {
-      //     coords: [53.195538, 50.101783],
-      //     properties: {},
-      //     options: {},
-      //     clusterName: '1',
-      //   },
-      //   {
-      //     coords: [53.224519, 50.174861],
-      //     properties: {},
-      //     options: {},
-      //     clusterName: '1',
-      //   },
-      //   {
-      //     coords: [53.233279, 50.270361],
-      //     properties: {},
-      //     options: {},
-      //     clusterName: '1',
-      //   },
-      //   {
-      //     coords: [53.216179, 50.196250],
-      //     properties: {},
-      //     options: {},
-      //     clusterName: '1',
-      //   },
-      // ],
       autocomplete: null,
       filter: {
         status: '',
@@ -732,6 +719,7 @@ export default {
         id: 0,
         date: dateNow,
         client: '',
+        name: '',
         phone: '',
         courier: '',
         deliveryDate: '',
@@ -756,6 +744,7 @@ export default {
         id: 0,
         date: dateNow,
         client: '',
+        name: '',
         phone: '',
         courier: '',
         deliveryDate: '',
@@ -829,6 +818,18 @@ export default {
     },
   },
   methods: {
+    setDataClient() {
+      const clientId = this.editedItem.client;
+      const findClient = this.clientsList.find(item => item.id === clientId);
+
+      if (findClient !== undefined) {
+        this.editedItem.name = findClient.name;
+        this.editedItem.phone = findClient.phone;
+      } else {
+        this.editedItem.name = '';
+        this.editedItem.phone = '';
+      }
+    },
     customFilter: function customFilter(items) {
       const filterProps = this.filter;
       let itemsFind = [];

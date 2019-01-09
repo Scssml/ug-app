@@ -15,6 +15,7 @@
         hide-details
         v-model="florist"
         class="scs-small"
+        no-data-text="Не надено"
         @change="updateProps()"
       ></v-select>
     </div>

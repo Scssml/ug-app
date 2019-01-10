@@ -103,10 +103,10 @@
               >
                 <v-text-field
                   label="Приход"
-                  v-model="dataEdit.arrival"
+                  :value="arrival"
                   hide-details
                   class="pr-4"
-                  :rules="[v => !!v || 'Заполните поле']"
+                  readonly
                 ></v-text-field>
                 <v-spacer></v-spacer>
               </v-flex>
@@ -261,7 +261,6 @@ export default {
       dataEdit: {
         type: '',
         company: '',
-        arrival: '',
         purchase: '',
       },
       search: '',
@@ -313,6 +312,14 @@ export default {
     formAlertTitle: function formTitle() {
       return 'Остатки изменены';
     },
+    arrival() {
+      const arrival = this.goodsList.reduce((sum, item) => {
+        const goodArrival = +item.count * +item.price;
+        return goodArrival + sum;
+      }, 0);
+
+      return arrival;
+    },
   },
   methods: {
     getGoodsList: function getGoodsList() {
@@ -356,7 +363,11 @@ export default {
         });
 
         const purchase = Object.assign({}, this.dataEdit);
-        [purchase.date, purchase.goods] = [new Date().toISOString().split('T')[0], Object.assign({}, this.goodsList)];
+        [purchase.date, purchase.goods, purchase.arrival] = [
+          new Date().toISOString().split('T')[0],
+          Object.assign({}, this.goodsList),
+          this.arrival,
+        ];
         // purchase.goods = Object.assign({}, this.goodsList);
         this.purchaseList.push(purchase);
 

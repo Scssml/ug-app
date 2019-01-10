@@ -30,7 +30,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-show="!loadingDialog">
+    <template v-if="!loadingDialog">
       <v-dialog
         v-model="dialogDeleted"
         persistent
@@ -327,7 +327,7 @@
 
                         <v-flex
                           xs6
-                          v-show="editedItem.delivery === 2"
+                          v-if="editedItem.delivery === 2"
                           style="padding-left: 15px;"
                         >
                           <v-text-field
@@ -403,16 +403,11 @@
                             :readonly="editedItemReadOnly"
                           ></v-text-field>
 
-                          <v-text-field
-                            label="Адрес"
-                            v-model="editedItem.address"
-                            hide-details
-                            class="mb-4"
-                            :rules="[v => !!v || 'Заполните поле']"
+                          <autocomplete-address
+                            :value="editedItem.address"
                             :readonly="editedItemReadOnly"
-                            ref="autocomplete"
-                            placeholder="Введите местоположение"
-                          ></v-text-field>
+                            @change="updateAddress($event)"
+                          ></autocomplete-address>
 
                           <v-text-field
                             label="Квартира"
@@ -543,6 +538,7 @@
 
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
+import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
 
 // const dateNow = new Date().toLocaleString('us', {
 //   day: 'numeric',
@@ -557,6 +553,7 @@ export default {
   components: {
     yandexMap,
     ymapMarker,
+    AutocompleteAddress,
   },
   data() {
     return {
@@ -1003,60 +1000,13 @@ export default {
       localStorage.setItem('cardsList', JSON.stringify(cardsList));
       this.$router.push('/');
     },
+    updateAddress(data) {
+      this.editedItem.address = data.address;
+      this.editedItem.geo = data.geo;
+    },
   },
   mounted() {
     this.getDataProps();
-
-    const ref = this.$refs.autocomplete.$refs.input;
-    this.autocomplete = new google.maps.places.Autocomplete(ref, { types: ['address'] });
-
-    this.autocomplete.addListener('place_changed', () => {
-      const place = this.autocomplete.getPlace();
-      const address = place.address_components;
-      const lat = place.geometry.location.lat();
-      const lng = place.geometry.location.lng();
-
-      const locationInfo = {
-        country: null,
-        state: null,
-        city: null,
-        postalCode: null,
-        street: null,
-        streetNumber: null,
-        geo: [lat, lng],
-      };
-
-      if (place.address_components !== undefined) {
-        for (let i = 0; i < address.length; i += 1) {
-          const component = address[i].types[0];
-          switch (component) {
-            case 'country':
-              locationInfo.country = address[i].long_name;
-              break;
-            case 'administrative_area_level_1':
-              locationInfo.state = address[i].long_name;
-              break;
-            case 'locality':
-              locationInfo.city = address[i].long_name;
-              break;
-            case 'postal_code':
-              locationInfo.postalCode = address[i].long_name;
-              break;
-            case 'route':
-              locationInfo.street = address[i].short_name;
-              break;
-            case 'street_number':
-              locationInfo.streetNumber = address[i].long_name;
-              break;
-            default:
-              break;
-          }
-        }
-
-        this.editedItem.address = `${locationInfo.city}, ${locationInfo.street} ${locationInfo.streetNumber}`;
-        this.editedItem.geo = locationInfo.geo;
-      }
-    });
   },
 };
 </script>

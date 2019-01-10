@@ -66,7 +66,7 @@ export default {
         },
         {
           title: 'Товары',
-          link: '#',
+          link: '/goods/',
         },
         {
           title: 'Оплаты',

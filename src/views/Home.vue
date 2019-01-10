@@ -336,6 +336,13 @@ export default {
 
         localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
+        item.goods.forEach((elem) => {
+          const findGood = this.goodsList.find(good => good.id === elem.id);
+          findGood.store -= elem.value;
+        });
+
+        localStorage.setItem('goods', JSON.stringify(this.goodsList));
+
         const cardNoEmpty = this.cardsList.filter(elem =>
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
           && elem.success !== true);

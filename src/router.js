@@ -46,6 +46,16 @@ export default new Router({
       component: () => import('./views/Goods/List.vue'),
     },
     {
+      path: '/goods/history/',
+      name: 'history',
+      component: () => import('./views/Goods/History.vue'),
+    },
+    {
+      path: '/goods/history/:id/',
+      name: 'historyView',
+      component: () => import('./views/Goods/HistoryView.vue'),
+    },
+    {
       path: '/requests/',
       name: 'requests',
       component: () => import('./views/Requests/index.vue'),

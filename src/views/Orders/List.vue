@@ -60,107 +60,6 @@
 
       <v-card>
         <v-card-title>
-          <v-layout
-            row
-            wrap
-          >
-            <v-flex
-              xs4
-              class="px-3"
-            >
-              <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                hide-details
-              ></v-text-field>
-            </v-flex>
-            <v-flex
-              xs3
-              class="px-3"
-            >
-              <v-select
-                label="Статус"
-                :items="[{id: '', name: 'Все'}].concat(statusList)"
-                item-text="name"
-                item-value="id"
-                v-model="filter.status"
-                @change="updateFilter"
-                hide-details
-              ></v-select>
-            </v-flex>
-            <v-flex
-              xs2
-              class="px-3"
-            >
-              <v-menu
-                :close-on-content-click="false"
-                v-model="dataStartPicker"
-                :nudge-right="40"
-                lazy
-                transition="scale-transition"
-                offset-y
-                full-width
-                min-width="290px"
-                class="mb-4"
-              >
-                <v-text-field
-                  slot="activator"
-                  label="Начальная дата"
-                  v-model="filter.dateStart"
-                  prepend-icon="event"
-                  hide-details
-                  readonly
-                  clearable
-                ></v-text-field>
-                <v-date-picker
-                  v-model="filter.dateStart"
-                  @input="dataStartPicker = false"
-                  no-title
-                  scrollable
-                  locale="ru-ru"
-                  first-day-of-week="1"
-                  :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                ></v-date-picker>
-              </v-menu>
-            </v-flex>
-            <v-flex
-              xs2
-            >
-              <v-menu
-                :close-on-content-click="false"
-                v-model="dataEndPicker"
-                :nudge-right="40"
-                lazy
-                transition="scale-transition"
-                offset-y
-                full-width
-                min-width="290px"
-                class="mb-4"
-              >
-                <v-text-field
-                  slot="activator"
-                  label="Конечная дата"
-                  v-model="filter.dateEnd"
-                  prepend-icon="event"
-                  hide-details
-                  readonly
-                  clearable
-                ></v-text-field>
-                <v-date-picker
-                  v-model="filter.dateEnd"
-                  @input="dataEndPicker = false"
-                  no-title
-                  locale="ru-ru"
-                  scrollable
-                  first-day-of-week="1"
-                  :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                ></v-date-picker>
-              </v-menu>
-            </v-flex>
-          </v-layout>
-          <v-spacer></v-spacer>
-
           <v-dialog
             v-model="dialogForm"
             persistent
@@ -376,6 +275,7 @@
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
+                            mask="##:##-##:##"
                           ></v-text-field>
 
                           <v-checkbox
@@ -387,8 +287,23 @@
                             :readonly="editedItemReadOnly"
                           ></v-checkbox>
 
-                          <v-text-field
+                          <v-autocomplete
                             label="Получатель"
+                            :items="clientsList"
+                            :filter="clientsFilter"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.addressee"
+                            hide-details
+                            class="mb-4"
+                            no-data-text="Не надено"
+                            :readonly="editedItemReadOnly"
+                            clearable
+                            @change="setDataAddressee()"
+                          ></v-autocomplete>
+
+                          <v-text-field
+                            label="Имя получателя"
                             v-model="editedItem.addresseeName"
                             hide-details
                             class="mb-4"
@@ -470,6 +385,106 @@
               </v-form>
             </v-card>
           </v-dialog>
+          <v-spacer></v-spacer>
+          <v-layout
+            row
+            wrap
+          >
+            <v-flex
+              xs5
+              class="px-3"
+            >
+              <v-text-field
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                hide-details
+              ></v-text-field>
+            </v-flex>
+            <v-flex
+              xs3
+              class="px-3"
+            >
+              <v-select
+                label="Статус"
+                :items="[{id: '', name: 'Все'}].concat(statusList)"
+                item-text="name"
+                item-value="id"
+                v-model="filter.status"
+                @change="updateFilter"
+                hide-details
+              ></v-select>
+            </v-flex>
+            <v-flex
+              xs2
+              class="px-3"
+            >
+              <v-menu
+                :close-on-content-click="false"
+                v-model="dataStartPicker"
+                :nudge-right="40"
+                lazy
+                transition="scale-transition"
+                offset-y
+                full-width
+                min-width="290px"
+                class="mb-4"
+              >
+                <v-text-field
+                  slot="activator"
+                  label="Начальная дата"
+                  v-model="filter.dateStart"
+                  prepend-icon="event"
+                  hide-details
+                  readonly
+                  clearable
+                ></v-text-field>
+                <v-date-picker
+                  v-model="filter.dateStart"
+                  @input="dataStartPicker = false"
+                  no-title
+                  scrollable
+                  locale="ru-ru"
+                  first-day-of-week="1"
+                  :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                ></v-date-picker>
+              </v-menu>
+            </v-flex>
+            <v-flex
+              xs2
+            >
+              <v-menu
+                :close-on-content-click="false"
+                v-model="dataEndPicker"
+                :nudge-right="40"
+                lazy
+                transition="scale-transition"
+                offset-y
+                full-width
+                min-width="290px"
+                class="mb-4"
+              >
+                <v-text-field
+                  slot="activator"
+                  label="Конечная дата"
+                  v-model="filter.dateEnd"
+                  prepend-icon="event"
+                  hide-details
+                  readonly
+                  clearable
+                ></v-text-field>
+                <v-date-picker
+                  v-model="filter.dateEnd"
+                  @input="dataEndPicker = false"
+                  no-title
+                  locale="ru-ru"
+                  scrollable
+                  first-day-of-week="1"
+                  :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                ></v-date-picker>
+              </v-menu>
+            </v-flex>
+          </v-layout>
         </v-card-title>
 
         <v-data-table
@@ -727,6 +742,7 @@ export default {
         dp: '',
         orderText: '',
         sum: 0,
+        addressee: '',
         addresseeName: '',
         addresseePhone: '',
         address: '',
@@ -752,6 +768,7 @@ export default {
         dp: '',
         orderText: '',
         sum: 0,
+        addressee: '',
         addresseeName: '',
         addresseePhone: '',
         address: '',
@@ -825,6 +842,18 @@ export default {
       } else {
         this.editedItem.name = '';
         this.editedItem.phone = '';
+      }
+    },
+    setDataAddressee() {
+      const clientId = this.editedItem.addressee;
+      const findClient = this.clientsList.find(item => item.id === clientId);
+
+      if (findClient !== undefined) {
+        this.editedItem.addresseeName = findClient.name;
+        this.editedItem.addresseePhone = findClient.phone;
+      } else {
+        this.editedItem.addresseeName = '';
+        this.editedItem.addresseePhone = '';
       }
     },
     customFilter: function customFilter(items) {

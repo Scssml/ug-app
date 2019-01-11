@@ -1,13 +1,14 @@
 <template>
   <v-text-field
     label="Адрес"
-    v-model="address"
+    :value="address"
     hide-details
     class="mb-4"
     :rules="[v => !!v || 'Заполните поле']"
     :readonly="readonly"
     ref="autocomplete"
     placeholder="Введите местоположение"
+    @input="setPrefix($event)"
   ></v-text-field>
 </template>
 
@@ -30,8 +31,14 @@ export default {
       autocomplete: null,
     };
   },
+  methods: {
+    setPrefix(value) {
+      const address = value.replace('г. Самара, ', '');
+      this.address = `г. Самара, ${address}`;
+    },
+  },
   created() {
-    this.address = this.value;
+    this.address = (this.value.length > 0) ? this.value : '';
   },
   mounted() {
     const ref = this.$refs.autocomplete.$refs.input;
@@ -80,7 +87,7 @@ export default {
           }
         }
 
-        this.address = `${locationInfo.city}, ${locationInfo.street} ${locationInfo.streetNumber}`;
+        this.address = `г. ${locationInfo.city}, ${locationInfo.street} ${locationInfo.streetNumber}`;
         this.$emit('change', {
           address: this.address,
           geo: locationInfo.geo,

@@ -92,11 +92,11 @@
                 <v-text-field
                   label="Закупка"
                   v-model="dataEdit.purchase"
+                  type="number"
                   hide-details
                   class="pr-4"
-                  :rules="[v => !!v || 'Заполните поле']"
+                  :rules="[v => ((v !== '') && (v !== undefined)) || 'Заполните поле']"
                 ></v-text-field>
-                <v-spacer></v-spacer>
               </v-flex>
               <v-flex
                 xs2
@@ -108,10 +108,21 @@
                   class="pr-4"
                   readonly
                 ></v-text-field>
-                <v-spacer></v-spacer>
+              </v-flex>
+              <v-flex
+                xs1
+              >
+                <v-text-field
+                  label="Наценка"
+                  :value="markup + '%'"
+                  hide-details
+                  class="pr-4"
+                  readonly
+                ></v-text-field>
               </v-flex>
               <v-flex
                 xs3
+                v-if="dataEdit.type === 'Приход' || dataEdit.type ===  'Брак'"
               >
                 <v-text-field
                   label="Компания"
@@ -119,9 +130,7 @@
                   hide-details
                   class="pr-4"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-if="dataEdit.type === 'Приход' || dataEdit.type ===  'Брак'"
                 ></v-text-field>
-                <v-spacer></v-spacer>
               </v-flex>
               <v-flex
                 xs2
@@ -145,6 +154,10 @@
             hide-details
           ></v-text-field>
           <v-spacer></v-spacer>
+          <v-btn
+            color="info"
+            to="/goods/history/"
+          >История</v-btn>
         </v-card-title>
         <v-data-table
           :headers="headersTable"
@@ -261,7 +274,7 @@ export default {
       dataEdit: {
         type: '',
         company: '',
-        purchase: '',
+        purchase: 0,
       },
       search: '',
       headersTable: [
@@ -320,6 +333,14 @@ export default {
 
       return arrival;
     },
+    markup() {
+      let markupVal = 0;
+      if (this.arrival !== 0) {
+        markupVal = 100 - ((this.dataEdit.purchase * 100) / this.arrival);
+      }
+
+      return +markupVal.toFixed(2);
+    },
   },
   methods: {
     getGoodsList: function getGoodsList() {
@@ -363,12 +384,19 @@ export default {
         });
 
         const purchase = Object.assign({}, this.dataEdit);
-        [purchase.date, purchase.goods, purchase.arrival] = [
+        [purchase.date, purchase.goods, purchase.arrival, purchase.user] = [
           new Date().toISOString().split('T')[0],
-          Object.assign({}, this.goodsList),
+          this.goodsList,
           this.arrival,
+          this.$store.state.authUser,
         ];
-        // purchase.goods = Object.assign({}, this.goodsList);
+
+        if (this.purchaseList.length > 0) {
+          purchase.id = this.purchaseList[this.purchaseList.length - 1].id + 1;
+        } else {
+          purchase.id = 1;
+        }
+
         this.purchaseList.push(purchase);
 
         localStorage.setItem('purchase', JSON.stringify(this.purchaseList));
@@ -378,6 +406,10 @@ export default {
         });
 
         localStorage.setItem('goods', JSON.stringify(goods));
+
+        this.dataEdit.type = '';
+        this.dataEdit.company = '';
+        this.dataEdit.purchase = 0;
 
         this.createdSuccess = true;
 

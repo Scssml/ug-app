@@ -337,7 +337,7 @@ export default {
       return (sum > 0) ? sum : 0;
     },
     activePayBtn: function activePayBtn() {
-      const active = (!!this.florist && !!this.client) ? 1 : 0;
+      const active = (this.florist !== '') ? 1 : 0;
       return active;
     },
     clientSale: function clientSale() {
@@ -346,7 +346,7 @@ export default {
       if (client !== undefined && client.sale > 0) {
         salePersent = client.sale;
       } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
-        salePersent = 10;
+        salePersent = 5;
       } else {
         salePersent = null;
       }

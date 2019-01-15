@@ -399,10 +399,8 @@ export default {
           purchase.id = 1;
         }
 
-        axios.get(`${this.$store.state.apiSrc}purchase/add.php`, {
-          params: {
-            ELEM: purchase,
-          },
+        axios.post(`${this.$store.state.apiSrc}purchase/add.php`, {
+          ELEM: purchase,
         }).then(() => {
           this.purchaseList.push(purchase);
 
@@ -413,10 +411,8 @@ export default {
 
         // localStorage.setItem('purchase', JSON.stringify(this.purchaseList));
 
-        axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
-          params: {
-            ELEMS: JSON.stringify(goods),
-          },
+        axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
+          ELEMS: goods,
         }).then(() => {
           this.dataEdit.type = '';
           this.dataEdit.company = '';
@@ -448,10 +444,8 @@ export default {
         return good;
       });
 
-      axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
-        params: {
-          ELEMS: JSON.stringify(goods),
-        },
+      axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
+        ELEMS: goods,
       }).then(() => {
         this.closeConfirm();
       });

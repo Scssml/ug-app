@@ -348,10 +348,8 @@ export default {
           findGood.store -= elem.value;
         });
 
-        axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
-          params: {
-            ELEMS: JSON.stringify(this.goodsList),
-          },
+        axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
+          ELEMS: this.goodsList,
         });
         // localStorage.setItem('goods', JSON.stringify(this.goodsList));
 

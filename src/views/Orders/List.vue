@@ -163,6 +163,18 @@
                             :readonly="editedItemReadOnly"
                           ></v-select>
 
+                          <v-select
+                            label="Тип клиента"
+                            :items="typeClient"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.typeClient"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-select>
+
                           <v-autocomplete
                             label="Клиент"
                             :items="clientsList"
@@ -391,7 +403,7 @@
             wrap
           >
             <v-flex
-              xs5
+              xs4
               class="px-3"
             >
               <v-text-field
@@ -402,7 +414,7 @@
               ></v-text-field>
             </v-flex>
             <v-flex
-              xs3
+              xs2
               class="px-3"
             >
               <v-select
@@ -411,6 +423,20 @@
                 item-text="name"
                 item-value="id"
                 v-model="filter.status"
+                @change="updateFilter"
+                hide-details
+              ></v-select>
+            </v-flex>
+            <v-flex
+              xs2
+              class="px-3"
+            >
+              <v-select
+                label="Тип клиента"
+                :items="[{id: '', name: 'Все'}].concat(typeClient)"
+                item-text="name"
+                item-value="id"
+                v-model="filter.typeClient"
                 @change="updateFilter"
                 hide-details
               ></v-select>
@@ -505,7 +531,8 @@
               <td style="width: 8%;">{{ props.item.date }}</td>
               <td style="width: 9%;">{{ props.item.id }}</td>
               <td style="width: 10%;">
-                {{ clientsList.find(item => item.id === props.item.client).name }}
+                {{ (findItem = clientsList.find(item => item.id === props.item.client))
+                  ? findItem.name : '' }}
               </td>
               <td style="width: 10%;">{{ props.item.phone }}</td>
               <td style="width: 12%;">{{ props.item.orderText }}</td>
@@ -519,7 +546,7 @@
                   item-text="name"
                   item-value="id"
                   v-model="props.item.status"
-                  @change="updateStatus"
+                  @change="updateStatus(props.index)"
                   color="grey darken-2"
                 ></v-select>
               </td>
@@ -547,11 +574,20 @@
           </template>
         </v-data-table>
       </v-card>
+      <v-btn
+        fab
+        color="info"
+        class="mx-4"
+        @click="dialogForm = true"
+      >
+        <v-icon dark>add</v-icon>
+      </v-btn>
     </template>
   </v-container>
 </template>
 
 <script>
+import axios from 'axios';
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
 
@@ -575,6 +611,7 @@ export default {
       autocomplete: null,
       filter: {
         status: '',
+        typeClient: '',
         dateStart: null,
         dateEnd: null,
       },
@@ -587,7 +624,7 @@ export default {
         {
           id: 2,
           name: 'Выполнен',
-          color: 'green lighten-4',
+          color: 'teal lighten-4',
         },
         {
           id: 3,
@@ -603,6 +640,11 @@ export default {
           id: 5,
           name: 'Отменен',
           color: 'red lighten-4',
+        },
+        {
+          id: 6,
+          name: 'Завершен',
+          color: 'green lighten-4',
         },
       ],
       tsList: [
@@ -629,6 +671,20 @@ export default {
         {
           id: 6,
           name: 'Whatsapp',
+        },
+      ],
+      typeClient: [
+        {
+          id: 1,
+          name: 'Физ. лицо',
+        },
+        {
+          id: 2,
+          name: 'Юр. лицо',
+        },
+        {
+          id: 3,
+          name: 'Наши',
         },
       ],
       deliveryList: [
@@ -808,7 +864,11 @@ export default {
 
       const itemsFind = this.ordersList.filter((item) => {
         let find = false;
-        if (item.deliveryDate === date && item.delivery === 2) {
+        if (item.deliveryDate === date
+          && item.delivery === 2
+          && item.status !== 4
+          && item.status !== 5
+          && item.status !== 6) {
           find = true;
         }
 
@@ -871,6 +931,15 @@ export default {
 
       itemsFind = itemsFind.filter((item) => {
         let find = false;
+        if (item.typeClient === filterProps.typeClient || filterProps.typeClient === '') {
+          find = true;
+        }
+
+        return find;
+      });
+
+      itemsFind = itemsFind.filter((item) => {
+        let find = false;
         if (
           (item.date >= filterProps.dateStart || filterProps.dateStart === null)
           && (item.date <= filterProps.dateEnd || filterProps.dateEnd === null)
@@ -883,8 +952,16 @@ export default {
 
       return itemsFind;
     },
-    updateStatus() {
-      localStorage.setItem('orders', JSON.stringify(this.ordersList));
+    updateStatus(index) {
+      const editedItem = this.ordersList[index];
+      console.log(editedItem);
+      axios.get(`${this.$store.state.apiSrc}orders/edit.php`, {
+        params: {
+          INDEX: index,
+          ELEM: editedItem,
+        },
+      });
+      // localStorage.setItem('orders', JSON.stringify(this.ordersList));
     },
     updateFilter() {
       console.log(this.filter);
@@ -947,9 +1024,11 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
+      let apiPath = '';
       if (validate) {
         if (this.editedIndex > -1) {
           Object.assign(this.ordersList[this.editedIndex], this.editedItem);
+          apiPath = 'edit.php';
         } else {
           // this.editedItem.id = this.ordersList.sort((a, b) => b.id - a.id)[0].id + 1;
           if (this.ordersList.length > 0) {
@@ -959,15 +1038,21 @@ export default {
           }
 
           this.ordersList.push(this.editedItem);
+          apiPath = 'add.php';
         }
 
-        localStorage.setItem('orders', JSON.stringify(this.ordersList));
-
-        this.createdSuccess = true;
-
-        setTimeout(() => {
-          this.closeDialog();
-        }, 1000);
+        axios.get(`${this.$store.state.apiSrc}orders/${apiPath}`, {
+          params: {
+            INDEX: this.editedIndex,
+            ELEM: this.editedItem,
+          },
+        }).then(() => {
+          this.createdSuccess = true;
+          setTimeout(() => {
+            this.closeDialog();
+          }, 1000);
+        });
+        // localStorage.setItem('orders', JSON.stringify(this.ordersList));
       }
     },
     closeDialog: function closeDialog() {
@@ -992,9 +1077,15 @@ export default {
     deletedItem: function deletedItem(index) {
       this.ordersList.splice(index, 1);
 
-      localStorage.setItem('orders', JSON.stringify(this.ordersList));
+      axios.get(`${this.$store.state.apiSrc}orders/delete.php`, {
+        params: {
+          INDEX: index,
+        },
+      }).then(() => {
+        this.closeConfirm();
+      });
 
-      this.closeConfirm();
+      // localStorage.setItem('orders', JSON.stringify(this.ordersList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

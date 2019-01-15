@@ -35,6 +35,11 @@ export default {
     setPrefix(value) {
       const address = value.replace('г. Самара, ', '');
       this.address = `г. Самара, ${address}`;
+
+      this.$emit('change', {
+        address: this.address,
+        geo: [],
+      });
     },
   },
   created() {

@@ -206,6 +206,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 
@@ -332,16 +333,27 @@ export default {
 
         newBouqet.goods = item.goods;
 
+        axios.get(`${this.$store.state.apiSrc}bouquets/add.php`, {
+          params: {
+            ELEM: newBouqet,
+          },
+        });
+
         this.bouquetsList.push(newBouqet);
 
-        localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
+        // localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
         item.goods.forEach((elem) => {
           const findGood = this.goodsList.find(good => good.id === elem.id);
           findGood.store -= elem.value;
         });
 
-        localStorage.setItem('goods', JSON.stringify(this.goodsList));
+        axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
+          params: {
+            ELEMS: JSON.stringify(this.goodsList),
+          },
+        });
+        // localStorage.setItem('goods', JSON.stringify(this.goodsList));
 
         const cardNoEmpty = this.cardsList.filter(elem =>
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
@@ -361,7 +373,16 @@ export default {
     },
     getClientsList: function getClientsList() {
       this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.clientsList;
+        this.clientsList.push({
+          active: true,
+          bill: 0,
+          id: 0,
+          name: 'Розничный покупатель',
+          sale: 0,
+          phone: '',
+        });
+
+        this.clientsList = this.clientsList.concat(response.clientsList);
 
         const loadData = this.loadingData.find(item => item.id === 'clients');
         loadData.title = response.successData.text;

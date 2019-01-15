@@ -245,6 +245,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Goods',
   data() {
@@ -397,25 +399,37 @@ export default {
           purchase.id = 1;
         }
 
-        this.purchaseList.push(purchase);
+        axios.get(`${this.$store.state.apiSrc}purchase/add.php`, {
+          params: {
+            ELEM: purchase,
+          },
+        }).then(() => {
+          this.purchaseList.push(purchase);
 
-        localStorage.setItem('purchase', JSON.stringify(this.purchaseList));
-
-        this.goodsList.forEach((item, i) => {
-          this.goodsList[i].count = 0;
+          this.goodsList.forEach((item, i) => {
+            this.goodsList[i].count = 0;
+          });
         });
 
-        localStorage.setItem('goods', JSON.stringify(goods));
+        // localStorage.setItem('purchase', JSON.stringify(this.purchaseList));
 
-        this.dataEdit.type = '';
-        this.dataEdit.company = '';
-        this.dataEdit.purchase = 0;
+        axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
+          params: {
+            ELEMS: JSON.stringify(goods),
+          },
+        }).then(() => {
+          this.dataEdit.type = '';
+          this.dataEdit.company = '';
+          this.dataEdit.purchase = 0;
 
-        this.createdSuccess = true;
+          this.createdSuccess = true;
 
-        setTimeout(() => {
-          this.closeDialog();
-        }, 1000);
+          setTimeout(() => {
+            this.closeDialog();
+          }, 1000);
+        });
+
+        // localStorage.setItem('goods', JSON.stringify(goods));
       }
     },
     closeDialog: function closeDialog() {
@@ -434,9 +448,15 @@ export default {
         return good;
       });
 
-      localStorage.setItem('goods', JSON.stringify(goods));
+      axios.get(`${this.$store.state.apiSrc}goods/edit.php`, {
+        params: {
+          ELEMS: JSON.stringify(goods),
+        },
+      }).then(() => {
+        this.closeConfirm();
+      });
 
-      this.closeConfirm();
+      // localStorage.setItem('goods', JSON.stringify(goods));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

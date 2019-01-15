@@ -173,7 +173,7 @@
       <v-btn
         @click.native="dialogClear = true"
         small
-      >Отчистить</v-btn>
+      >Очистить</v-btn>
     </div>
     <v-divider></v-divider>
     <v-dialog
@@ -249,7 +249,7 @@
         <v-card-title
           class="px-4"
         >
-          <span class="headline">Отчистить?</span>
+          <span class="headline">Очистить?</span>
         </v-card-title>
         <v-divider></v-divider>
         <v-card-actions
@@ -262,7 +262,7 @@
           <v-btn
             color="error"
             @click="clearProps()"
-          >Отчистить</v-btn>
+          >Очистить</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -297,7 +297,7 @@ export default {
     return {
       createdSuccess: false,
       florist: '',
-      client: '',
+      client: 0,
       order: '',
       decorPersent: 10,
       delivery: 0,
@@ -356,7 +356,7 @@ export default {
   methods: {
     clearProps() {
       this.florist = '';
-      this.client = '';
+      this.client = 0;
       this.order = '';
       this.decorPersent = 10;
       this.delivery = 0;

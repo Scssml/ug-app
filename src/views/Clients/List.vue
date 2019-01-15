@@ -207,6 +207,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Clients',
   data() {
@@ -315,9 +317,11 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
+      let apiPath = '';
       if (validate) {
         if (this.editedIndex > -1) {
           Object.assign(this.clientsList[this.editedIndex], this.editedItem);
+          apiPath = 'edit.php';
         } else {
           if (this.clientsList.length > 0) {
             this.editedItem.id = this.clientsList[this.clientsList.length - 1].id + 1;
@@ -326,15 +330,22 @@ export default {
           }
 
           this.clientsList.push(this.editedItem);
+
+          apiPath = 'add.php';
         }
 
-        localStorage.setItem('clients', JSON.stringify(this.clientsList));
-
-        this.createdSuccess = true;
-
-        setTimeout(() => {
-          this.closeDialog();
-        }, 1000);
+        axios.get(`${this.$store.state.apiSrc}clients/${apiPath}`, {
+          params: {
+            INDEX: this.editedIndex,
+            ELEM: this.editedItem,
+          },
+        }).then(() => {
+          this.createdSuccess = true;
+          setTimeout(() => {
+            this.closeDialog();
+          }, 1000);
+        });
+        // localStorage.setItem('clients', JSON.stringify(this.clientsList));
       }
     },
     closeDialog: function closeDialog() {
@@ -357,9 +368,14 @@ export default {
     deletedItem: function deletedItem(index) {
       this.clientsList.splice(index, 1);
 
-      localStorage.setItem('clients', JSON.stringify(this.clientsList));
-
-      this.closeConfirm();
+      axios.get(`${this.$store.state.apiSrc}clients/delete.php`, {
+        params: {
+          INDEX: index,
+        },
+      }).then(() => {
+        this.closeConfirm();
+      });
+      // localStorage.setItem('clients', JSON.stringify(this.clientsList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

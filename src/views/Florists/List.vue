@@ -159,6 +159,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Clients',
   data() {
@@ -242,9 +244,11 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
+      let apiPath = '';
       if (validate) {
         if (this.editedIndex > -1) {
           Object.assign(this.floristsList[this.editedIndex], this.editedItem);
+          apiPath = 'edit.php';
         } else {
           if (this.floristsList.length > 0) {
             this.editedItem.id = this.floristsList[this.floristsList.length - 1].id + 1;
@@ -253,15 +257,22 @@ export default {
           }
 
           this.floristsList.push(this.editedItem);
+
+          apiPath = 'add.php';
         }
 
-        localStorage.setItem('florists', JSON.stringify(this.floristsList));
-
-        this.createdSuccess = true;
-
-        setTimeout(() => {
-          this.closeDialog();
-        }, 1000);
+        axios.get(`${this.$store.state.apiSrc}florists/${apiPath}`, {
+          params: {
+            INDEX: this.editedIndex,
+            ELEM: this.editedItem,
+          },
+        }).then(() => {
+          this.createdSuccess = true;
+          setTimeout(() => {
+            this.closeDialog();
+          }, 1000);
+        });
+        // localStorage.setItem('florists', JSON.stringify(this.floristsList));
       }
     },
     closeDialog: function closeDialog() {
@@ -284,9 +295,15 @@ export default {
     deletedItem: function deletedItem(index) {
       this.floristsList.splice(index, 1);
 
-      localStorage.setItem('florists', JSON.stringify(this.floristsList));
+      axios.get(`${this.$store.state.apiSrc}florists/delete.php`, {
+        params: {
+          INDEX: index,
+        },
+      }).then(() => {
+        this.closeConfirm();
+      });
 
-      this.closeConfirm();
+      // localStorage.setItem('florists', JSON.stringify(this.floristsList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

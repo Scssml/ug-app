@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import axios from 'axios';
 
 Vue.use(Vuex);
 
@@ -366,6 +367,7 @@ const usersListResponse = [
 export default new Vuex.Store({
   state: {
     authUser: 2,
+    apiSrc: 'http://ug-app.cq58583.tmweb.ru/api/',
   },
   mutations: {
 
@@ -414,11 +416,10 @@ export default new Vuex.Store({
         // }, 1500);
       });
     },
-    getBouquetsList() {
+    getBouquetsList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let bouquetsList = JSON.parse(localStorage.getItem('bouquets'));
-        bouquetsList = (bouquetsList !== null) ? bouquetsList : [];
+        // let bouquetsList = JSON.parse(localStorage.getItem('bouquets'));
 
         // const bouquetsList = bouquetsListResponse;
         const errorData = {
@@ -428,20 +429,24 @@ export default new Vuex.Store({
           text: 'Букеты получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ bouquetsList, successData });
-        }
+        axios.get(`${store.state.apiSrc}bouquets/list.php`).then((response) => {
+          let bouquetsList = response.data;
+          bouquetsList = (bouquetsList !== null && bouquetsList !== '') ? bouquetsList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ bouquetsList, successData });
+          }
+        });
         // }, 1500);
       });
     },
-    getClientsList() {
+    getClientsList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let clientsList = JSON.parse(localStorage.getItem('clients'));
-        clientsList = (clientsList !== null) ? clientsList : [];
+        // let clientsList = JSON.parse(localStorage.getItem('clients'));
 
         // const clientsList = clientsListResponse;
         const errorData = {
@@ -451,20 +456,23 @@ export default new Vuex.Store({
           text: 'Клиенты получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ clientsList, successData });
-        }
+        axios.get(`${store.state.apiSrc}clients/list.php`).then((response) => {
+          let clientsList = response.data;
+          clientsList = (clientsList !== null && clientsList !== '') ? clientsList : [];
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ clientsList, successData });
+          }
+        });
         // }, 1000);
       });
     },
-    getFloristsList() {
+    getFloristsList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let floristsList = JSON.parse(localStorage.getItem('florists'));
-        floristsList = (floristsList !== null) ? floristsList : [];
+        // let floristsList = JSON.parse(localStorage.getItem('florists'));
 
         // const floristsList = floristsListResponse;
         const errorData = {
@@ -474,20 +482,24 @@ export default new Vuex.Store({
           text: 'Флористы получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ floristsList, successData });
-        }
+        axios.get(`${store.state.apiSrc}florists/list.php`).then((response) => {
+          let floristsList = response.data;
+          floristsList = (floristsList !== null && floristsList !== '') ? floristsList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ floristsList, successData });
+          }
+        });
         // }, 1500);
       });
     },
-    getOrdersList() {
+    getOrdersList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let ordersList = JSON.parse(localStorage.getItem('orders'));
-        ordersList = (ordersList !== null) ? ordersList : [];
+        // let ordersList = JSON.parse(localStorage.getItem('orders'));
 
         // const ordersList = ordersListResponse;
         const errorData = {
@@ -497,22 +509,24 @@ export default new Vuex.Store({
           text: 'Заказы получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ ordersList, successData });
-        }
+        axios.get(`${store.state.apiSrc}orders/list.php`).then((response) => {
+          let ordersList = response.data;
+          ordersList = (ordersList !== null && ordersList !== '') ? ordersList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ ordersList, successData });
+          }
+        });
         // }, 2000);
       });
     },
-    getOrdersWorksList() {
+    getOrdersWorksList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let ordersList = JSON.parse(localStorage.getItem('orders'));
-        ordersList = (ordersList !== null) ? ordersList : [];
-
-        ordersList = ordersList.filter(item => item.status === 1);
+        // let ordersList = JSON.parse(localStorage.getItem('orders'));
 
         // const ordersList = ordersListResponse;
         const errorData = {
@@ -522,20 +536,25 @@ export default new Vuex.Store({
           text: 'Заказы получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ ordersList, successData });
-        }
+        axios.get(`${store.state.apiSrc}orders/list.php`).then((response) => {
+          let ordersList = response.data;
+          ordersList = (ordersList !== null && ordersList !== '') ? ordersList : [];
+          ordersList = ordersList.filter(item => item.status === 1);
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ ordersList, successData });
+          }
+        });
         // }, 2000);
       });
     },
-    getGoodsList() {
+    getGoodsList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let goodsList = JSON.parse(localStorage.getItem('goods'));
-        goodsList = (goodsList !== null) ? goodsList : [];
+        // let goodsList = JSON.parse(localStorage.getItem('goods'));
 
         // const goodsList = goodsListResponse;
         const errorData = {
@@ -545,20 +564,24 @@ export default new Vuex.Store({
           text: 'Товары получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ goodsList, successData });
-        }
-        // }, 2500);
+        axios.get(`${store.state.apiSrc}goods/list.php`).then((response) => {
+          let goodsList = response.data;
+          goodsList = (goodsList !== null && goodsList !== '') ? goodsList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ goodsList, successData });
+          }
+          // }, 2500);
+        });
       });
     },
-    getPurchaseList() {
+    getPurchaseList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
-        let purchaseList = JSON.parse(localStorage.getItem('purchase'));
-        purchaseList = (purchaseList !== null) ? purchaseList : [];
+        // let purchaseList = JSON.parse(localStorage.getItem('purchase'));
 
         const errorData = {
           text: 'Ошибка получения закупок!',
@@ -567,12 +590,17 @@ export default new Vuex.Store({
           text: 'Закупки получены!',
         };
 
-        const error = false;
-        if (error) {
-          rejected(errorData);
-        } else {
-          resolve({ purchaseList, successData });
-        }
+        axios.get(`${store.state.apiSrc}purchase/list.php`).then((response) => {
+          let purchaseList = response.data;
+          purchaseList = (purchaseList !== null && purchaseList !== '') ? purchaseList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ purchaseList, successData });
+          }
+        });
         // }, 2500);
       });
     },

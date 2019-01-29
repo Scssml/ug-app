@@ -132,6 +132,14 @@
                           ></v-select>
 
                           <v-text-field
+                            label="Т/С другой вариант"
+                            v-model="editedItem.tsText"
+                            hide-details
+                            class="mb-4"
+                            v-if="editedItem.ts === 7"
+                          ></v-text-field>
+
+                          <v-text-field
                             label="Д/П"
                             v-model="editedItem.date"
                             hide-details
@@ -287,7 +295,6 @@
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
-                            mask="##:##-##:##"
                           ></v-text-field>
 
                           <v-checkbox
@@ -672,6 +679,10 @@ export default {
           id: 6,
           name: 'Whatsapp',
         },
+        {
+          id: 7,
+          name: 'Другое',
+        },
       ],
       typeClient: [
         {
@@ -795,6 +806,7 @@ export default {
         delivered: false,
         kto: this.$store.state.authUser,
         ts: '',
+        tsText: '',
         dp: '',
         orderText: '',
         sum: 0,
@@ -821,6 +833,7 @@ export default {
         delivered: false,
         kto: this.$store.state.authUser,
         ts: '',
+        tsText: '',
         dp: '',
         orderText: '',
         sum: 0,
@@ -954,7 +967,6 @@ export default {
     },
     updateStatus(index) {
       const editedItem = this.ordersList[index];
-      console.log(editedItem);
       axios.get(`${this.$store.state.apiSrc}orders/edit.php`, {
         params: {
           INDEX: index,
@@ -1118,7 +1130,7 @@ export default {
       }
 
       localStorage.setItem('cardsList', JSON.stringify(cardsList));
-      this.$router.push('/');
+      this.$router.push({ path: '/', query: { selectOrder: item.id } });
     },
     updateAddress(data) {
       this.editedItem.address = data.address;

@@ -75,6 +75,8 @@
                   :propsDefault="item.props"
                   @saveProps="saveProps(index, $event)"
                   @updateProps="updateProps(index, $event)"
+                  @copy="copyItem(index)"
+                  @delete="deleteItem(index)"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -450,11 +452,28 @@ export default {
       this.getGoodsList();
       this.getBouquetsList();
     },
+    copyItem(index) {
+      const item = Object.assign({}, this.cardsList[index]);
+      this.cardsList.push(item);
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
+        && elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+    },
+    deleteItem(index) {
+      const item = this.cardsList[index];
+      item.success = true;
+
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
+        && elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+    },
   },
   mounted() {
     const cardsList = JSON.parse(localStorage.getItem('cardsList'));
     this.cardsList = (cardsList !== null) ? cardsList : [];
-    const addCountElem = 5 - this.cardsList.length;
+    const addCountElem = 1 - this.cardsList.length;
 
     for (let i = 0; i < addCountElem; i += 1) {
       this.addCard();
@@ -479,5 +498,17 @@ export default {
         margin: 6px 4px 6px 0;
       }
     }
+  }
+
+  .v-card.selected  {
+    box-shadow: inset 0 0 2px 2px #008a00;
+  }
+
+  .v-btn--small {
+    min-width: 50px;
+  }
+
+  .flex {
+    max-width: 300px;
   }
 </style>

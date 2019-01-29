@@ -75,7 +75,7 @@ export default {
     },
     setCountGood: function setCountGood(index, value) {
       const item = this.goods[index];
-      item.value = +value;
+      item.value = +value.replace(',', '.');
       this.$set(this.goods, index, item);
       this.changeSum();
     },

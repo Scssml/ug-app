@@ -91,11 +91,11 @@
               >
                 <v-text-field
                   label="Закупка"
-                  v-model="dataEdit.purchase"
-                  type="number"
+                  :value="dataEdit.purchase"
                   hide-details
                   class="pr-4"
                   :rules="[v => ((v !== '') && (v !== undefined)) || 'Заполните поле']"
+                  @change="dataEdit.purchase = exelCalc($event)"
                 ></v-text-field>
               </v-flex>
               <v-flex
@@ -217,8 +217,9 @@
                 solo
                 flat
                 hide-details
-                type="number"
-                v-model="props.item.count"
+                type="text"
+                :value="props.item.count"
+                @change="props.item.count = exelCalc($event)"
                 class="scs-small"
               ></v-text-field>
             </td>
@@ -345,6 +346,10 @@ export default {
     },
   },
   methods: {
+    exelCalc(val) {
+      /* eslint no-eval: 0 */
+      return eval(val);
+    },
     getGoodsList: function getGoodsList() {
       this.$store.dispatch('getGoodsList').then((response) => {
         this.goodsList = response.goodsList.map((item) => {

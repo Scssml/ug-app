@@ -99,11 +99,13 @@
                       <p><b>Номер букета:</b> {{ editedItem.id }}</p>
                       <p>
                         <b>Флорист:</b>
-                        {{ floristsList.find(item => item.id === editedItem.florist).name }}
+                        {{ (findItem = floristsList.find(item => item.id === editedItem.florist))
+                          ? findItem.name : '' }}
                       </p>
                       <p>
                         <b>Клиент:</b>
-                        {{ clientsList.find(item => item.id === editedItem.client).name }}
+                        {{ (findItem = clientsList.find(item => item.id === editedItem.client))
+                          ? findItem.name : '' }}
                       </p>
                       <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
                       <p><b>Процент оформления:</b> {{ editedItem.decorPersent }}</p>
@@ -116,7 +118,8 @@
                       <p><b>Дата создания:</b> {{ editedItem.date }}</p>
                       <p>
                         <b>Менеджер:</b>
-                        {{ usersList.find(item => item.id === editedItem.user).name }}
+                        {{ (findItem = usersList.find(item => item.id === editedItem.user))
+                          ? findItem.name : '' }}
                       </p>
                       <p><b>Заказ:</b> {{ editedItem.order }}</p>
                       <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
@@ -166,13 +169,16 @@
               <td style="width: 5%;">{{ props.item.date }}</td>
               <td style="width: 14%;">Букет {{ props.item.id }}</td>
               <td style="width: 18%;">
-                {{ usersList.find(item => item.id === props.item.user).name }}
+                {{ (findItem = usersList.find(item => item.id === props.item.user))
+                  ? findItem.name : '' }}
               </td>
               <td style="width: 18%;">
-                {{ floristsList.find(item => item.id === props.item.florist).name }}
+                {{ (findItem = floristsList.find(item => item.id === props.item.florist))
+                  ? findItem.name : '' }}
               </td>
               <td style="width: 18%;">
-                {{ clientsList.find(item => item.id === props.item.client).name }}
+                {{ (findItem = clientsList.find(item => item.id === props.item.client))
+                  ? findItem.name : '' }}
               </td>
               <td class="text-xs-right" style="width: 10%;">{{ props.item.sumPay }}</td>
               <td class="text-xs-right" style="width: 10%;">{{ props.item.typePay }}</td>

@@ -3,6 +3,7 @@
     flat
     width="300"
     style="border-left: 1px solid #ccc; font-size: 16px;"
+    :class="($route.query.selectOrder === order) ? 'selected' : ''"
   >
     <div class="px-3" style="height: 30px;">
       <v-select
@@ -115,7 +116,8 @@
         hide-details
         :value="sumDecor"
         class="scs-small"
-        readonly
+        @input="sumDecorCustom = $event"
+        @change="updateProps()"
       ></v-text-field>
     </div>
     <v-divider></v-divider>
@@ -128,7 +130,7 @@
         :value="clientSale"
         :background-color="(clientSale > 0) ? 'deep-orange lighten-4' : ''"
         class="scs-small"
-        readonly
+        @input="clientSaleCustom = $event"
         @change="updateProps()"
       ></v-text-field>
     </div>
@@ -172,8 +174,22 @@
       >Оплатить</v-btn>
       <v-btn
         @click.native="dialogClear = true"
+        flat
         small
-      >Очистить</v-btn>
+        color="error"
+        class="mx-0"
+      >
+        <v-icon dark>clear</v-icon>
+      </v-btn>
+      <v-btn
+        @click.native="$emit('copy')"
+        flat
+        small
+        color="warning"
+        class="mx-0"
+      >
+        <v-icon dark>library_add</v-icon>
+      </v-btn>
     </div>
     <v-divider></v-divider>
     <v-dialog
@@ -209,7 +225,7 @@
             ></v-text-field>
             <v-text-field
               label="Сумма"
-              :rules="[v => v >= sumPay || 'Заполните поле']"
+              :rules="[v => (v >= sumPay || typePay === 'На баланс') || 'Заполните поле']"
               v-model="sumClient"
             ></v-text-field>
             <v-text-field
@@ -261,7 +277,7 @@
           <v-spacer></v-spacer>
           <v-btn
             color="error"
-            @click="clearProps()"
+            @click="$emit('delete')"
           >Очистить</v-btn>
         </v-card-actions>
       </v-card>
@@ -305,23 +321,40 @@ export default {
       dialogPay: false,
       sumClient: 0,
       typePay: '',
-      typePayList: [
-        'Наличные',
-        'На баланс',
-        'Яндекс',
-        'Карта',
-        'Терминал',
-      ],
+      // typePayList: [
+      //   'Наличные',
+      //   'На баланс',
+      //   'Яндекс',
+      //   'Карта',
+      //   'Терминал',
+      // ],
       dialogClear: false,
+      sumDecorCustom: '',
+      clientSaleCustom: '',
     };
   },
   computed: {
+    typePayList() {
+      const typePay = [
+        'Наличные',
+        'Яндекс',
+        'Карта',
+        'Терминал',
+      ];
+      if (this.client !== 0) typePay.push('На баланс');
+      return typePay;
+    },
     clientOrdersList: function clientOrdersList() {
       const ordersList = this.ordersList.filter(item => item.client === this.client);
       return ordersList;
     },
     sumDecor: function decorSum() {
-      const sum = Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+      let sum = 0;
+      if (this.sumDecorCustom !== '') {
+        sum = this.sumDecorCustom;
+      } else {
+        sum = Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+      }
       return this.priceRound(sum);
     },
     sumSale: function sumSale() {
@@ -343,7 +376,9 @@ export default {
     clientSale: function clientSale() {
       const client = this.clientsList.find(item => item.id === this.client);
       let salePersent = 0;
-      if (client !== undefined && client.sale > 0) {
+      if (this.clientSaleCustom !== '') {
+        salePersent = this.clientSaleCustom;
+      } else if (client !== undefined && client.sale > 0) {
         salePersent = client.sale;
       } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
         salePersent = 5;
@@ -413,8 +448,9 @@ export default {
       this.$emit('updateProps', props);
     },
     priceRound: function priceRound(sum) {
-      const remainder = (sum % 10 <= 5 && sum % 10 > 0 && sum > 0) ? -5 : 0;
-      return (Math.ceil(sum / 10) * 10) + remainder;
+      // const remainder = (sum % 10 <= 5 && sum % 10 > 0 && sum > 0) ? -5 : 0;
+      // return (Math.ceil(sum / 10) * 10) + remainder;
+      return +sum;
     },
     setValueDefault: function setValueDefault() {
       if (Object.keys(this.propsDefault).length > 0) {

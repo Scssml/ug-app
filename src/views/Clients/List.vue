@@ -276,6 +276,8 @@ export default {
         bill: 0,
         sale: 0,
         active: true,
+        birthDay: '',
+        phone: '',
       },
       defaultItem: {
         name: '',
@@ -283,6 +285,8 @@ export default {
         bill: 0,
         sale: 0,
         active: true,
+        birthDay: '',
+        phone: '',
       },
       createdSuccess: false,
       dialogDeleted: false,

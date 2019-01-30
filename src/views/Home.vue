@@ -508,7 +508,9 @@ export default {
     min-width: 50px;
   }
 
-  .flex {
-    max-width: 300px;
+  .right-block {
+    .flex {
+      max-width: 300px;
+    }
   }
 </style>

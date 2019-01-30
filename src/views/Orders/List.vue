@@ -297,14 +297,14 @@
                             :readonly="editedItemReadOnly"
                           ></v-text-field>
 
-                          <v-checkbox
+                          <!-- <v-checkbox
                             label="Доставлен"
                             v-model="editedItem.delivered"
                             color="primary"
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
-                          ></v-checkbox>
+                          ></v-checkbox> -->
 
                           <v-autocomplete
                             label="Получатель"
@@ -803,7 +803,7 @@ export default {
         courier: '',
         deliveryDate: '',
         deliveryTime: '',
-        delivered: false,
+        // delivered: false,
         kto: this.$store.state.authUser,
         ts: '',
         tsText: '',
@@ -830,7 +830,7 @@ export default {
         courier: '',
         deliveryDate: '',
         deliveryTime: '',
-        delivered: false,
+        // delivered: false,
         kto: this.$store.state.authUser,
         ts: '',
         tsText: '',
@@ -1051,6 +1051,32 @@ export default {
 
           this.ordersList.push(this.editedItem);
           apiPath = 'add.php';
+        }
+
+        if (this.editedItem.client === '' || this.editedItem.client === undefined) {
+          const clientFields = {};
+
+          if (this.clientsList.length > 0) {
+            clientFields.id = this.clientsList[this.clientsList.length - 1].id + 1;
+          } else {
+            clientFields.id = 1;
+          }
+
+          clientFields.name = this.editedItem.name;
+          clientFields.phone = this.editedItem.phone;
+          clientFields.bill = 0;
+          clientFields.sale = 0;
+          clientFields.active = true;
+
+          this.editedItem.client = clientFields.id;
+
+          axios.get(`${this.$store.state.apiSrc}clients/add.php`, {
+            params: {
+              ELEM: clientFields,
+            },
+          }).then(() => {
+            this.getClientsList();
+          });
         }
 
         axios.get(`${this.$store.state.apiSrc}orders/${apiPath}`, {

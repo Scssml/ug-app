@@ -345,14 +345,27 @@ export default {
 
         // localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
+        if (newBouqet.typePay === 'На баланс') {
+          const clientIndex = this.clientsList.findIndex(elem => elem.id === newBouqet.client);
+
+          this.clientsList[clientIndex].bill -= newBouqet.sumPay;
+
+          axios.get(`${this.$store.state.apiSrc}clients/edit.php`, {
+            params: {
+              INDEX: clientIndex - 1,
+              ELEM: this.clientsList[clientIndex],
+            },
+          });
+        }
+
         item.goods.forEach((elem) => {
           const findGood = this.goodsList.find(good => good.id === elem.id);
           findGood.store -= elem.value;
         });
 
-        axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
-          ELEMS: this.goodsList,
-        });
+        // axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
+        //   ELEMS: this.goodsList,
+        // });
         // localStorage.setItem('goods', JSON.stringify(this.goodsList));
 
         const cardNoEmpty = this.cardsList.filter(elem =>

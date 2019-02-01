@@ -159,6 +159,47 @@
                             :readonly="editedItemReadOnly"
                           ></v-select>
 
+                          <v-menu
+                            :close-on-content-click="false"
+                            v-model="dataPicker"
+                            :nudge-right="40"
+                            lazy
+                            transition="scale-transition"
+                            offset-y
+                            full-width
+                            min-width="290px"
+                            class="mb-2"
+                            v-if="editedItem.delivery !== 2"
+                          >
+                            <v-text-field
+                              slot="activator"
+                              label="Дата доставки"
+                              :rules="[v => !!v || 'Заполните поле']"
+                              v-model="editedItem.deliveryDate"
+                              prepend-icon="event"
+                              hide-details
+                              readonly
+                            ></v-text-field>
+                            <v-date-picker
+                              v-model="editedItem.deliveryDate"
+                              @input="dataPicker = false"
+                              no-title
+                              scrollable
+                              locale="ru-ru"
+                              first-day-of-week="1"
+                              :readonly="editedItemReadOnly"
+                            ></v-date-picker>
+                          </v-menu>
+
+                          <v-text-field
+                            label="Время доставки"
+                            v-model="editedItem.deliveryTime"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                            v-if="editedItem.delivery !== 2"
+                          ></v-text-field>
+
                           <v-select
                             label="Статус"
                             :items="statusList"
@@ -166,18 +207,6 @@
                             item-text="name"
                             item-value="id"
                             v-model="editedItem.status"
-                            hide-details
-                            class="mb-4"
-                            :readonly="editedItemReadOnly"
-                          ></v-select>
-
-                          <v-select
-                            label="Тип клиента"
-                            :items="typeClient"
-                            :rules="[v => !!v || 'Заполните поле']"
-                            item-text="name"
-                            item-value="id"
-                            v-model="editedItem.typeClient"
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
@@ -205,6 +234,18 @@
                             item-value="id"
                             v-model="editedItem.client"
                           ></v-select> -->
+
+                          <v-select
+                            label="Тип клиента"
+                            :items="typeClient"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.typeClient"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-select>
 
                           <v-text-field
                             label="Имя"
@@ -306,6 +347,16 @@
                             :readonly="editedItemReadOnly"
                           ></v-checkbox> -->
 
+                          <v-checkbox
+                            label="Заказчик-получатель"
+                            v-model="clientAddressee"
+                            color="primary"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                            @
+                          ></v-checkbox>
+
                           <v-autocomplete
                             label="Получатель"
                             :items="clientsList"
@@ -319,6 +370,7 @@
                             :readonly="editedItemReadOnly"
                             clearable
                             @change="setDataAddressee()"
+                            v-if="!clientAddressee"
                           ></v-autocomplete>
 
                           <v-text-field
@@ -327,6 +379,7 @@
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
+                            v-if="!clientAddressee"
                           ></v-text-field>
 
                           <v-text-field
@@ -335,6 +388,7 @@
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
+                            v-if="!clientAddressee"
                           ></v-text-field>
 
                           <autocomplete-address
@@ -616,6 +670,7 @@ export default {
   data() {
     return {
       autocomplete: null,
+      clientAddressee: false,
       filter: {
         status: '',
         typeClient: '',
@@ -798,6 +853,7 @@ export default {
         id: 0,
         date: dateNow,
         client: '',
+        typeClient: '',
         name: '',
         phone: '',
         courier: '',
@@ -825,6 +881,7 @@ export default {
         id: 0,
         date: dateNow,
         client: '',
+        typeClient: '',
         name: '',
         phone: '',
         courier: '',
@@ -912,9 +969,13 @@ export default {
       if (findClient !== undefined) {
         this.editedItem.name = findClient.name;
         this.editedItem.phone = findClient.phone;
+        if (findClient.type !== undefined) {
+          this.editedItem.typeClient = findClient.type;
+        }
       } else {
         this.editedItem.name = '';
         this.editedItem.phone = '';
+        this.editedItem.typeClient = '';
       }
     },
     setDataAddressee() {
@@ -1049,6 +1110,12 @@ export default {
             this.editedItem.id = 1;
           }
 
+          if (this.clientAddressee) {
+            this.editedItem.addressee = '';
+            this.editedItem.addresseeName = '';
+            this.editedItem.addresseePhone = '';
+          }
+
           this.ordersList.push(this.editedItem);
           apiPath = 'add.php';
         }
@@ -1067,6 +1134,7 @@ export default {
           clientFields.bill = 0;
           clientFields.sale = 0;
           clientFields.active = true;
+          clientFields.type = this.editedItem.typeClient;
 
           this.editedItem.client = clientFields.id;
 
@@ -1100,6 +1168,7 @@ export default {
         this.editedIndex = -1;
         this.createdSuccess = false;
         this.editedItemReadOnly = false;
+        this.clientAddressee = false;
       }, 300);
     },
     editItem: function editItem(item, readonly = false) {
@@ -1107,6 +1176,16 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
       this.editedItemReadOnly = readonly;
+
+      if (
+        this.editedItem.addressee !== ''
+        || this.editedItem.addresseeName !== ''
+        || this.editedItem.addresseePhone !== ''
+      ) {
+        this.clientAddressee = false;
+      } else {
+        this.clientAddressee = true;
+      }
     },
     confirmDeleted: function confirmDeleted(item) {
       this.dialogDeleted = true;

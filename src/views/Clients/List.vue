@@ -60,13 +60,36 @@
 
       <v-card>
         <v-card-title>
-          <v-text-field
-            v-model="search"
-            prepend-icon="search"
-            label="Поиск"
-            single-line
-            hide-details
-          ></v-text-field>
+          <v-layout
+            row
+            wrap
+          >
+            <v-flex
+              xs4
+              class="px-3"
+            >
+              <v-text-field
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-flex>
+            <v-flex
+              xs2
+              class="px-3"
+            >
+              <v-select
+                label="Тип клиента"
+                :items="[{id: '', name: 'Все'}].concat(typeClient)"
+                item-text="name"
+                item-value="id"
+                v-model="filter.type"
+                hide-details
+              ></v-select>
+            </v-flex>
+          </v-layout>
           <v-spacer></v-spacer>
 
           <v-dialog
@@ -96,6 +119,16 @@
                 <v-card-text
                   class="px-4"
                 >
+                  <v-select
+                    label="Тип клиента"
+                    :items="typeClient"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    item-text="name"
+                    item-value="id"
+                    v-model="editedItem.type"
+                    hide-details
+                    class="mb-4"
+                  ></v-select>
                   <v-text-field
                     label="Имя"
                     :rules="[v => !!v || 'Заполните поле']"
@@ -175,12 +208,17 @@
           no-data-text="Клиентов не найдено"
           no-results-text="Клиентов не найдено"
           :search="search"
+          :custom-filter="customFilter"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
-            <td style="width: 30%;">{{ props.item.name }}</td>
+            <td style="width: 25%;">{{ props.item.name }}</td>
             <td style="width: 15%;">{{ props.item.phone }}</td>
-            <td style="width: 15%;">{{ props.item.birthDay }}</td>
+            <td style="width: 10%;">
+              {{ (findItem = typeClient.find(item => item.id === props.item.type))
+                  ? findItem.name : '' }}
+            </td>
+            <td style="width: 10%;">{{ props.item.birthDay }}</td>
             <td class="text-xs-right" style="width: 10%;">{{ props.item.bill }}</td>
             <td class="text-xs-right" style="width: 10%;">{{ props.item.sale }}</td>
             <td class="text-xs-right" style="width: 10%;">
@@ -223,6 +261,23 @@ export default {
           id: 'clients',
         },
       ],
+      filter: {
+        type: '',
+      },
+      typeClient: [
+        {
+          id: 1,
+          name: 'Физ. лицо',
+        },
+        {
+          id: 2,
+          name: 'Юр. лицо',
+        },
+        {
+          id: 3,
+          name: 'Наши',
+        },
+      ],
       search: '',
       headersTable: [
         {
@@ -239,6 +294,11 @@ export default {
           text: 'Телефон',
           align: 'left',
           value: 'phone',
+        },
+        {
+          text: 'Тип',
+          align: 'left',
+          value: 'type',
         },
         {
           text: 'День рождения',
@@ -278,6 +338,7 @@ export default {
         active: true,
         birthDay: '',
         phone: '',
+        type: '',
       },
       defaultItem: {
         name: '',
@@ -287,6 +348,7 @@ export default {
         active: true,
         birthDay: '',
         phone: '',
+        type: '',
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -306,6 +368,21 @@ export default {
     },
   },
   methods: {
+    customFilter: function customFilter(items) {
+      const filterProps = this.filter;
+      let itemsFind = [];
+
+      itemsFind = items.filter((item) => {
+        let find = false;
+        if (item.type === filterProps.type || filterProps.type === '') {
+          find = true;
+        }
+
+        return find;
+      });
+
+      return itemsFind;
+    },
     getClientsList: function getClientsList() {
       this.$store.dispatch('getClientsList').then((response) => {
         this.clientsList = response.clientsList;

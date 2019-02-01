@@ -16,7 +16,7 @@
         hide-details
         v-model="florist"
         class="scs-small"
-        no-data-text="Не надено"
+        no-data-text="Не найдено"
         @change="updateProps()"
       ></v-select>
     </div>
@@ -227,11 +227,13 @@
               label="Сумма"
               :rules="[v => (v >= sumPay || typePay === 'На баланс') || 'Заполните поле']"
               v-model="sumClient"
+              v-if="typePay !== 'На баланс'"
             ></v-text-field>
             <v-text-field
               label="Сдача"
               readonly
               :value="sumChange"
+              v-if="typePay !== 'На баланс'"
             ></v-text-field>
             <v-select
               label="Способ оплаты"

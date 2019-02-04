@@ -496,6 +496,33 @@ export default new Vuex.Store({
         // }, 1500);
       });
     },
+    getCouriersList(store) {
+      return new Promise((resolve, rejected) => {
+        // setTimeout(() => {
+        // let couriersList = JSON.parse(localStorage.getItem('couriers'));
+
+        // const couriersList = couriersListResponse;
+        const errorData = {
+          text: 'Ошибка получения флористов!',
+        };
+        const successData = {
+          text: 'Флористы получены!',
+        };
+
+        axios.get(`${store.state.apiSrc}couriers/list.php`).then((response) => {
+          let couriersList = response.data;
+          couriersList = (couriersList !== null && couriersList !== '') ? couriersList : [];
+
+          const error = false;
+          if (error) {
+            rejected(errorData);
+          } else {
+            resolve({ couriersList, successData });
+          }
+        });
+        // }, 1500);
+      });
+    },
     getOrdersList(store) {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {

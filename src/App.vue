@@ -81,6 +81,10 @@ export default {
           link: '/florists/',
         },
         {
+          title: 'Курьеры',
+          link: '/couriers/',
+        },
+        {
           title: 'Пользователи',
           link: '/users/',
         },

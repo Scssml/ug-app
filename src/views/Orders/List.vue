@@ -290,14 +290,27 @@
                           v-if="editedItem.delivery === 2"
                           style="padding-left: 15px;"
                         >
-                          <v-text-field
+                          <!-- <v-text-field
                             label="Курьер"
                             v-model="editedItem.courier"
                             v-if="editedItem.status === 3"
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"
-                          ></v-text-field>
+                          ></v-text-field> -->
+
+                          <v-select
+                            label="Курьер"
+                            :items="couriersList"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            item-text="name"
+                            item-value="id"
+                            v-model="editedItem.courier"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                            v-if="editedItem.status === 3"
+                          ></v-select>
 
                           <v-menu
                             :close-on-content-click="false"
@@ -785,6 +798,13 @@ export default {
           color: 'deep-orange',
           id: 'users',
         },
+        {
+          title: 'Получение курьеров',
+          error: false,
+          loading: true,
+          color: 'cyan',
+          id: 'couriers',
+        },
       ],
       dataPicker: false,
       dataStartPicker: false,
@@ -847,6 +867,7 @@ export default {
       clientsList: [],
       ordersList: [],
       usersList: [],
+      couriersList: [],
       editedIndex: -1,
       editedItemReadOnly: false,
       editedItem: {
@@ -1090,10 +1111,24 @@ export default {
         loadData.error = true;
       });
     },
+    getCouriersList: function getCouriersList() {
+      this.$store.dispatch('getCouriersList').then((response) => {
+        this.couriersList = response.couriersList;
+
+        const loadData = this.loadingData.find(item => item.id === 'couriers');
+        loadData.title = response.successData.text;
+        loadData.loading = false;
+      }).catch((error) => {
+        const loadData = this.loadingData.find(item => item.id === 'couriers');
+        loadData.title = error.text;
+        loadData.error = true;
+      });
+    },
     getDataProps: function getDataProps() {
       this.getClientsList();
       this.getOrdersList();
       this.getUsersList();
+      this.getCouriersList();
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();

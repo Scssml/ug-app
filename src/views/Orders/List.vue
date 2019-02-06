@@ -306,6 +306,7 @@
                             item-text="name"
                             item-value="id"
                             v-model="editedItem.courier"
+                            no-data-text="Не надено"
                             hide-details
                             class="mb-4"
                             :readonly="editedItemReadOnly"

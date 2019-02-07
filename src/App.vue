@@ -19,6 +19,14 @@
             {{ item.title }}
           </v-btn>
         </template>
+        <v-btn
+          @click="logout()"
+          flat
+          ripple
+          exact
+        >
+          Выход
+        </v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-content>
@@ -88,13 +96,23 @@ export default {
           title: 'Пользователи',
           link: '/users/',
         },
-        {
-          title: 'Выход',
-          link: '#',
-        },
       ],
       yearNow: new Date().getFullYear(),
     };
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      });
+    },
+  },
+  created() {
+    this.$store.dispatch('autoAuth').then(() => {
+      // this.$router.push('/');
+    }).catch(() => {
+      this.$router.push('/login');
+    });
   },
 };
 </script>

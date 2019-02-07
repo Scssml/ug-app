@@ -1,8 +1,20 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
+import router from './router';
 
 Vue.use(Vuex);
+
+axios.interceptors.response.use(undefined, err =>
+  new Promise((resolve) => {
+    if (err.status === 401) {
+      this.$store.dispatch('logout');
+      router.push('/login');
+      console.log(router);
+      resolve();
+    }
+    throw err;
+  }));
 
 const usersGroupsListResponse = [
   {
@@ -59,6 +71,10 @@ export default new Vuex.Store({
     authError: (state) => {
       state.authStatus = 'error';
     },
+    authLogout: (state) => {
+      state.authStatus = '';
+      state.authToken = '';
+    },
   },
   actions: {
     login({ state, commit }, user) {
@@ -86,6 +102,180 @@ export default new Vuex.Store({
         });
       });
     },
+    logout({ commit }) {
+      return new Promise((resolve) => {
+        commit('authLogout');
+        localStorage.removeItem('user-token');
+        delete axios.defaults.headers.common.Authorization;
+        resolve();
+      });
+    },
+    autoAuth({ commit }) {
+      return new Promise((resolve, rejected) => {
+        const token = localStorage.getItem('user-token');
+        if (token !== null) {
+          axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+          commit('authSuccess', token);
+          resolve();
+        } else {
+          rejected();
+        }
+      });
+    },
+
+    getCouriersList({ state }) {
+      return new Promise((resolve, rejected) => {
+        const errorData = {
+          text: 'Ошибка получения курьеров!',
+        };
+        const successData = {
+          text: 'Курьеры получены!',
+        };
+
+        axios.get(`${state.apiUrl}couriers`).then((response) => {
+          const elemList = response.data;
+          resolve({ elemList, successData });
+        }).catch(() => {
+          rejected(errorData);
+        });
+      });
+    },
+    addCouriers({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.post(
+          `${state.apiUrl}couriers`,
+          elem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    updateCouriers({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.put(
+          `${state.apiUrl}couriers/${elem.id}`,
+          elem.propsItem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    deleteCouriers({ state }, id) {
+      return new Promise((resolve, rejected) => {
+        axios.delete(`${state.apiUrl}couriers/${id}`).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+
+    getFloristsList({ state }) {
+      return new Promise((resolve, rejected) => {
+        const errorData = {
+          text: 'Ошибка получения флористов!',
+        };
+        const successData = {
+          text: 'Флористы получены!',
+        };
+
+        axios.get(`${state.apiUrl}florists`).then((response) => {
+          const elemList = response.data;
+          resolve({ elemList, successData });
+        }).catch(() => {
+          rejected(errorData);
+        });
+      });
+    },
+    addFlorists({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.post(
+          `${state.apiUrl}florists`,
+          elem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    updateFlorists({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.put(
+          `${state.apiUrl}florists/${elem.id}`,
+          elem.propsItem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    deleteFlorists({ state }, id) {
+      return new Promise((resolve, rejected) => {
+        axios.delete(`${state.apiUrl}florists/${id}`).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+
+    getClientsList({ state }) {
+      return new Promise((resolve, rejected) => {
+        const errorData = {
+          text: 'Ошибка получения клиентов!',
+        };
+        const successData = {
+          text: 'Клиенты получены!',
+        };
+
+        axios.get(`${state.apiUrl}clients`).then((response) => {
+          const elemList = response.data;
+          resolve({ elemList, successData });
+        }).catch(() => {
+          rejected(errorData);
+        });
+      });
+    },
+    addClients({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.post(
+          `${state.apiUrl}clients`,
+          elem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    updateClients({ state }, elem) {
+      return new Promise((resolve, rejected) => {
+        axios.put(
+          `${state.apiUrl}clients/${elem.id}`,
+          elem.propsItem,
+        ).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+    deleteClients({ state }, id) {
+      return new Promise((resolve, rejected) => {
+        axios.delete(`${state.apiUrl}clients/${id}`).then(() => {
+          resolve();
+        }).catch(() => {
+          rejected();
+        });
+      });
+    },
+
     getUsersList() {
       return new Promise((resolve, rejected) => {
         // setTimeout(() => {
@@ -151,86 +341,6 @@ export default new Vuex.Store({
             rejected(errorData);
           } else {
             resolve({ bouquetsList, successData });
-          }
-        });
-        // }, 1500);
-      });
-    },
-    getClientsList(store) {
-      return new Promise((resolve, rejected) => {
-        // setTimeout(() => {
-        // let clientsList = JSON.parse(localStorage.getItem('clients'));
-
-        // const clientsList = clientsListResponse;
-        const errorData = {
-          text: 'Ошибка получения клиентов!',
-        };
-        const successData = {
-          text: 'Клиенты получены!',
-        };
-
-        axios.get(`${store.state.apiUrl}clients`).then((response) => {
-          let clientsList = response.data;
-          clientsList = (clientsList !== null && clientsList !== '') ? clientsList : [];
-          const error = false;
-          if (error) {
-            rejected(errorData);
-          } else {
-            resolve({ clientsList, successData });
-          }
-        });
-        // }, 1000);
-      });
-    },
-    getFloristsList(store) {
-      return new Promise((resolve, rejected) => {
-        // setTimeout(() => {
-        // let floristsList = JSON.parse(localStorage.getItem('florists'));
-
-        // const floristsList = floristsListResponse;
-        const errorData = {
-          text: 'Ошибка получения флористов!',
-        };
-        const successData = {
-          text: 'Флористы получены!',
-        };
-
-        axios.get(`${store.state.apiUrl}florists`).then((response) => {
-          let floristsList = response.data;
-          floristsList = (floristsList !== null && floristsList !== '') ? floristsList : [];
-
-          const error = false;
-          if (error) {
-            rejected(errorData);
-          } else {
-            resolve({ floristsList, successData });
-          }
-        });
-        // }, 1500);
-      });
-    },
-    getCouriersList(store) {
-      return new Promise((resolve, rejected) => {
-        // setTimeout(() => {
-        // let couriersList = JSON.parse(localStorage.getItem('couriers'));
-
-        // const couriersList = couriersListResponse;
-        const errorData = {
-          text: 'Ошибка получения флористов!',
-        };
-        const successData = {
-          text: 'Флористы получены!',
-        };
-
-        axios.get(`${store.state.apiUrl}couriers`).then((response) => {
-          let couriersList = response.data;
-          couriersList = (couriersList !== null && couriersList !== '') ? couriersList : [];
-
-          const error = false;
-          if (error) {
-            rejected(errorData);
-          } else {
-            resolve({ couriersList, successData });
           }
         });
         // }, 1500);

@@ -159,8 +159,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   name: 'Couriers',
   data() {
@@ -231,7 +229,7 @@ export default {
   methods: {
     getCouriersList: function getCouriersList() {
       this.$store.dispatch('getCouriersList').then((response) => {
-        this.couriersList = response.couriersList;
+        this.couriersList = response.elemList;
 
         const loadData = this.loadingData.find(item => item.id === 'couriers');
         loadData.title = response.successData.text;
@@ -244,35 +242,27 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
-      let apiPath = '';
       if (validate) {
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
         if (this.editedIndex > -1) {
-          Object.assign(this.couriersList[this.editedIndex], this.editedItem);
-          apiPath = 'edit.php';
+          const { id } = this.editedItem;
+          this.$store.dispatch('updateCouriers', { id, propsItem }).then(() => {
+            this.createdSuccess = true;
+            this.getCouriersList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         } else {
-          if (this.couriersList.length > 0) {
-            this.editedItem.id = this.couriersList[this.couriersList.length - 1].id + 1;
-          } else {
-            this.editedItem.id = 1;
-          }
-
-          this.couriersList.push(this.editedItem);
-
-          apiPath = 'add.php';
+          this.$store.dispatch('addCouriers', propsItem).then(() => {
+            this.createdSuccess = true;
+            this.getCouriersList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         }
-
-        axios.get(`${this.$store.state.apiSrc}couriers/${apiPath}`, {
-          params: {
-            INDEX: this.editedIndex,
-            ELEM: this.editedItem,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.closeDialog();
-          }, 1000);
-        });
-        // localStorage.setItem('couriers', JSON.stringify(this.couriersList));
       }
     },
     closeDialog: function closeDialog() {
@@ -293,17 +283,10 @@ export default {
       this.deletedIndex = this.couriersList.indexOf(item);
     },
     deletedItem: function deletedItem(index) {
-      this.couriersList.splice(index, 1);
-
-      axios.get(`${this.$store.state.apiSrc}couriers/delete.php`, {
-        params: {
-          INDEX: index,
-        },
-      }).then(() => {
+      this.$store.dispatch('deleteCouriers', this.couriersList[index].id).then(() => {
+        this.getCouriersList();
         this.closeConfirm();
       });
-
-      // localStorage.setItem('couriers', JSON.stringify(this.couriersList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

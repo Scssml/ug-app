@@ -173,10 +173,12 @@
                   <v-text-field
                     label="Счет"
                     v-model="editedItem.bill"
+                    type="number"
                   ></v-text-field>
                   <v-text-field
                     label="Скидка"
                     v-model="editedItem.sale"
+                    type="number"
                   ></v-text-field>
                   <v-checkbox
                     label="Активность"
@@ -245,8 +247,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   name: 'Clients',
   data() {
@@ -385,7 +385,7 @@ export default {
     },
     getClientsList: function getClientsList() {
       this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.clientsList;
+        this.clientsList = response.elemList;
 
         const loadData = this.loadingData.find(item => item.id === 'clients');
         loadData.title = response.successData.text;
@@ -398,35 +398,30 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
-      let apiPath = '';
       if (validate) {
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
+        delete propsItem.type;
+        propsItem.bill = +propsItem.bill;
+        propsItem.sale = +propsItem.sale;
         if (this.editedIndex > -1) {
-          Object.assign(this.clientsList[this.editedIndex], this.editedItem);
-          apiPath = 'edit.php';
+          const { id } = this.editedItem;
+          this.$store.dispatch('updateClients', { id, propsItem }).then(() => {
+            this.createdSuccess = true;
+            this.getClientsList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         } else {
-          if (this.clientsList.length > 0) {
-            this.editedItem.id = this.clientsList[this.clientsList.length - 1].id + 1;
-          } else {
-            this.editedItem.id = 1;
-          }
-
-          this.clientsList.push(this.editedItem);
-
-          apiPath = 'add.php';
+          this.$store.dispatch('addClients', propsItem).then(() => {
+            this.createdSuccess = true;
+            this.getClientsList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         }
-
-        axios.get(`${this.$store.state.apiSrc}clients/${apiPath}`, {
-          params: {
-            INDEX: this.editedIndex,
-            ELEM: this.editedItem,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.closeDialog();
-          }, 1000);
-        });
-        // localStorage.setItem('clients', JSON.stringify(this.clientsList));
       }
     },
     closeDialog: function closeDialog() {
@@ -447,16 +442,10 @@ export default {
       this.deletedIndex = this.clientsList.indexOf(item);
     },
     deletedItem: function deletedItem(index) {
-      this.clientsList.splice(index, 1);
-
-      axios.get(`${this.$store.state.apiSrc}clients/delete.php`, {
-        params: {
-          INDEX: index,
-        },
-      }).then(() => {
+      this.$store.dispatch('deleteClients', this.clientsList[index].id).then(() => {
+        this.getClientsList();
         this.closeConfirm();
       });
-      // localStorage.setItem('clients', JSON.stringify(this.clientsList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

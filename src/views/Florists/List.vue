@@ -159,8 +159,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   name: 'Clients',
   data() {
@@ -231,7 +229,7 @@ export default {
   methods: {
     getFloristsList: function getFloristsList() {
       this.$store.dispatch('getFloristsList').then((response) => {
-        this.floristsList = response.floristsList;
+        this.floristsList = response.elemList;
 
         const loadData = this.loadingData.find(item => item.id === 'florists');
         loadData.title = response.successData.text;
@@ -244,35 +242,27 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
-      let apiPath = '';
       if (validate) {
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
         if (this.editedIndex > -1) {
-          Object.assign(this.floristsList[this.editedIndex], this.editedItem);
-          apiPath = 'edit.php';
+          const { id } = this.editedItem;
+          this.$store.dispatch('updateFlorists', { id, propsItem }).then(() => {
+            this.createdSuccess = true;
+            this.getFloristsList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         } else {
-          if (this.floristsList.length > 0) {
-            this.editedItem.id = this.floristsList[this.floristsList.length - 1].id + 1;
-          } else {
-            this.editedItem.id = 1;
-          }
-
-          this.floristsList.push(this.editedItem);
-
-          apiPath = 'add.php';
+          this.$store.dispatch('addFlorists', propsItem).then(() => {
+            this.createdSuccess = true;
+            this.getFloristsList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
         }
-
-        axios.get(`${this.$store.state.apiSrc}florists/${apiPath}`, {
-          params: {
-            INDEX: this.editedIndex,
-            ELEM: this.editedItem,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.closeDialog();
-          }, 1000);
-        });
-        // localStorage.setItem('florists', JSON.stringify(this.floristsList));
       }
     },
     closeDialog: function closeDialog() {
@@ -293,17 +283,10 @@ export default {
       this.deletedIndex = this.floristsList.indexOf(item);
     },
     deletedItem: function deletedItem(index) {
-      this.floristsList.splice(index, 1);
-
-      axios.get(`${this.$store.state.apiSrc}florists/delete.php`, {
-        params: {
-          INDEX: index,
-        },
-      }).then(() => {
+      this.$store.dispatch('deleteFlorists', this.floristsList[index].id).then(() => {
+        this.getFloristsList();
         this.closeConfirm();
       });
-
-      // localStorage.setItem('florists', JSON.stringify(this.floristsList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;

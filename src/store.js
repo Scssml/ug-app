@@ -40,7 +40,7 @@ export default new Vuex.Store({
   state: {
     authUser: 2,
     apiSrc: 'http://ug-app.cq58583.tmweb.ru/api/',
-    apiUrl: 'http://10.0.0.18:3000/',
+    apiUrl: '/',
     authToken: '',
     authStatus: '',
   },
@@ -69,7 +69,6 @@ export default new Vuex.Store({
           user,
           {
             headers: {
-              'Accept': 'application/json',
               'Content-Type': 'application/json',
             },
           },
@@ -143,7 +142,7 @@ export default new Vuex.Store({
           text: 'Букеты получены!',
         };
 
-        axios.get(`${store.state.apiSrc}bouquets/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}bouquets`).then((response) => {
           let bouquetsList = response.data;
           bouquetsList = (bouquetsList !== null && bouquetsList !== '') ? bouquetsList : [];
 
@@ -170,7 +169,7 @@ export default new Vuex.Store({
           text: 'Клиенты получены!',
         };
 
-        axios.get(`${store.state.apiSrc}clients/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}clients`).then((response) => {
           let clientsList = response.data;
           clientsList = (clientsList !== null && clientsList !== '') ? clientsList : [];
           const error = false;
@@ -196,7 +195,7 @@ export default new Vuex.Store({
           text: 'Флористы получены!',
         };
 
-        axios.get(`${store.state.apiSrc}florists/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}florists`).then((response) => {
           let floristsList = response.data;
           floristsList = (floristsList !== null && floristsList !== '') ? floristsList : [];
 
@@ -223,7 +222,7 @@ export default new Vuex.Store({
           text: 'Флористы получены!',
         };
 
-        axios.get(`${store.state.apiSrc}couriers/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}couriers`).then((response) => {
           let couriersList = response.data;
           couriersList = (couriersList !== null && couriersList !== '') ? couriersList : [];
 
@@ -250,7 +249,7 @@ export default new Vuex.Store({
           text: 'Заказы получены!',
         };
 
-        axios.get(`${store.state.apiSrc}orders/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}orders`).then((response) => {
           let ordersList = response.data;
           ordersList = (ordersList !== null && ordersList !== '') ? ordersList : [];
 
@@ -277,7 +276,7 @@ export default new Vuex.Store({
           text: 'Заказы получены!',
         };
 
-        axios.get(`${store.state.apiSrc}orders/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}orders`).then((response) => {
           let ordersList = response.data;
           ordersList = (ordersList !== null && ordersList !== '') ? ordersList : [];
           ordersList = ordersList.filter(item => item.status === 1);
@@ -305,7 +304,7 @@ export default new Vuex.Store({
           text: 'Товары получены!',
         };
 
-        axios.get(`${store.state.apiSrc}goods/list.php`).then((response) => {
+        axios.get(`${store.state.apiUrl}goods`).then((response) => {
           let goodsList = response.data;
           goodsList = (goodsList !== null && goodsList !== '') ? goodsList : [];
 

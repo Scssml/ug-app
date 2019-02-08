@@ -59,6 +59,12 @@ export default new Router({
       beforeEnter: ifAuthenticated,
     },
     {
+      path: '/users-groups/',
+      name: 'users-groups',
+      component: () => import('./views/UsersGroups/List.vue'),
+      beforeEnter: ifAuthenticated,
+    },
+    {
       path: '/bouquets/',
       name: 'bouquets',
       component: () => import('./views/Bouquets/List.vue'),

@@ -96,6 +96,10 @@ export default {
           title: 'Пользователи',
           link: '/users/',
         },
+        {
+          title: 'Группы',
+          link: '/users-groups/',
+        },
       ],
       yearNow: new Date().getFullYear(),
     };

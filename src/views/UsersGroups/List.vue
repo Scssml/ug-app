@@ -102,29 +102,10 @@
                     v-model="editedItem.name"
                   ></v-text-field>
                   <v-text-field
-                    label="Логин"
+                    label="Код"
                     :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.login"
+                    v-model="editedItem.code"
                   ></v-text-field>
-                  <v-text-field
-                    label="Пароль"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.password"
-                    type="password"
-                  ></v-text-field>
-                  <v-select
-                    label="Группы"
-                    :items="usersGroupsList"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    item-text="name"
-                    item-value="id"
-                    v-model="editedItem.group_id"
-                  ></v-select>
-                  <v-checkbox
-                    label="Активность"
-                    v-model="editedItem.active"
-                    color="primary"
-                  ></v-checkbox>
                 </v-card-text>
                 <v-card-actions
                   class="px-4 pb-4"
@@ -145,24 +126,16 @@
 
         <v-data-table
           :headers="headersTable"
-          :items="usersList"
+          :items="usersGroupsList"
           hide-actions
-          no-data-text="Пользователей не найдено"
-          no-results-text="Пользователей не найдено"
+          no-data-text="Групп не найдено"
+          no-results-text="Групп не найдено"
           :search="search"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
             <td style="width: 45%;">{{ props.item.name }}</td>
-            <td style="width: 15%;">
-              <template v-for="(group, index) in props.item.groups">
-                {{ usersGroupsList.find(item => item.id === group).name }}
-                <br :key="index">
-              </template>
-            </td>
-            <td class="text-xs-right" style="width: 10%;">
-              {{ (!!props.item.active) ? 'Да' : 'Нет' }}
-            </td>
+            <td style="width: 46%;">{{ props.item.code }}</td>
             <td class="text-xs-right" style="width: 7%;">
               <v-icon
                 class="mr-2"
@@ -191,13 +164,6 @@ export default {
     return {
       loadingData: [
         {
-          title: 'Получение пользователей',
-          error: false,
-          loading: true,
-          color: 'deep-orange',
-          id: 'users',
-        },
-        {
           title: 'Получение групп пользователей',
           error: false,
           loading: true,
@@ -213,19 +179,14 @@ export default {
           value: 'id',
         },
         {
-          text: 'Пользователь',
+          text: 'Название',
           align: 'left',
           value: 'name',
         },
         {
-          text: 'Группы',
+          text: 'Код',
           align: 'left',
-          value: 'groups',
-        },
-        {
-          text: 'Активность',
-          align: 'right',
-          value: 'active',
+          value: 'code',
         },
         {
           text: '',
@@ -235,24 +196,17 @@ export default {
         },
       ],
       dialogForm: false,
-      usersList: [],
       usersGroupsList: [],
       editedIndex: -1,
       editedItem: {
         name: '',
         id: 0,
-        active: true,
-        group_id: '',
-        password: '',
-        login: '',
+        code: 0,
       },
       defaultItem: {
         name: '',
         id: 0,
-        active: true,
-        group_id: '',
-        password: '',
-        login: '',
+        code: 0,
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -265,33 +219,13 @@ export default {
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
     formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Новый пользователь' : 'Изменение пользователя';
+      return this.editedIndex === -1 ? 'Новая группа' : 'Изменение группы';
     },
     formAlertTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Пользователь создан' : 'Пользователь изменен';
+      return this.editedIndex === -1 ? 'Группа создана' : 'Группа изменена';
     },
   },
   methods: {
-    getUsersList: function getUsersList() {
-      const itemParams = {
-        type: 'users',
-      };
-
-      const successData = 'Пользователи получены!';
-      const errorData = 'Ошибка получения пользователей!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
     getUsersGroupsList: function getUsersGroupsList() {
       const itemParams = {
         type: 'users-groups',
@@ -317,16 +251,17 @@ export default {
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
+        propsItem.code = +propsItem.code;
 
         const itemParams = {
-          type: 'users',
+          type: 'users-groups',
           props: propsItem,
         };
         if (this.editedIndex > -1) {
           itemParams.id = this.editedItem.id;
           this.$store.dispatch('updateItem', itemParams).then(() => {
             this.createdSuccess = true;
-            this.getUsersList();
+            this.getUsersGroupsList();
             setTimeout(() => {
               this.closeDialog();
             }, 1000);
@@ -334,7 +269,7 @@ export default {
         } else {
           this.$store.dispatch('addItem', itemParams).then(() => {
             this.createdSuccess = true;
-            this.getUsersList();
+            this.getUsersGroupsList();
             setTimeout(() => {
               this.closeDialog();
             }, 1000);
@@ -351,7 +286,7 @@ export default {
       }, 300);
     },
     editItem: function editItem(item) {
-      this.editedIndex = this.usersList.indexOf(item);
+      this.editedIndex = this.usersGroupsList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
     },
@@ -361,12 +296,12 @@ export default {
     },
     deletedItem: function deletedItem(elemId) {
       const itemParams = {
-        type: 'users',
+        type: 'users-groups',
         id: elemId,
       };
 
       this.$store.dispatch('deleteItem', itemParams).then(() => {
-        this.getUsersList();
+        this.getUsersGroupsList();
         this.closeConfirm();
       });
     },
@@ -378,7 +313,6 @@ export default {
     },
   },
   mounted() {
-    this.getUsersList();
     this.getUsersGroupsList();
   },
 };

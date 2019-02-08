@@ -50,7 +50,7 @@ const usersListResponse = [
 
 export default new Vuex.Store({
   state: {
-    authUser: 2,
+    authUser: 0,
     apiSrc: 'http://ug-app.cq58583.tmweb.ru/api/',
     apiUrl: '/',
     authToken: '',
@@ -64,9 +64,10 @@ export default new Vuex.Store({
     authRequest: (state) => {
       state.authStatus = 'loading';
     },
-    authSuccess: (state, token) => {
+    authSuccess: (state, token, id) => {
       state.authStatus = 'success';
       state.authToken = token;
+      state.authUser = id;
     },
     authError: (state) => {
       state.authStatus = 'error';
@@ -74,10 +75,11 @@ export default new Vuex.Store({
     authLogout: (state) => {
       state.authStatus = '';
       state.authToken = '';
+      state.authUser = 0;
     },
   },
   actions: {
-    login({ state, commit }, user) {
+    login({ state, commit, dispatch }, user) {
       return new Promise((resolve, rejected) => {
         commit('authRequest');
         axios.post(
@@ -92,9 +94,19 @@ export default new Vuex.Store({
           const token = response.data;
           localStorage.setItem('user-token', token);
           axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-          commit('authSuccess', token);
-          // dispatch('userRequest');
-          resolve(response);
+
+          const itemParams = {
+            type: 'users',
+            filter: {
+              login: user.login,
+            },
+          };
+
+          dispatch('getItemsList', itemParams).then((users) => {
+            console.log(users);
+            commit('authSuccess', token, users[0].id);
+            resolve(response);
+          });
         }).catch((error) => {
           commit('authError', error);
           localStorage.removeItem('user-token');
@@ -126,7 +138,17 @@ export default new Vuex.Store({
     getItemsList({ state }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}`;
-        axios.get(url).then((response) => {
+
+        let filterQuery = '?';
+        if (item.filter !== undefined) {
+          const keys = Object.keys(item.filter);
+          const values = Object.values(item.filter);
+          for (let i = 0; i < keys.length; i += 1) {
+            filterQuery += `filter[${keys[i]}]=${values[i]}`;
+          }
+        }
+
+        axios.get(url + filterQuery).then((response) => {
           const elemList = response.data;
           resolve(elemList);
         }).catch(() => {

@@ -1074,54 +1074,82 @@ export default {
         textTwo.indexOf(searchText) > -1;
     },
     getClientsList: function getClientsList() {
-      this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.clientsList;
+      const itemParams = {
+        type: 'clients',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = response.successData.text;
+      const successData = 'Клиенты получены!';
+      const errorData = 'Ошибка получения клиентов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getOrdersList: function getOrdersList() {
-      this.$store.dispatch('getOrdersList').then((response) => {
-        this.ordersList = response.ordersList;
+      const itemParams = {
+        type: 'orders',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = response.successData.text;
+      const successData = 'Заказы получены!';
+      const errorData = 'Ошибка получения заказов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.ordersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getUsersList: function getUsersList() {
-      this.$store.dispatch('getUsersList').then((response) => {
-        this.usersList = response.usersList;
+      const itemParams = {
+        type: 'users',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'users');
-        loadData.title = response.successData.text;
+      const successData = 'Пользователи получены!';
+      const errorData = 'Ошибка получения пользователей!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'users');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getCouriersList: function getCouriersList() {
-      this.$store.dispatch('getCouriersList').then((response) => {
-        this.couriersList = response.couriersList;
+      const itemParams = {
+        type: 'couriers',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'couriers');
-        loadData.title = response.successData.text;
+      const successData = 'Курьеры получены!';
+      const errorData = 'Ошибка получения курьеров!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.couriersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'couriers');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },

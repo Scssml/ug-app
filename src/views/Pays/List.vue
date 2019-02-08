@@ -52,7 +52,7 @@
             <v-spacer></v-spacer>
             <v-btn
               color="error"
-              @click="deletedItem(deletedIndex)"
+              @click="deletedItem(deletedId)"
             >Удалить</v-btn>
           </v-card-actions>
         </v-card>
@@ -190,7 +190,7 @@
                   visibility
                 </v-icon>
                 <v-icon
-                  @click="confirmDeleted(props.item)"
+                  @click="confirmDeleted(props.item.id)"
                 >
                   delete
                 </v-icon>
@@ -339,7 +339,7 @@ export default {
         goods: [],
       },
       dialogDeleted: false,
-      deletedIndex: -1,
+      deletedId: -1,
     };
   },
   computed: {
@@ -350,80 +350,122 @@ export default {
   },
   methods: {
     getBouquetsList: function getBouquetsList() {
-      this.$store.dispatch('getBouquetsList').then((response) => {
-        this.bouquetsList = response.bouquetsList;
+      const itemParams = {
+        type: 'bouquets',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'bouquets');
-        loadData.title = response.successData.text;
+      const successData = 'Букеты получены!';
+      const errorData = 'Ошибка получения букетов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.bouquetsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'bouquets');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getUsersList: function getUsersList() {
-      this.$store.dispatch('getUsersList').then((response) => {
-        this.usersList = response.usersList;
+      const itemParams = {
+        type: 'users',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'users');
-        loadData.title = response.successData.text;
+      const successData = 'Пользователи получены!';
+      const errorData = 'Ошибка получения пользователей!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'users');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getClientsList: function getClientsList() {
-      this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.clientsList;
+      const itemParams = {
+        type: 'clients',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = response.successData.text;
+      const successData = 'Клиенты получены!';
+      const errorData = 'Ошибка получения клиентов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getFloristsList: function getFloristsList() {
-      this.$store.dispatch('getFloristsList').then((response) => {
-        this.floristsList = response.floristsList;
+      const itemParams = {
+        type: 'florists',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'florists');
-        loadData.title = response.successData.text;
+      const successData = 'Флористы получены!';
+      const errorData = 'Ошибка получения флористов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.floristsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'florists');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getOrdersList: function getOrdersList() {
-      this.$store.dispatch('getOrdersList').then((response) => {
-        this.ordersList = response.ordersList;
+      const itemParams = {
+        type: 'orders',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = response.successData.text;
+      const successData = 'Заказы получены!';
+      const errorData = 'Ошибка получения заказов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.ordersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getGoodsList: function getGoodsList() {
-      this.$store.dispatch('getGoodsList').then((response) => {
-        this.goodsList = response.goodsList;
+      const itemParams = {
+        type: 'goods',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = response.successData.text;
+      const successData = 'Товары получены!';
+      const errorData = 'Ошибка получения товаров!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.goodsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
@@ -447,18 +489,25 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
     },
-    confirmDeleted: function confirmDeleted(item) {
+    confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;
-      this.deletedIndex = this.bouquetsList.indexOf(item);
+      this.deletedId = id;
     },
-    deletedItem: function deletedItem(index) {
-      this.bouquetsList.splice(index, 1);
-      this.closeConfirm();
+    deletedItem: function deletedItem(elemId) {
+      const itemParams = {
+        type: 'florists',
+        id: elemId,
+      };
+
+      this.$store.dispatch('deleteItem', itemParams).then(() => {
+        this.getBouquetsList();
+        this.closeConfirm();
+      });
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;
       setTimeout(() => {
-        this.deletedIndex = -1;
+        this.deletedId = -1;
       }, 300);
     },
   },

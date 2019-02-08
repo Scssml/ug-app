@@ -52,7 +52,7 @@
             <v-spacer></v-spacer>
             <v-btn
               color="error"
-              @click="deletedItem(deletedIndex)"
+              @click="deletedItem(deletedId)"
             >Удалить</v-btn>
           </v-card-actions>
         </v-card>
@@ -225,7 +225,7 @@
             </td>
             <td class="text-xs-right" style="width: 7%;">
               <v-icon
-                @click="confirmDeleted(props.item)"
+                @click="confirmDeleted(props.item.id)"
               >
                 delete
               </v-icon>
@@ -317,7 +317,7 @@ export default {
       purchaseList: [],
       createdSuccess: false,
       dialogDeleted: false,
-      deletedIndex: -1,
+      deletedId: -1,
     };
   },
   computed: {
@@ -351,32 +351,46 @@ export default {
       return eval(val);
     },
     getGoodsList: function getGoodsList() {
-      this.$store.dispatch('getGoodsList').then((response) => {
-        this.goodsList = response.goodsList.map((item) => {
+      const itemParams = {
+        type: 'goods',
+      };
+
+      const successData = 'Товары получены!';
+      const errorData = 'Ошибка получения товаров!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.goodsList = response.map((item) => {
           const good = item;
           good.count = 0;
           return good;
         });
 
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = response.successData.text;
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getPurchaseList: function getPurchaseList() {
-      this.$store.dispatch('getPurchaseList').then((response) => {
-        this.purchaseList = response.purchaseList;
+      const itemParams = {
+        type: 'purchase',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'purchase');
-        loadData.title = response.successData.text;
+      const successData = 'Закупки получены!';
+      const errorData = 'Ошибка получения закупок!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.purchaseList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'purchase');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
@@ -436,46 +450,39 @@ export default {
     closeDialog: function closeDialog() {
       this.createdSuccess = false;
     },
-    confirmDeleted: function confirmDeleted(item) {
+    confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;
-      this.deletedIndex = this.goodsList.indexOf(item);
+      this.deletedId = id;
     },
-    deletedItem: function deletedItem(index) {
-      this.goodsList.splice(index, 1);
+    deletedItem: function deletedItem(elemId) {
+      const itemParams = {
+        type: 'goods',
+        id: elemId,
+      };
 
-      const goods = this.goodsList.map((item) => {
-        const good = Object.assign({}, item);
-        delete good.count;
-        return good;
-      });
-
-      axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
-        ELEMS: goods,
-      }).then(() => {
+      this.$store.dispatch('deleteItem', itemParams).then(() => {
+        this.getGoodsList();
         this.closeConfirm();
       });
-
-      // localStorage.setItem('goods', JSON.stringify(goods));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;
       setTimeout(() => {
-        this.deletedIndex = -1;
+        this.deletedId = -1;
       }, 300);
     },
     addGoods() {
-      let newId = 1;
-      if (this.goodsList.length > 0) {
-        newId = this.goodsList[this.goodsList.length - 1].id + 1;
-      }
+      const itemParams = {
+        type: 'goods',
+        props: {
+          store: 0,
+          name: '',
+          price: 0,
+        },
+      };
 
-      this.goodsList.push({
-        store: 0,
-        name: '',
-        type: '',
-        id: newId,
-        price: 0,
-        count: 0,
+      this.$store.dispatch('addItem', itemParams).then(() => {
+        this.getGoodsList();
       });
     },
   },

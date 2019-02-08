@@ -123,28 +123,23 @@ export default new Vuex.Store({
       });
     },
 
-    getCouriersList({ state }) {
+    getItemsList({ state }, item) {
       return new Promise((resolve, rejected) => {
-        const errorData = {
-          text: 'Ошибка получения курьеров!',
-        };
-        const successData = {
-          text: 'Курьеры получены!',
-        };
-
-        axios.get(`${state.apiUrl}couriers`).then((response) => {
+        const url = `${state.apiUrl}${item.type}`;
+        axios.get(url).then((response) => {
           const elemList = response.data;
-          resolve({ elemList, successData });
+          resolve(elemList);
         }).catch(() => {
-          rejected(errorData);
+          rejected();
         });
       });
     },
-    addCouriers({ state }, elem) {
+    addItem({ state }, item) {
       return new Promise((resolve, rejected) => {
+        const url = `${state.apiUrl}${item.type}`;
         axios.post(
-          `${state.apiUrl}couriers`,
-          elem,
+          url,
+          item.props,
         ).then(() => {
           resolve();
         }).catch(() => {
@@ -152,11 +147,12 @@ export default new Vuex.Store({
         });
       });
     },
-    updateCouriers({ state }, elem) {
+    updateItem({ state }, item) {
+      const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
         axios.put(
-          `${state.apiUrl}couriers/${elem.id}`,
-          elem.propsItem,
+          url,
+          item.props,
         ).then(() => {
           resolve();
         }).catch(() => {
@@ -164,111 +160,10 @@ export default new Vuex.Store({
         });
       });
     },
-    deleteCouriers({ state }, id) {
+    deleteItem({ state }, item) {
+      const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
-        axios.delete(`${state.apiUrl}couriers/${id}`).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-
-    getFloristsList({ state }) {
-      return new Promise((resolve, rejected) => {
-        const errorData = {
-          text: 'Ошибка получения флористов!',
-        };
-        const successData = {
-          text: 'Флористы получены!',
-        };
-
-        axios.get(`${state.apiUrl}florists`).then((response) => {
-          const elemList = response.data;
-          resolve({ elemList, successData });
-        }).catch(() => {
-          rejected(errorData);
-        });
-      });
-    },
-    addFlorists({ state }, elem) {
-      return new Promise((resolve, rejected) => {
-        axios.post(
-          `${state.apiUrl}florists`,
-          elem,
-        ).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-    updateFlorists({ state }, elem) {
-      return new Promise((resolve, rejected) => {
-        axios.put(
-          `${state.apiUrl}florists/${elem.id}`,
-          elem.propsItem,
-        ).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-    deleteFlorists({ state }, id) {
-      return new Promise((resolve, rejected) => {
-        axios.delete(`${state.apiUrl}florists/${id}`).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-
-    getClientsList({ state }) {
-      return new Promise((resolve, rejected) => {
-        const errorData = {
-          text: 'Ошибка получения клиентов!',
-        };
-        const successData = {
-          text: 'Клиенты получены!',
-        };
-
-        axios.get(`${state.apiUrl}clients`).then((response) => {
-          const elemList = response.data;
-          resolve({ elemList, successData });
-        }).catch(() => {
-          rejected(errorData);
-        });
-      });
-    },
-    addClients({ state }, elem) {
-      return new Promise((resolve, rejected) => {
-        axios.post(
-          `${state.apiUrl}clients`,
-          elem,
-        ).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-    updateClients({ state }, elem) {
-      return new Promise((resolve, rejected) => {
-        axios.put(
-          `${state.apiUrl}clients/${elem.id}`,
-          elem.propsItem,
-        ).then(() => {
-          resolve();
-        }).catch(() => {
-          rejected();
-        });
-      });
-    },
-    deleteClients({ state }, id) {
-      return new Promise((resolve, rejected) => {
-        axios.delete(`${state.apiUrl}clients/${id}`).then(() => {
+        axios.delete(url).then(() => {
           resolve();
         }).catch(() => {
           rejected();

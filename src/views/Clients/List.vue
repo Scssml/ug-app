@@ -52,7 +52,7 @@
             <v-spacer></v-spacer>
             <v-btn
               color="error"
-              @click="deletedItem(deletedIndex)"
+              @click="deletedItem(deletedId)"
             >Удалить</v-btn>
           </v-card-actions>
         </v-card>
@@ -234,7 +234,7 @@
                 edit
               </v-icon>
               <v-icon
-                @click="confirmDeleted(props.item)"
+                @click="confirmDeleted(props.item.id)"
               >
                 delete
               </v-icon>
@@ -352,7 +352,7 @@ export default {
       },
       createdSuccess: false,
       dialogDeleted: false,
-      deletedIndex: -1,
+      deletedId: -1,
     };
   },
   computed: {
@@ -384,15 +384,22 @@ export default {
       return itemsFind;
     },
     getClientsList: function getClientsList() {
-      this.$store.dispatch('getClientsList').then((response) => {
-        this.clientsList = response.elemList;
+      const itemParams = {
+        type: 'clients',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = response.successData.text;
+      const successData = 'Клиенты получены!';
+      const errorData = 'Ошибка получения клиентов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
@@ -404,9 +411,15 @@ export default {
         delete propsItem.type;
         propsItem.bill = +propsItem.bill;
         propsItem.sale = +propsItem.sale;
+
+        const itemParams = {
+          type: 'clients',
+          props: propsItem,
+        };
+
         if (this.editedIndex > -1) {
-          const { id } = this.editedItem;
-          this.$store.dispatch('updateClients', { id, propsItem }).then(() => {
+          itemParams.id = this.editedItem.id;
+          this.$store.dispatch('updateItem', itemParams).then(() => {
             this.createdSuccess = true;
             this.getClientsList();
             setTimeout(() => {
@@ -414,7 +427,7 @@ export default {
             }, 1000);
           });
         } else {
-          this.$store.dispatch('addClients', propsItem).then(() => {
+          this.$store.dispatch('addItem', itemParams).then(() => {
             this.createdSuccess = true;
             this.getClientsList();
             setTimeout(() => {
@@ -437,12 +450,17 @@ export default {
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
     },
-    confirmDeleted: function confirmDeleted(item) {
+    confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;
-      this.deletedIndex = this.clientsList.indexOf(item);
+      this.deletedId = id;
     },
-    deletedItem: function deletedItem(index) {
-      this.$store.dispatch('deleteClients', this.clientsList[index].id).then(() => {
+    deletedItem: function deletedItem(elemId) {
+      const itemParams = {
+        type: 'clients',
+        id: elemId,
+      };
+
+      this.$store.dispatch('deleteItem', itemParams).then(() => {
         this.getClientsList();
         this.closeConfirm();
       });
@@ -450,7 +468,7 @@ export default {
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;
       setTimeout(() => {
-        this.deletedIndex = -1;
+        this.deletedId = -1;
       }, 300);
     },
   },

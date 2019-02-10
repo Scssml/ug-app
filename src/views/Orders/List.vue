@@ -885,7 +885,7 @@ export default {
         kto: this.$store.state.authUser,
         ts: '',
         tsText: '',
-        dp: '',
+        // dp: '',
         orderText: '',
         sum: 0,
         addressee: '',
@@ -913,7 +913,7 @@ export default {
         kto: this.$store.state.authUser,
         ts: '',
         tsText: '',
-        dp: '',
+        // dp: '',
         orderText: '',
         sum: 0,
         addressee: '',
@@ -1161,68 +1161,87 @@ export default {
     },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
-      let apiPath = '';
       if (validate) {
-        if (this.editedIndex > -1) {
-          Object.assign(this.ordersList[this.editedIndex], this.editedItem);
-          apiPath = 'edit.php';
-        } else {
-          // this.editedItem.id = this.ordersList.sort((a, b) => b.id - a.id)[0].id + 1;
-          if (this.ordersList.length > 0) {
-            this.editedItem.id = this.ordersList[this.ordersList.length - 1].id + 1;
-          } else {
-            this.editedItem.id = 1;
-          }
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
+        propsItem.sum = +propsItem.sum;
+        propsItem.incognito = false;
 
-          if (this.clientAddressee) {
-            this.editedItem.addressee = '';
-            this.editedItem.addresseeName = '';
-            this.editedItem.addresseePhone = '';
-          }
-
-          this.ordersList.push(this.editedItem);
-          apiPath = 'add.php';
+        if (propsItem.clientAddressee) {
+          propsItem.editedItem.addressee = '';
+          propsItem.editedItem.addresseeName = '';
+          propsItem.editedItem.addresseePhone = '';
         }
 
         if (this.editedItem.client === '' || this.editedItem.client === undefined) {
           const clientFields = {};
-
-          if (this.clientsList.length > 0) {
-            clientFields.id = this.clientsList[this.clientsList.length - 1].id + 1;
-          } else {
-            clientFields.id = 1;
-          }
 
           clientFields.name = this.editedItem.name;
           clientFields.phone = this.editedItem.phone;
           clientFields.bill = 0;
           clientFields.sale = 0;
           clientFields.active = true;
-          clientFields.type = this.editedItem.typeClient;
+          clientFields.birthDay = '';
+          // clientFields.type = this.editedItem.typeClient;
 
-          this.editedItem.client = clientFields.id;
+          const clientParams = {
+            type: 'clients',
+            props: clientFields,
+          };
 
-          axios.get(`${this.$store.state.apiSrc}clients/add.php`, {
-            params: {
-              ELEM: clientFields,
-            },
-          }).then(() => {
+          this.$store.dispatch('addItem', clientParams).then((response) => {
+            propsItem.client = response.id;
             this.getClientsList();
-          });
-        }
 
-        axios.get(`${this.$store.state.apiSrc}orders/${apiPath}`, {
-          params: {
-            INDEX: this.editedIndex,
-            ELEM: this.editedItem,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.closeDialog();
-          }, 1000);
-        });
-        // localStorage.setItem('orders', JSON.stringify(this.ordersList));
+            const itemParams = {
+              type: 'orders',
+              props: propsItem,
+            };
+
+            if (this.editedIndex > -1) {
+              itemParams.id = this.editedItem.id;
+              this.$store.dispatch('updateItem', itemParams).then(() => {
+                this.createdSuccess = true;
+                this.getOrdersList();
+                setTimeout(() => {
+                  this.closeDialog();
+                }, 1000);
+              });
+            } else {
+              this.$store.dispatch('addItem', itemParams).then(() => {
+                this.createdSuccess = true;
+                this.getOrdersList();
+                setTimeout(() => {
+                  this.closeDialog();
+                }, 1000);
+              });
+            }
+          });
+        } else {
+          const itemParams = {
+            type: 'orders',
+            props: propsItem,
+          };
+
+          if (this.editedIndex > -1) {
+            itemParams.id = this.editedItem.id;
+            this.$store.dispatch('updateItem', itemParams).then(() => {
+              this.createdSuccess = true;
+              this.getOrdersList();
+              setTimeout(() => {
+                this.closeDialog();
+              }, 1000);
+            });
+          } else {
+            this.$store.dispatch('addItem', itemParams).then(() => {
+              this.createdSuccess = true;
+              this.getOrdersList();
+              setTimeout(() => {
+                this.closeDialog();
+              }, 1000);
+            });
+          }
+        }
       }
     },
     closeDialog: function closeDialog() {

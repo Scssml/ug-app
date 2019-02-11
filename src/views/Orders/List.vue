@@ -52,7 +52,7 @@
             <v-spacer></v-spacer>
             <v-btn
               color="error"
-              @click="deletedItem(deletedIndex)"
+              @click="deletedItem(deletedId)"
             >Удалить</v-btn>
           </v-card-actions>
         </v-card>
@@ -621,7 +621,7 @@
                   item-text="name"
                   item-value="id"
                   v-model="props.item.status"
-                  @change="updateStatus(props.index)"
+                  @change="updateStatus(props.index, props.item.id)"
                   color="grey darken-2"
                 ></v-select>
               </td>
@@ -640,7 +640,7 @@
                   edit
                 </v-icon>
                 <v-icon
-                  @click="confirmDeleted(props.item)"
+                  @click="confirmDeleted(props.item.id)"
                 >
                   delete
                 </v-icon>
@@ -662,15 +662,8 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
-
-// const dateNow = new Date().toLocaleString('us', {
-//   day: 'numeric',
-//   month: 'numeric',
-//   year: 'numeric',
-// });
 
 const dateNow = new Date().toISOString().split('T')[0];
 
@@ -929,7 +922,7 @@ export default {
       },
       createdSuccess: false,
       dialogDeleted: false,
-      deletedIndex: -1,
+      deletedId: -1,
     };
   },
   computed: {
@@ -1048,15 +1041,21 @@ export default {
 
       return itemsFind;
     },
-    updateStatus(index) {
-      const editedItem = this.ordersList[index];
-      axios.get(`${this.$store.state.apiSrc}orders/edit.php`, {
-        params: {
-          INDEX: index,
-          ELEM: editedItem,
-        },
-      });
-      // localStorage.setItem('orders', JSON.stringify(this.ordersList));
+    updateStatus(index, id) {
+      if (id > 0) {
+        const propsItem = this.ordersList[index];
+        delete propsItem.id;
+
+        const itemParams = {
+          type: 'orders',
+          props: propsItem,
+        };
+
+        itemParams.id = id;
+        this.$store.dispatch('updateItem', itemParams).then(() => {
+          this.getOrdersList();
+        });
+      }
     },
     updateFilter() {
       console.log(this.filter);
@@ -1102,7 +1101,15 @@ export default {
       const errorData = 'Ошибка получения заказов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.ordersList = response;
+        this.ordersList = response.map((item) => {
+          const order = item;
+          const dateCreated = order.date.split('T')[0];
+          const deliveryDate = order.deliveryDate.split('/');
+          order.deliveryDate = `${deliveryDate[2]}-${deliveryDate[0]}-${deliveryDate[1]}`;
+          order.date = dateCreated;
+          order.typeClient = +order.typeClient;
+          return order;
+        });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -1165,6 +1172,8 @@ export default {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
         propsItem.sum = +propsItem.sum;
+        propsItem.addressee = +propsItem.addressee;
+        propsItem.courier = +propsItem.courier;
         propsItem.incognito = false;
 
         if (propsItem.clientAddressee) {
@@ -1270,27 +1279,25 @@ export default {
         this.clientAddressee = true;
       }
     },
-    confirmDeleted: function confirmDeleted(item) {
+    confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;
-      this.deletedIndex = this.ordersList.indexOf(item);
+      this.deletedId = id;
     },
-    deletedItem: function deletedItem(index) {
-      this.ordersList.splice(index, 1);
+    deletedItem: function deletedItem(elemId) {
+      const itemParams = {
+        type: 'orders',
+        id: elemId,
+      };
 
-      axios.get(`${this.$store.state.apiSrc}orders/delete.php`, {
-        params: {
-          INDEX: index,
-        },
-      }).then(() => {
+      this.$store.dispatch('deleteItem', itemParams).then(() => {
+        this.getOrdersList();
         this.closeConfirm();
       });
-
-      // localStorage.setItem('orders', JSON.stringify(this.ordersList));
     },
     closeConfirm: function closeDialog() {
       this.dialogDeleted = false;
       setTimeout(() => {
-        this.deletedIndex = -1;
+        this.deletedId = -1;
       }, 300);
     },
     createdBouquet: function createdBouquet(item) {

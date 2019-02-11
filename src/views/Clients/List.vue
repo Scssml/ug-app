@@ -392,7 +392,12 @@ export default {
       const errorData = 'Ошибка получения клиентов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response;
+        this.clientsList = response.map((item) => {
+          const client = item;
+          const dateArray = client.birthDay.split('/');
+          client.birthDay = `${dateArray[2]}-${dateArray[0]}-${dateArray[1]}`;
+          return client;
+        });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -411,6 +416,8 @@ export default {
         delete propsItem.type;
         propsItem.bill = +propsItem.bill;
         propsItem.sale = +propsItem.sale;
+
+        propsItem.birthDay = `${propsItem.birthDay}T00:00:00.000-00:00`;
 
         const itemParams = {
           type: 'clients',

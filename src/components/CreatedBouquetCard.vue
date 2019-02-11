@@ -392,9 +392,9 @@ export default {
   },
   methods: {
     clearProps() {
-      this.florist = '';
+      this.florist = 0;
       this.client = 0;
-      this.order = '';
+      this.order = 0;
       this.decorPersent = 10;
       this.delivery = 0;
       this.salePersent = null;
@@ -420,7 +420,7 @@ export default {
           florist: this.florist,
           user: this.$store.state.authUser,
           client: this.client,
-          order: this.order,
+          order: +this.order,
           sum: this.sumFlowers,
           decorPersent: this.decorPersent,
           sumDecor: this.sumDecor,

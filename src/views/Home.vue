@@ -208,7 +208,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 
@@ -249,13 +248,13 @@ export default {
           color: 'blue-grey',
           id: 'goods',
         },
-        {
-          title: 'Получение букетов',
-          error: false,
-          loading: true,
-          color: 'deep-orange',
-          id: 'bouquets',
-        },
+        // {
+        //   title: 'Получение букетов',
+        //   error: false,
+        //   loading: true,
+        //   color: 'deep-orange',
+        //   id: 'bouquets',
+        // },
       ],
       offsetLeft: 0,
       propsBouquet: [
@@ -327,34 +326,49 @@ export default {
 
         const newBouqet = props;
 
-        if (this.bouquetsList.length > 0) {
-          newBouqet.id = this.bouquetsList[this.bouquetsList.length - 1].id + 1;
-        } else {
-          newBouqet.id = 1;
-        }
+        newBouqet.date = `${newBouqet.date}T00:00:00.000-00:00`;
 
-        newBouqet.goods = item.goods;
-
-        axios.get(`${this.$store.state.apiSrc}bouquets/add.php`, {
-          params: {
-            ELEM: newBouqet,
-          },
+        newBouqet.goods = item.goods.map((elem) => {
+          const good = {
+            id: elem.id,
+            value: elem.value,
+          };
+          return good;
         });
+
+        console.log(newBouqet);
+
+        const bouquetParams = {
+          type: 'bouquets',
+          props: newBouqet,
+        };
+
+        this.$store.dispatch('addItem', bouquetParams);
 
         this.bouquetsList.push(newBouqet);
 
         // localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
         if (newBouqet.typePay === 'На баланс') {
-          const clientIndex = this.clientsList.findIndex(elem => elem.id === newBouqet.client);
+          const client = this.clientsList.find(elem => elem.id === newBouqet.client);
 
-          this.clientsList[clientIndex].bill -= newBouqet.sumPay;
+          const propsItem = Object.assign({}, client);
+          delete propsItem.id;
+          delete propsItem.type;
+          propsItem.bill -= newBouqet.sumPay;
+          propsItem.sale = +propsItem.sale;
 
-          axios.get(`${this.$store.state.apiSrc}clients/edit.php`, {
-            params: {
-              INDEX: clientIndex - 1,
-              ELEM: this.clientsList[clientIndex],
-            },
+          const dateParam = propsItem.birthDay.split('/');
+          propsItem.birthDay = `${dateParam[2]}-${dateParam[0]}-${dateParam[1]}`;
+
+          const itemParams = {
+            type: 'clients',
+            props: propsItem,
+          };
+
+          itemParams.id = client.id;
+          this.$store.dispatch('updateItem', itemParams).then(() => {
+            this.getClientsList();
           });
         }
 
@@ -385,7 +399,16 @@ export default {
       localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     getClientsList: function getClientsList() {
-      this.$store.dispatch('getClientsList').then((response) => {
+      const itemParams = {
+        type: 'clients',
+      };
+
+      const successData = 'Клиенты получены!';
+      const errorData = 'Ошибка получения клиентов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = [];
+
         this.clientsList.push({
           active: true,
           bill: 0,
@@ -395,75 +418,99 @@ export default {
           phone: '',
         });
 
-        this.clientsList = this.clientsList.concat(response.clientsList);
+        this.clientsList = this.clientsList.concat(response);
 
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = response.successData.text;
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'clients');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getFloristsList: function getFloristsList() {
-      this.$store.dispatch('getFloristsList').then((response) => {
-        this.floristsList = response.floristsList;
+      const itemParams = {
+        type: 'florists',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'florists');
-        loadData.title = response.successData.text;
+      const successData = 'Флористы получены!';
+      const errorData = 'Ошибка получения флористов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.floristsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'florists');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getOrdersList: function getOrdersWorksList() {
-      this.$store.dispatch('getOrdersWorksList').then((response) => {
-        this.ordersList = response.ordersList;
+      const itemParams = {
+        type: 'orders',
+        filter: {
+          status: 1,
+        },
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = response.successData.text;
+      const successData = 'Заказы получены!';
+      const errorData = 'Ошибка получения заказов!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.ordersList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'orders');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
     getGoodsList: function getGoodsList() {
-      this.$store.dispatch('getGoodsList').then((response) => {
-        this.goodsList = response.goodsList;
+      const itemParams = {
+        type: 'goods',
+      };
 
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = response.successData.text;
+      const successData = 'Товары получены!';
+      const errorData = 'Ошибка получения товаров!';
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.goodsList = response;
+
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = successData;
         loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = error.text;
+      }).catch(() => {
+        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        loadData.title = errorData;
         loadData.error = true;
       });
     },
-    getBouquetsList: function getBouquetsList() {
-      this.$store.dispatch('getBouquetsList').then((response) => {
-        this.bouquetsList = response.bouquetsList;
+    // getBouquetsList: function getBouquetsList() {
+    //   this.$store.dispatch('getBouquetsList').then((response) => {
+    //     this.bouquetsList = response.bouquetsList;
 
-        const loadData = this.loadingData.find(item => item.id === 'bouquets');
-        loadData.title = response.successData.text;
-        loadData.loading = false;
-      }).catch((error) => {
-        const loadData = this.loadingData.find(item => item.id === 'bouquets');
-        loadData.title = error.text;
-        loadData.error = true;
-      });
-    },
+    //     const loadData = this.loadingData.find(item => item.id === 'bouquets');
+    //     loadData.title = response.successData.text;
+    //     loadData.loading = false;
+    //   }).catch((error) => {
+    //     const loadData = this.loadingData.find(item => item.id === 'bouquets');
+    //     loadData.title = error.text;
+    //     loadData.error = true;
+    //   });
+    // },
     getDataProps: function getDataProps() {
       this.getClientsList();
       this.getFloristsList();
       this.getOrdersList();
       this.getGoodsList();
-      this.getBouquetsList();
+      // this.getBouquetsList();
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);

@@ -358,7 +358,14 @@ export default {
       const errorData = 'Ошибка получения букетов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.bouquetsList = response;
+        this.bouquetsList = response.map((item) => {
+          const bouquet = item;
+          if (bouquet.date !== undefined) {
+            const dateCreated = bouquet.date.split('T')[0];
+            bouquet.date = dateCreated;
+          }
+          return bouquet;
+        });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;

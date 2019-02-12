@@ -424,7 +424,7 @@ export default {
           sum: this.sumFlowers,
           decorPersent: this.decorPersent,
           sumDecor: this.sumDecor,
-          delivery: this.delivery,
+          delivery: +this.delivery,
           salePersent: this.clientSale,
           sumSale: this.sumSale,
           sumPay: this.sumPay,

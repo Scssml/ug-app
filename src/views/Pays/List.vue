@@ -133,7 +133,8 @@
                     <div><b>Состав:</b></div>
                     <ul>
                       <li v-for="(good, index) in editedItem.goods" :key="index">
-                        {{ goodsList.find(item => item.id === good.id).name }}:
+                        {{ (findItem = goodsList.find(item => item.id === good.good_id))
+                          ? findItem.name : '' }}:
                         {{ good.value }}шт
                       </li>
                     </ul>

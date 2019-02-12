@@ -330,7 +330,7 @@ export default {
 
         newBouqet.goods = item.goods.map((elem) => {
           const good = {
-            id: elem.id,
+            good_id: elem.id,
             value: elem.value,
           };
           return good;

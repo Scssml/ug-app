@@ -497,7 +497,7 @@ export default {
     },
     deletedItem: function deletedItem(elemId) {
       const itemParams = {
-        type: 'florists',
+        type: 'bouquets',
         id: elemId,
       };
 

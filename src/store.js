@@ -5,16 +5,16 @@ import router from './router';
 
 Vue.use(Vuex);
 
-axios.interceptors.response.use(undefined, err =>
-  new Promise((resolve) => {
-    if (err.status === 401) {
-      this.$store.dispatch('logout');
-      router.push('/login');
-      console.log(router);
-      resolve();
-    }
-    throw err;
-  }));
+// axios.interceptors.response.use(undefined, err =>
+//   new Promise((resolve) => {
+//     if (err.response.status === 401) {
+//       this.$store.dispatch('logout');
+//       router.push('/login');
+//       console.log(err.response);
+//       resolve();
+//     }
+//     throw err;
+//   }));
 
 export default new Vuex.Store({
   state: {
@@ -106,7 +106,7 @@ export default new Vuex.Store({
       });
     },
 
-    getItemsList({ state }, item) {
+    getItemsList({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}`;
 
@@ -122,7 +122,27 @@ export default new Vuex.Store({
         axios.get(url + filterQuery).then((response) => {
           const elemList = response.data;
           resolve(elemList);
-        }).catch(() => {
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
+          rejected();
+        });
+      });
+    },
+    getItem({ state, dispatch }, item) {
+      return new Promise((resolve, rejected) => {
+        const url = `${state.apiUrl}${item.type}/${item.id}`;
+
+        axios.get(url).then((response) => {
+          const elem = response.data;
+          resolve(elem);
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
           rejected();
         });
       });

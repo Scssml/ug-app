@@ -113,7 +113,7 @@ export default {
   },
   created() {
     this.$store.dispatch('autoAuth').then(() => {
-      // this.$router.push('/');
+      this.$router.push('/');
     }).catch(() => {
       this.$router.push('/login');
     });

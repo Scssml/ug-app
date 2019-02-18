@@ -57,6 +57,65 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <v-dialog
+        v-model="dialogForm"
+        persistent
+        max-width="420px"
+      >
+        <v-card>
+          <v-alert
+            :value="createdSuccessAdd"
+            type="success"
+            class="my-0"
+          >
+            Товар добавлен
+          </v-alert>
+          <v-form
+            ref="formAdd"
+            lazy-validation
+          >
+            <v-card-title
+              class="px-4"
+            >
+              <span class="headline">Добавление товара</span>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text
+              class="px-4"
+            >
+              <v-text-field
+                label="Название"
+                :rules="[v => !!v || 'Заполните поле']"
+                v-model="editedItem.name"
+              ></v-text-field>
+              <v-text-field
+                label="Цена"
+                :rules="[v => !!v || 'Заполните поле']"
+                v-model="editedItem.price"
+                type="number"
+              ></v-text-field>
+              <v-text-field
+                label="На складе"
+                :rules="[v => !!v || 'Заполните поле']"
+                v-model="editedItem.store"
+                type="number"
+              ></v-text-field>
+            </v-card-text>
+            <v-card-actions
+              class="px-4 pb-4"
+            >
+              <v-btn
+                @click.native="closeDialogAdd()"
+              >Отмена</v-btn>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="info"
+                @click="addGoods"
+              >Сохранить</v-btn>
+            </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
       <v-card>
         <v-alert
           :value="createdSuccess"
@@ -175,7 +234,7 @@
                 solo
                 flat
                 hide-details
-                :value="props.item.store + +props.item.count"
+                :value="+props.item.store + +props.item.count"
                 class="scs-small"
                 readonly
               ></v-text-field>
@@ -236,7 +295,7 @@
           fab
           color="info"
           class="mx-4"
-          @click="addGoods"
+          @click="dialogForm = true;"
         >
           <v-icon dark>add</v-icon>
         </v-btn>
@@ -246,8 +305,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   name: 'Goods',
   data() {
@@ -259,13 +316,6 @@ export default {
           loading: true,
           color: 'indigo',
           id: 'goods',
-        },
-        {
-          title: 'Получение закупок',
-          error: false,
-          loading: true,
-          color: 'blue lighten-4',
-          id: 'purchase',
         },
       ],
       typeEdit: [
@@ -314,10 +364,22 @@ export default {
         },
       ],
       goodsList: [],
-      purchaseList: [],
       createdSuccess: false,
       dialogDeleted: false,
       deletedId: -1,
+      dialogForm: false,
+      editedIndex: -1,
+      editedItem: {
+        name: '',
+        price: 0,
+        store: 0,
+      },
+      defaultItem: {
+        name: '',
+        price: 0,
+        store: 0,
+      },
+      createdSuccessAdd: false,
     };
   },
   computed: {
@@ -374,81 +436,72 @@ export default {
         loadData.error = true;
       });
     },
-    getPurchaseList: function getPurchaseList() {
-      const itemParams = {
-        type: 'purchase',
-      };
-
-      const successData = 'Закупки получены!';
-      const errorData = 'Ошибка получения закупок!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.purchaseList = response;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
         const goods = this.goodsList.map((item, i) => {
-          this.goodsList[i].store = item.store + +item.count;
+          this.goodsList[i].store = +item.store + +item.count;
           const good = Object.assign({}, item);
           delete good.count;
           return good;
         });
 
-        const purchase = Object.assign({}, this.dataEdit);
-        [purchase.date, purchase.goods, purchase.arrival, purchase.user] = [
-          new Date().toISOString().split('T')[0],
-          this.goodsList,
+        const purchaseGoods = this.goodsList.map((item) => {
+          const good = Object.assign({}, item);
+          good.good_id = good.id;
+          good.price = +good.price;
+          delete good.id;
+          return good;
+        });
+
+        const propsItem = Object.assign({}, this.dataEdit);
+        [propsItem.date, propsItem.goods, propsItem.arrival, propsItem.user] = [
+          new Date().toISOString(),
+          purchaseGoods,
           this.arrival,
           this.$store.state.authUser,
         ];
 
-        if (this.purchaseList.length > 0) {
-          purchase.id = this.purchaseList[this.purchaseList.length - 1].id + 1;
-        } else {
-          purchase.id = 1;
-        }
+        const itemParams = {
+          type: 'purchase',
+          props: propsItem,
+        };
 
-        axios.post(`${this.$store.state.apiSrc}purchase/add.php`, {
-          ELEM: purchase,
-        }).then(() => {
-          this.purchaseList.push(purchase);
-
-          this.goodsList.forEach((item, i) => {
-            this.goodsList[i].count = 0;
-          });
-        });
-
-        // localStorage.setItem('purchase', JSON.stringify(this.purchaseList));
-
-        axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
-          ELEMS: goods,
-        }).then(() => {
-          this.dataEdit.type = '';
-          this.dataEdit.company = '';
-          this.dataEdit.purchase = 0;
-
+        this.$store.dispatch('addItem', itemParams).then(() => {
           this.createdSuccess = true;
-
+          this.getGoodsList();
           setTimeout(() => {
             this.closeDialog();
           }, 1000);
         });
 
-        // localStorage.setItem('goods', JSON.stringify(goods));
+        goods.forEach((elem) => {
+          const propsGood = Object.assign({}, elem);
+          delete propsGood.id;
+
+          propsGood.price = +propsGood.price;
+          propsGood.store = +propsGood.store;
+
+          const goodParams = {
+            type: 'goods',
+            props: propsGood,
+            id: elem.id,
+          };
+
+          this.$store.dispatch('updateItem', goodParams);
+        });
       }
     },
     closeDialog: function closeDialog() {
       this.createdSuccess = false;
+    },
+    closeDialogAdd: function closeDialogAdd() {
+      this.dialogForm = false;
+      setTimeout(() => {
+        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedIndex = -1;
+        this.createdSuccess = false;
+      }, 300);
     },
     confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;
@@ -472,23 +525,31 @@ export default {
       }, 300);
     },
     addGoods() {
-      const itemParams = {
-        type: 'goods',
-        props: {
-          store: 0,
-          name: '',
-          price: 0,
-        },
-      };
+      const validate = this.$refs.formAdd.validate();
+      if (validate) {
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
 
-      this.$store.dispatch('addItem', itemParams).then(() => {
-        this.getGoodsList();
-      });
+        propsItem.price = +propsItem.price;
+        propsItem.store = +propsItem.store;
+
+        const itemParams = {
+          type: 'goods',
+          props: propsItem,
+        };
+
+        this.$store.dispatch('addItem', itemParams).then(() => {
+          this.createdSuccessAdd = true;
+          this.getGoodsList();
+          setTimeout(() => {
+            this.closeDialogAdd();
+          }, 1000);
+        });
+      }
     },
   },
   mounted() {
     this.getGoodsList();
-    this.getPurchaseList();
   },
 };
 </script>

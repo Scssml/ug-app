@@ -108,8 +108,7 @@
                           ? findItem.name : '' }}
                       </p>
                       <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
-                      <p><b>Процент оформления:</b> {{ editedItem.decorPersent }}</p>
-                      <p><b>Процент скидки:</b> {{ editedItem.salePersent }}</p>
+                      <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
                       <p><b>Оплачено:</b> {{ editedItem.sumPay }}</p>
                     </v-flex>
                     <v-flex
@@ -123,7 +122,6 @@
                       </p>
                       <p><b>Заказ:</b> {{ editedItem.order }}</p>
                       <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
-                      <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
                       <p><b>Сумма скидки:</b> {{ editedItem.sumSale }}</p>
                       <p><b>Тип оплаты:</b> {{ editedItem.typePay }}</p>
                     </v-flex>

@@ -19,7 +19,6 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     authUser: 0,
-    apiSrc: 'http://ug-app.cq58583.tmweb.ru/api/',
     apiUrl: '/',
     authToken: '',
     authStatus: '',

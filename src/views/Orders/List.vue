@@ -1058,7 +1058,7 @@ export default {
       }
     },
     updateFilter() {
-      console.log(this.filter);
+
     },
     statusColor(statusId) {
       const colorStatus = this.statusList.find(elem => elem.id === statusId).color;
@@ -1104,10 +1104,13 @@ export default {
         this.ordersList = response.map((item) => {
           const order = item;
           const dateCreated = order.date.split('T')[0];
-          const deliveryDate = order.deliveryDate.split('/');
-          order.deliveryDate = `${deliveryDate[2]}-${deliveryDate[0]}-${deliveryDate[1]}`;
           order.date = dateCreated;
+          if (order.deliveryDate !== undefined && order.deliveryDate !== '') {
+            const deliveryDate = order.deliveryDate.split('/');
+            order.deliveryDate = `${deliveryDate[2]}-${deliveryDate[0]}-${deliveryDate[1]}`;
+          }
           order.typeClient = +order.typeClient;
+          order.delivery = +order.delivery;
           return order;
         });
 
@@ -1175,6 +1178,8 @@ export default {
         propsItem.addressee = +propsItem.addressee;
         propsItem.courier = +propsItem.courier;
         propsItem.incognito = false;
+        propsItem.incognito = false;
+        delete propsItem.date;
 
         if (propsItem.clientAddressee) {
           propsItem.editedItem.addressee = '';
@@ -1270,9 +1275,9 @@ export default {
       this.editedItemReadOnly = readonly;
 
       if (
-        this.editedItem.addressee !== ''
-        || this.editedItem.addresseeName !== ''
-        || this.editedItem.addresseePhone !== ''
+        (this.editedItem.addressee !== '' && this.editedItem.addressee !== undefined)
+        || (this.editedItem.addresseeName !== '' && this.editedItem.addresseeName !== undefined)
+        || (this.editedItem.addresseePhone !== '' && this.editedItem.addresseePhone !== undefined)
       ) {
         this.clientAddressee = false;
       } else {

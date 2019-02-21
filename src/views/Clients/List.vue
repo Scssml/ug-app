@@ -417,7 +417,7 @@ export default {
         propsItem.bill = +propsItem.bill;
         propsItem.sale = +propsItem.sale;
 
-        propsItem.birthDay = `${propsItem.birthDay}T00:00:00.000-00:00`;
+        // propsItem.birthDay = `${propsItem.birthDay}T00:00:00.000-00:00`;
 
         const itemParams = {
           type: 'clients',

@@ -605,14 +605,20 @@
             >
               <td style="width: 8%;">{{ props.item.date }}</td>
               <td style="width: 9%;">{{ props.item.id }}</td>
-              <td style="width: 10%;">
+              <td style="width: 15%;">
                 {{ (findItem = clientsList.find(item => item.id === props.item.client))
+                  ? findItem.name : '' }}<br>
+                {{ props.item.phone }}
+              </td>
+              <td style="width: 17%;">{{ props.item.orderText }}</td>
+              <td style="width: 9%;" class="text-xs-right">
+                 {{ (findItem = deliveryList.find(item => item.id === props.item.delivery))
                   ? findItem.name : '' }}
               </td>
-              <td style="width: 10%;">{{ props.item.phone }}</td>
-              <td style="width: 12%;">{{ props.item.orderText }}</td>
-              <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryDate }}</td>
-              <td style="width: 9%;" class="text-xs-right">{{ props.item.deliveryTime }}</td>
+              <td style="width: 9%;" class="text-xs-right">
+                {{ props.item.deliveryDate }}<br>
+                {{ props.item.deliveryTime }}
+              </td>
               <td class="text-xs-right" style="width: 9%;">{{ props.item.sum }}</td>
               <td class="text-xs-right" style="width: 15%;">
                 <v-select
@@ -623,6 +629,17 @@
                   v-model="props.item.status"
                   @change="updateStatus(props.index, props.item.id)"
                   color="grey darken-2"
+                ></v-select>
+
+                <v-select
+                  label="Курьер"
+                  :items="couriersList"
+                  item-text="name"
+                  item-value="id"
+                  v-model="props.item.courier"
+                  @change="updateСourier(props.index, props.item.id)"
+                  color="grey darken-2"
+                  v-if="props.item.status === 3"
                 ></v-select>
               </td>
               <td class="text-xs-right" style="width: 15%;">
@@ -821,24 +838,19 @@ export default {
           value: 'client',
         },
         {
-          text: 'Телефон',
-          align: 'left',
-          value: 'phone',
-        },
-        {
           text: 'Состав заказа',
           align: 'left',
           value: 'orderText',
         },
         {
+          text: 'Тип доставки',
+          align: 'right',
+          value: 'delivery',
+        },
+        {
           text: 'Дата доставки',
           align: 'right',
           value: 'deliveryDate',
-        },
-        {
-          text: 'Дата время',
-          align: 'right',
-          value: 'deliveryTime',
         },
         {
           text: 'Сумма',
@@ -847,7 +859,7 @@ export default {
         },
         {
           text: 'Статус',
-          align: 'right',
+          align: 'left',
           value: 'status',
         },
         {
@@ -1043,8 +1055,10 @@ export default {
     },
     updateStatus(index, id) {
       if (id > 0) {
-        const propsItem = this.ordersList[index];
+        const propsItem = Object.assign({}, this.ordersList[index]);
         delete propsItem.id;
+
+        propsItem.sum = +propsItem.sum;
 
         const itemParams = {
           type: 'orders',
@@ -1052,11 +1066,33 @@ export default {
         };
 
         itemParams.id = id;
+
+        console.log(itemParams);
+
         this.$store.dispatch('updateItem', itemParams).then(() => {
-          this.getOrdersList();
+          // this.getOrdersList();
         });
       }
     },
+    // updateСourier(index, id) {
+    //   if (id > 0) {
+    //     const propsItem = Object.assign({}, this.ordersList[index]);
+    //     delete propsItem.id;
+
+    //     propsItem.sum = +propsItem.sum;
+
+    //     const itemParams = {
+    //       type: 'orders',
+    //       props: propsItem,
+    //     };
+
+    //     itemParams.id = id;
+
+    //     this.$store.dispatch('updateItem', itemParams).then(() => {
+    //       // this.getOrdersList();
+    //     });
+    //   }
+    // },
     updateFilter() {
 
     },

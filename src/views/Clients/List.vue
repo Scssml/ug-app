@@ -394,8 +394,10 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.clientsList = response.map((item) => {
           const client = item;
-          const dateArray = client.birthDay.split('/');
-          client.birthDay = `${dateArray[2]}-${dateArray[0]}-${dateArray[1]}`;
+          if (client.birthDay !== undefined) {
+            const dateArray = client.birthDay.split('/');
+            client.birthDay = `${dateArray[2]}-${dateArray[0]}-${dateArray[1]}`;
+          }
           return client;
         });
 

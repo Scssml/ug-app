@@ -601,7 +601,8 @@
           <template slot="items" slot-scope="props">
             <tr
               @dblclick="editItem(props.item, true)"
-              :class="statusList.find(elem => elem.id === props.item.status).color"
+              :class="(props.item.status !== undefined)
+                ? statusList.find(elem => elem.id === props.item.status).color : ''"
             >
               <td style="width: 8%;">{{ props.item.date }}</td>
               <td style="width: 9%;">{{ props.item.id }}</td>
@@ -1074,25 +1075,25 @@ export default {
         });
       }
     },
-    // updateСourier(index, id) {
-    //   if (id > 0) {
-    //     const propsItem = Object.assign({}, this.ordersList[index]);
-    //     delete propsItem.id;
+    updateСourier(index, id) {
+      if (id > 0) {
+        const propsItem = Object.assign({}, this.ordersList[index]);
+        delete propsItem.id;
 
-    //     propsItem.sum = +propsItem.sum;
+        propsItem.sum = +propsItem.sum;
 
-    //     const itemParams = {
-    //       type: 'orders',
-    //       props: propsItem,
-    //     };
+        const itemParams = {
+          type: 'orders',
+          props: propsItem,
+        };
 
-    //     itemParams.id = id;
+        itemParams.id = id;
 
-    //     this.$store.dispatch('updateItem', itemParams).then(() => {
-    //       // this.getOrdersList();
-    //     });
-    //   }
-    // },
+        this.$store.dispatch('updateItem', itemParams).then(() => {
+          // this.getOrdersList();
+        });
+      }
+    },
     updateFilter() {
 
     },

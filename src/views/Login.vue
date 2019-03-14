@@ -30,7 +30,7 @@
           <v-btn
             color="info"
             @click="submitForm"
-          >Сохранить</v-btn>
+          >Войти</v-btn>
         </v-form>
       </v-flex>
     </v-layout>

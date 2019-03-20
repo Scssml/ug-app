@@ -176,6 +176,11 @@
                     type="number"
                   ></v-text-field>
                   <v-text-field
+                    label="Лимит"
+                    v-model="editedItem.credit"
+                    type="number"
+                  ></v-text-field>
+                  <v-text-field
                     label="Скидка"
                     v-model="editedItem.sale"
                     type="number"
@@ -221,12 +226,18 @@
                   ? findItem.name : '' }}
             </td>
             <td style="width: 10%;">{{ props.item.birthDay }}</td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.bill }}</td>
-            <td class="text-xs-right" style="width: 10%;">{{ props.item.sale }}</td>
-            <td class="text-xs-right" style="width: 10%;">
+            <td class="text-xs-right" style="width: 8%;">{{ props.item.bill }}</td>
+            <td class="text-xs-right" style="width: 8%;">{{ props.item.sale }}</td>
+            <td class="text-xs-right" style="width: 8%;">
               {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 7%;">
+            <td class="text-xs-right" style="width: 10%;">
+              <v-icon
+                class="mr-2"
+                @click="showOrders(props.item.id)"
+              >
+                assignment
+              </v-icon>
               <v-icon
                 class="mr-2"
                 @click="editItem(props.item)"
@@ -339,6 +350,7 @@ export default {
         birthDay: '',
         phone: '',
         type: '',
+        credit: 0,
       },
       defaultItem: {
         name: '',
@@ -349,6 +361,7 @@ export default {
         birthDay: '',
         phone: '',
         type: '',
+        credit: 0,
       },
       createdSuccess: false,
       dialogDeleted: false,
@@ -416,6 +429,7 @@ export default {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
         delete propsItem.type;
+        delete propsItem.credit;
         propsItem.bill = +propsItem.bill;
         propsItem.sale = +propsItem.sale;
 
@@ -479,6 +493,9 @@ export default {
       setTimeout(() => {
         this.deletedId = -1;
       }, 300);
+    },
+    showOrders(id) {
+      this.$router.push({ path: `/orders/?client=${id}` });
     },
   },
   mounted() {

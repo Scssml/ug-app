@@ -146,7 +146,7 @@ export default new Vuex.Store({
         });
       });
     },
-    addItem({ state }, item) {
+    addItem({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}`;
         axios.post(
@@ -154,12 +154,16 @@ export default new Vuex.Store({
           item.props,
         ).then((response) => {
           resolve(response.data);
-        }).catch(() => {
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
           rejected();
         });
       });
     },
-    updateItem({ state }, item) {
+    updateItem({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
         axios.put(
@@ -167,17 +171,25 @@ export default new Vuex.Store({
           item.props,
         ).then(() => {
           resolve();
-        }).catch(() => {
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
           rejected();
         });
       });
     },
-    deleteItem({ state }, item) {
+    deleteItem({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
         axios.delete(url).then(() => {
           resolve();
-        }).catch(() => {
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
           rejected();
         });
       });

@@ -73,9 +73,16 @@
             v-model="dialogForm"
             v-if="dialogForm"
             persistent
-            max-width="720px"
+            max-width="420px"
           >
             <v-card>
+              <v-alert
+                :value="createdSuccess"
+                type="success"
+                class="my-0"
+              >
+                Букет изменен
+              </v-alert>
               <v-form
                 ref="form"
                 lazy-validation
@@ -83,69 +90,143 @@
                 <v-card-title
                   class="px-4"
                 >
-                  <span class="headline">Просмотр букета</span>
+                  <span class="headline">{{ formTitle }}</span>
                 </v-card-title>
                 <v-divider></v-divider>
                 <v-card-text
                   class="px-4"
                 >
-                  <v-layout
-                    row
-                    wrap
-                  >
-                    <v-flex
-                      xs6
-                    >
-                      <p><b>Номер букета:</b> {{ editedItem.id }}</p>
-                      <p>
-                        <b>Флорист:</b>
-                        {{ (findItem = floristsList.find(item => item.id === editedItem.florist))
-                          ? findItem.name : '' }}
-                      </p>
-                      <p>
-                        <b>Клиент:</b>
-                        {{ (findItem = clientsList.find(item => item.id === editedItem.client))
-                          ? findItem.name : '' }}
-                      </p>
-                      <p><b>Стоимость товаров:</b> {{ editedItem.sum }}</p>
-                      <p><b>Стоимость оформления:</b> {{ editedItem.sumDecor }}</p>
-                      <p><b>Оплачено:</b> {{ editedItem.sumPay }}</p>
-                    </v-flex>
-                    <v-flex
-                      xs6
-                    >
-                      <p><b>Дата создания:</b> {{ editedItem.date }}</p>
-                      <p>
-                        <b>Менеджер:</b>
-                        {{ (findItem = usersList.find(item => item.id === editedItem.user))
-                          ? findItem.name : '' }}
-                      </p>
-                      <p><b>Заказ:</b> {{ editedItem.order }}</p>
-                      <p><b>Стоимость доставки:</b> {{ editedItem.delivery }}</p>
-                      <p><b>Сумма скидки:</b> {{ editedItem.sumSale }}</p>
-                      <p><b>Тип оплаты:</b> {{ editedItem.typePay }}</p>
-                    </v-flex>
-                    <v-flex
-                      xs12
-                    >
-                    <div><b>Состав:</b></div>
-                    <ul>
-                      <li v-for="(good, index) in editedItem.goods" :key="index">
-                        {{ (findItem = goodsList.find(item => item.id === good.good_id))
-                          ? findItem.name : '' }}:
-                        {{ good.value }}шт
-                      </li>
-                    </ul>
-                  </v-flex>
-                 </v-layout>
+                  <v-autocomplete
+                    label="Клиент"
+                    :items="clientsList"
+                    :filter="clientsFilter"
+                    item-text="name"
+                    item-value="id"
+                    v-model="editedItem.client"
+                    hide-details
+                    class="mb-4"
+                    no-data-text="Не надено"
+                    :readonly="editedItemReadOnly"
+                    clearable
+                  ></v-autocomplete>
+
+                  <v-select
+                    label="Заказ"
+                    :items="ordersList"
+                    item-text="name"
+                    item-value="id"
+                    v-model="editedItem.order"
+                    hide-details
+                    :readonly="editedItemReadOnly"
+                  ></v-select>
+
+                  <v-select
+                    label="Флорист"
+                    :items="floristsList"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    item-text="name"
+                    item-value="id"
+                    v-model="editedItem.florist"
+                    hide-details
+                    :readonly="editedItemReadOnly"
+                  ></v-select>
+
+                  <v-select
+                    label="Менеджер"
+                    :items="usersList"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    item-text="name"
+                    item-value="id"
+                    v-model="editedItem.user"
+                    hide-details
+                    :readonly="editedItemReadOnly"
+                  ></v-select>
+
+                  <v-text-field
+                    label="Стоимость товаров"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    v-model="editedItem.sum"
+                    hide-details
+                    class="mb-4"
+                    :readonly="editedItemReadOnly"
+                  ></v-text-field>
+
+                  <v-text-field
+                    label="Стоимость оформления"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    v-model="editedItem.sumDecor"
+                    hide-details
+                    class="mb-4"
+                    :readonly="editedItemReadOnly"
+                  ></v-text-field>
+
+                  <v-text-field
+                    label="Стоимость доставки"
+                    v-model="editedItem.delivery"
+                    hide-details
+                    class="mb-4"
+                    :readonly="editedItemReadOnly"
+                  ></v-text-field>
+
+                  <v-text-field
+                    label="Сумма скидки"
+                    v-model="editedItem.sumSale"
+                    hide-details
+                    class="mb-4"
+                    :readonly="editedItemReadOnly"
+                  ></v-text-field>
+
+                  <v-text-field
+                    label="Оплачено"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    v-model="editedItem.sumPay"
+                    hide-details
+                    class="mb-4"
+                    :readonly="editedItemReadOnly"
+                  ></v-text-field>
+
+                  <v-select
+                    label="Тип оплаты"
+                    :items="typePayList"
+                    :rules="[v => !!v || 'Заполните поле']"
+                    v-model="editedItem.typePay"
+                    hide-details
+                    :readonly="editedItemReadOnly"
+                  ></v-select>
+
+                  <br>
+                  <div><b>Состав:</b></div>
+                  <ul>
+                    <li v-for="(good, index) in editedItem.goods" :key="index">
+                      {{ (findItem = goodsList.find(item => item.id === good.good_id))
+                        ? findItem.name : '' }}:
+                      {{ good.value }}шт
+                    </li>
+                  </ul>
+
+                  <v-textarea
+                    label="Комментарий"
+                    auto-grow
+                    :rules="[v => !!v || 'Заполните поле']"
+                    v-model="editedItem.comment"
+                    row-height="12"
+                    hide-details
+                    class="mb-4"
+                    v-if="!editedItemReadOnly"
+                  ></v-textarea>
                 </v-card-text>
                 <v-card-actions
                   class="px-4 pb-4"
                 >
+                  <v-btn
+                    @click.native="closeDialog()"
+                  >Отмена</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn
-                    @click.native="dialogForm = false"
-                  >Закрыть</v-btn>
+                    color="info"
+                    @click="submitForm"
+                    v-if="!editedItemReadOnly"
+                  >Сохранить</v-btn>
                 </v-card-actions>
               </v-form>
             </v-card>
@@ -167,23 +248,29 @@
             >
               <td style="width: 5%;">{{ props.item.date }}</td>
               <td style="width: 15%;">Букет {{ props.item.id }}</td>
-              <td style="width: 21%;">
+              <td style="width: 18%;">
                 {{ (findItem = usersList.find(item => item.id === props.item.user))
                   ? findItem.name : '' }}
               </td>
-              <td style="width: 21%;">
+              <td style="width: 18%;">
                 {{ (findItem = floristsList.find(item => item.id === props.item.florist))
                   ? findItem.name : '' }}
               </td>
-              <td style="width: 21%;">
+              <td style="width: 18%;">
                 {{ (findItem = clientsList.find(item => item.id === props.item.client))
                   ? findItem.name : '' }}
               </td>
               <td class="text-xs-right" style="width: 10%;">{{ props.item.sumPay }}</td>
-              <td class="text-xs-right" style="width: 7%;">
+              <td class="text-xs-right" style="width: 10%;">
                 <v-icon
                   class="mr-2"
                   @click="editItem(props.item)"
+                >
+                  edit
+                </v-icon>
+                <v-icon
+                  class="mr-2"
+                  @click="editItem(props.item, true)"
                 >
                   visibility
                 </v-icon>
@@ -290,6 +377,8 @@ export default {
         },
       ],
       dialogForm: false,
+      editedItemReadOnly: false,
+      createdSuccess: false,
       bouquetsList: [],
       usersList: [],
       floristsList: [],
@@ -313,6 +402,7 @@ export default {
         sumPay: '',
         typePay: '',
         goods: [],
+        comment: '',
       },
       defaultItem: {
         id: 0,
@@ -330,6 +420,7 @@ export default {
         sumPay: '',
         typePay: '',
         goods: [],
+        comment: '',
       },
       dialogDeleted: false,
       deletedId: -1,
@@ -339,6 +430,25 @@ export default {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
+    },
+    formTitle: function formTitle() {
+      let title = '';
+      if (this.editedItemReadOnly) {
+        title = 'Просмотр букета';
+      } else {
+        title = 'Изменение букета';
+      }
+      return title;
+    },
+    typePayList() {
+      const typePay = [
+        'Наличные',
+        'Яндекс',
+        'Карта',
+        'Терминал',
+      ];
+      if (this.client !== 0) typePay.push('На баланс');
+      return typePay;
     },
   },
   methods: {
@@ -398,7 +508,18 @@ export default {
       const errorData = 'Ошибка получения клиентов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response;
+        this.clientsList = [];
+
+        this.clientsList.push({
+          active: true,
+          bill: 0,
+          id: 0,
+          name: 'Розничный покупатель',
+          sale: 0,
+          phone: '',
+        });
+
+        this.clientsList = this.clientsList.concat(response);
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -477,17 +598,57 @@ export default {
       this.getOrdersList();
       this.getGoodsList();
     },
+    submitForm: function submitForm() {
+      const validate = this.$refs.form.validate();
+      if (validate) {
+        const propsItem = Object.assign({}, this.editedItem);
+        delete propsItem.id;
+        delete propsItem.comment;
+
+        propsItem.sum = +propsItem.sum;
+        propsItem.sumDecor = +propsItem.sumDecor;
+        propsItem.sumPay = +propsItem.sumPay;
+        propsItem.sumSale = +propsItem.sumSale;
+
+        const itemParams = {
+          type: 'bouquets',
+          props: propsItem,
+        };
+
+        if (this.editedIndex > -1) {
+          itemParams.id = this.editedItem.id;
+          this.$store.dispatch('updateItem', itemParams).then(() => {
+            this.createdSuccess = true;
+            this.getBouquetsList();
+            setTimeout(() => {
+              this.closeDialog();
+            }, 1000);
+          });
+        }
+      }
+    },
     closeDialog: function closeDialog() {
       this.dialogForm = false;
       setTimeout(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
+        this.createdSuccess = false;
+        this.editedItemReadOnly = false;
       }, 300);
     },
-    editItem: function editItem(item) {
-      this.editedIndex = this.usersList.indexOf(item);
+    editItem: function editItem(item, readonly = false) {
+      this.editedIndex = this.bouquetsList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogForm = true;
+      this.editedItemReadOnly = readonly;
+    },
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
     },
     confirmDeleted: function confirmDeleted(id) {
       this.dialogDeleted = true;

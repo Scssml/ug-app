@@ -478,7 +478,7 @@
             wrap
           >
             <v-flex
-              xs4
+              xs2
               class="px-3"
             >
               <v-text-field
@@ -501,6 +501,23 @@
                 @change="updateFilter"
                 hide-details
               ></v-select>
+            </v-flex>
+            <v-flex
+              xs2
+              class="px-3"
+            >
+              <v-autocomplete
+                label="Клиент"
+                :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
+                :filter="clientsFilter"
+                item-text="name"
+                item-value="id"
+                v-model="filter.client"
+                hide-details
+                class="mb-4"
+                no-data-text="Не надено"
+                @change="updateFilter"
+              ></v-autocomplete>
             </v-flex>
             <v-flex
               xs2
@@ -698,6 +715,7 @@ export default {
       clientAddressee: false,
       filter: {
         status: '',
+        client: '',
         typeClient: '',
         dateStart: null,
         dateEnd: null,
@@ -1042,6 +1060,15 @@ export default {
 
       itemsFind = itemsFind.filter((item) => {
         let find = false;
+        if (item.client === filterProps.client || filterProps.client === '') {
+          find = true;
+        }
+
+        return find;
+      });
+
+      itemsFind = itemsFind.filter((item) => {
+        let find = false;
         if (
           (item.date >= filterProps.dateStart || filterProps.dateStart === null)
           && (item.date <= filterProps.dateEnd || filterProps.dateEnd === null)
@@ -1376,6 +1403,9 @@ export default {
   },
   mounted() {
     this.getDataProps();
+    if (this.$route.query.client !== undefined) {
+      this.filter.client = +this.$route.query.client;
+    }
   },
 };
 </script>

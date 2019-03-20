@@ -3,6 +3,15 @@
     fluid
     class="pa-0"
   >
+    <v-snackbar
+      :value="true"
+      v-if="checkSum > 0"
+      color="info"
+      bottom
+      :timeout="3600000"
+    >
+      Общая стоимость: {{ checkSum }}
+    </v-snackbar>
     <v-dialog
       :value="loadingDialog"
       persistent
@@ -292,6 +301,7 @@
                   @updateProps="updateProps(index, $event)"
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
+                  @checkCard="checkCard(index, $event)"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -493,9 +503,16 @@ export default {
       bouquetsList: [],
       cashPrevDay: 1200,
       sumEncashment: 0,
+      checkCardList: [],
     };
   },
   computed: {
+    checkSum() {
+      return this.checkCardList.reduce((sum, item) => {
+        const allSum = sum + item.sum;
+        return allSum;
+      }, 0);
+    },
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
@@ -583,6 +600,18 @@ export default {
         goods: [],
       });
     },
+    checkCard(indexCard, sumPay) {
+      const findIndex = this.checkCardList.findIndex(item => item.index === indexCard);
+
+      if (findIndex + 1) {
+        this.checkCardList.splice(findIndex, 1);
+      } else {
+        this.checkCardList.push({
+          index: indexCard,
+          sum: sumPay,
+        });
+      }
+    },
     saveProps: function saveProps(index, props) {
       if (props) {
         const item = this.cardsList[index];
@@ -653,6 +682,8 @@ export default {
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
           && elem.success !== true);
         localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+
+        this.checkCardList.splice(index, 1);
       }
     },
     updateProps: function updateProps(index, props) {

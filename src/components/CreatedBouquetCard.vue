@@ -190,6 +190,22 @@
       >
         <v-icon dark>library_add</v-icon>
       </v-btn>
+      <v-btn
+        @click="checkCard()"
+        flat
+        small
+        color="gray"
+        class="mx-0"
+      >
+        <v-icon
+          dark
+          v-if="check"
+        >check_box</v-icon>
+        <v-icon
+          dark
+          v-else
+        >check_box_outline_blank</v-icon>
+      </v-btn>
     </div>
     <v-divider></v-divider>
     <v-dialog
@@ -333,6 +349,7 @@ export default {
       dialogClear: false,
       sumDecorCustom: '',
       clientSaleCustom: '',
+      check: false,
     };
   },
   computed: {
@@ -448,6 +465,10 @@ export default {
       };
 
       this.$emit('updateProps', props);
+    },
+    checkCard() {
+      this.check = !this.check;
+      this.$emit('checkCard', this.sumPay);
     },
     priceRound: function priceRound(sum) {
       // const remainder = (sum % 10 <= 5 && sum % 10 > 0 && sum > 0) ? -5 : 0;

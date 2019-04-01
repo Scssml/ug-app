@@ -66,6 +66,44 @@
       ></v-select>
     </div>
     <v-divider></v-divider>
+    <v-layout
+      row
+    >
+      <v-flex
+        xs9
+      >
+        <div class="pl-3" style="height: 30px;">
+          <v-select
+            label="Букет"
+            :items="orderBouquets"
+            item-text="name"
+            item-value="id"
+            solo
+            flat
+            hide-details
+            no-data-text="Нет букетов"
+            v-model="bouquet"
+            class="scs-small"
+            @change="updateProps()"
+          ></v-select>
+        </div>
+      </v-flex>
+      <v-flex
+        xs3
+      >
+        <div class="pr-3" style="height: 30px;" title="Кол-во">
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            v-model="bouquetCount"
+            class="scs-small"
+          ></v-text-field>
+        </div>
+      </v-flex>
+    </v-layout>
+    <v-divider></v-divider>
     <div class="px-3" style="height: 30px;">
       <v-text-field
         label="Оформление, %"
@@ -350,6 +388,25 @@ export default {
       sumDecorCustom: '',
       clientSaleCustom: '',
       check: false,
+      orderBouquets: [
+        {
+          name: 'Букет 1 (2шт)',
+          id: 1,
+          disabled: false,
+        },
+        {
+          name: 'Букет 2 (1шт)',
+          id: 2,
+          disabled: false,
+        },
+        {
+          name: 'Букет 3 (0шт)',
+          id: 3,
+          disabled: true,
+        },
+      ],
+      bouquetCount: null,
+      bouquet: null,
     };
   },
   computed: {
@@ -456,12 +513,27 @@ export default {
     },
     updateProps: function updateProps() {
       const props = {
+        // florist: this.florist,
+        // client: this.client,
+        // order: this.order,
+        // decorPersent: this.decorPersent,
+        // delivery: this.delivery,
+        // salePersent: this.clientSale,
+
+
+        date: new Date().toISOString().split('T')[0],
         florist: this.florist,
+        user: this.$store.state.authUser,
         client: this.client,
-        order: this.order,
+        order: +this.order,
+        sum: this.sumFlowers,
         decorPersent: this.decorPersent,
-        delivery: this.delivery,
-        salePersent: this.salePersent,
+        sumDecor: this.sumDecor,
+        delivery: +this.delivery,
+        salePersent: this.clientSale,
+        sumSale: this.sumSale,
+        sumPay: this.sumPay,
+        typePay: this.typePay,
       };
 
       this.$emit('updateProps', props);

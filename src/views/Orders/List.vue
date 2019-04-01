@@ -439,6 +439,56 @@
                           ></v-text-field>
                         </v-flex>
                       </v-layout>
+
+                      <p class="mb-0">Букеты</p>
+                      <v-layout
+                        row
+                        wrap
+                        v-for="(bouquet, index) in orderBouquets"
+                        :key="'bouquet-' + index"
+                        align-center
+                      >
+                        <v-flex
+                          xs9
+                          class="pr-3"
+                        >
+                          <v-text-field
+                            label="Название"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            v-model="bouquet.name"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
+                        </v-flex>
+                        <v-flex
+                          xs2
+                          class="pr-3"
+                        >
+                          <v-text-field
+                            label="Кол-во"
+                            :rules="[v => !!v || 'Заполните поле']"
+                            v-model="bouquet.count"
+                            hide-details
+                            class="mb-4"
+                            :readonly="editedItemReadOnly"
+                          ></v-text-field>
+                        </v-flex>
+                        <v-flex
+                          xs1
+                        >
+                          <v-icon
+                            @click="bouquetDelete(index)"
+                          >
+                            delete
+                          </v-icon>
+                        </v-flex>
+                      </v-layout>
+                      <v-icon
+                        @click="bouquetAdd()"
+                      >
+                        add
+                      </v-icon>
                     </v-flex>
 
                     <v-flex
@@ -954,6 +1004,7 @@ export default {
       createdSuccess: false,
       dialogDeleted: false,
       deletedId: -1,
+      orderBouquets: [],
     };
   },
   computed: {
@@ -1399,6 +1450,15 @@ export default {
     updateAddress(data) {
       this.editedItem.address = data.address;
       this.editedItem.geo = data.geo;
+    },
+    bouquetAdd() {
+      this.orderBouquets.push({
+        name: null,
+        count: null,
+      });
+    },
+    bouquetDelete(index) {
+      this.orderBouquets.splice(index, 1);
     },
   },
   mounted() {

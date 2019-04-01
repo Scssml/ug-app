@@ -11,6 +11,16 @@
       :timeout="3600000"
     >
       Общая стоимость: {{ checkSum }}
+      <v-btn
+        color="error"
+        depressed
+        @click="deleteCheckCards"
+      >Удалить</v-btn>
+      <v-btn
+        color="info"
+        depressed
+        @click="dialogPay = true"
+      >Оплатить</v-btn>
     </v-snackbar>
     <v-dialog
       :value="loadingDialog"
@@ -429,6 +439,72 @@
         </v-container>
       </v-flex>
     </v-layout>
+
+    <v-dialog
+      v-model="dialogPay"
+      persistent
+      max-width="420px"
+    >
+      <v-card>
+        <v-alert
+          :value="createdSuccess"
+          type="success"
+          class="my-0"
+        >
+          Букеты созданы
+        </v-alert>
+        <v-form
+          ref="form"
+          lazy-validation
+        >
+          <v-card-title
+            class="px-4"
+          >
+            <span class="headline">Оплата заказа</span>
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-card-text
+            class="px-4"
+          >
+            <v-text-field
+              label="К оплате"
+              readonly
+              :value="checkSum"
+            ></v-text-field>
+            <v-text-field
+              label="Сумма"
+              :rules="[v => (v >= checkSum || typePay === 'На баланс') || 'Заполните поле']"
+              v-model="sumClient"
+              v-if="typePay !== 'На баланс'"
+            ></v-text-field>
+            <v-text-field
+              label="Сдача"
+              readonly
+              :value="sumChange"
+              v-if="typePay !== 'На баланс'"
+            ></v-text-field>
+            <v-select
+              label="Способ оплаты"
+              :items="typePayList"
+              :rules="[v => !!v || 'Заполните поле']"
+              v-model="typePay"
+            ></v-select>
+          </v-card-text>
+          <v-card-actions
+            class="px-4 pb-4"
+          >
+            <v-btn
+              @click.native="dialogPay = false"
+            >Отмена</v-btn>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="info"
+              @click="pay()"
+            >Оплатить</v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -486,6 +562,7 @@ export default {
         'Флорист',
         'Клиент',
         'Заказ',
+        'Букеты',
         'Cтавка на оформление, %',
         'Сумма товара',
         'Доставка',
@@ -504,9 +581,34 @@ export default {
       cashPrevDay: 1200,
       sumEncashment: 0,
       checkCardList: [],
+      createdSuccess: false,
+      dialogPay: false,
+      sumClient: 0,
+      typePay: null,
     };
   },
   computed: {
+    typePayList() {
+      const typePay = [
+        'Наличные',
+        'Яндекс',
+        'Карта',
+        'Терминал',
+      ];
+
+      const checkClients = this.checkCardList.every((item) => {
+        const card = this.cardsList[item.index];
+        return card.props.client !== 0;
+      });
+
+      if (checkClients) typePay.push('На баланс');
+
+      return typePay;
+    },
+    sumChange: function sumChange() {
+      const sum = this.sumClient - this.checkSum;
+      return (sum > 0) ? sum : 0;
+    },
     checkSum() {
       return this.checkCardList.reduce((sum, item) => {
         const allSum = sum + item.sum;
@@ -683,7 +785,11 @@ export default {
           && elem.success !== true);
         localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-        this.checkCardList.splice(index, 1);
+        const findIndex = this.checkCardList.findIndex(card => card.index === index);
+
+        if (findIndex + 1) {
+          this.checkCardList.splice(findIndex, 1);
+        }
       }
     },
     updateProps: function updateProps(index, props) {
@@ -836,6 +942,33 @@ export default {
         (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
         && elem.success !== true);
       localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+
+      const findIndex = this.checkCardList.findIndex(card => card.index === index);
+
+      if (findIndex + 1) {
+        this.checkCardList.splice(findIndex, 1);
+      }
+    },
+    pay() {
+      this.createdSuccess = true;
+      const checkCards = this.checkCardList.slice();
+
+      checkCards.forEach((item) => {
+        const card = this.cardsList[item.index];
+        card.props.typePay = this.typePay;
+        this.saveProps(item.index, card.props);
+      });
+
+      setTimeout(() => {
+        this.dialogPay = false;
+      }, 1000);
+    },
+    deleteCheckCards() {
+      const checkCards = this.checkCardList.slice();
+
+      checkCards.forEach((item) => {
+        this.deleteItem(item.index);
+      });
     },
   },
   mounted() {

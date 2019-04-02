@@ -346,11 +346,11 @@
             <v-card
               flat
             >
-              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Остаток</div>
+              <div class="py-1 px-1 text-xs-center" style="height: 30px;">Остаток</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="py-1 px-3 text-xs-center"
+                  class="py-1 px-1 text-xs-center"
                   style="height: 30px;"
                   :key="index"
                 >{{ item.store }}</div>
@@ -362,11 +362,11 @@
             <v-card
               flat
             >
-              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Тип</div>
+              <div class="py-1 px-1 text-xs-center" style="height: 30px;">Тип</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="py-1 px-3 text-xs-center"
+                  class="py-1 px-1 text-xs-center"
                   style="height: 30px;"
                   :key="index"
                 >{{ item.type }}</div>
@@ -378,11 +378,11 @@
             <v-card
               flat
             >
-              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Наименование</div>
+              <div class="py-1 px-1 text-xs-center" style="height: 30px;">Наименование</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="py-1 px-3 text-xs-center"
+                  class="py-1 px-1 text-xs-center"
                   style="height: 30px;"
                   :key="index"
                 >{{ item.name }}</div>
@@ -394,11 +394,11 @@
             <v-card
               flat
             >
-              <div class="py-1 px-3 text-xs-center" style="height: 30px;">Цена</div>
+              <div class="py-1 px-1 text-xs-center" style="height: 30px;">Цена</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
                 <div
-                  class="py-1 px-3 text-xs-center"
+                  class="py-1 px-1 text-xs-center"
                   style="height: 30px;"
                   :key="index"
                 >{{ item.price }}</div>
@@ -561,15 +561,14 @@ export default {
       propsBouquet: [
         'Флорист',
         'Клиент',
-        'Заказ',
-        'Букеты',
+        'Заказ | Букет',
         'Cтавка на оформление, %',
         'Сумма товара',
         'Доставка',
         'Оформление',
         'Ставка на скидку,%',
         'Сумма скидки',
-        'Всего к оплате',
+        'Всего к оплате | Кол-во',
         '',
       ],
       cardsList: [],
@@ -997,6 +996,11 @@ export default {
       }
       .v-select__selection--comma {
         margin: 6px 4px 6px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        max-width: 116px;
+        text-overflow: ellipsis;
+        display: block;
       }
     }
   }

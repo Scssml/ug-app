@@ -5,7 +5,7 @@
     style="border-left: 1px solid #ccc; font-size: 16px;"
     :class="($route.query.selectOrder === order) ? 'selected' : ''"
   >
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-select
         label="Флорист"
         :items="floristsList"
@@ -21,7 +21,7 @@
       ></v-select>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <!-- <v-select
         label="Клиент"
         :items="clientsList"
@@ -50,29 +50,32 @@
       ></v-autocomplete>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 30px;">
-      <v-select
-        label="Заказ"
-        :items="clientOrdersList"
-        item-text="id"
-        item-value="id"
-        solo
-        flat
-        hide-details
-        no-data-text="Нет заказов"
-        v-model="order"
-        class="scs-small"
-        @change="updateProps()"
-      ></v-select>
-    </div>
-    <v-divider></v-divider>
     <v-layout
       row
     >
       <v-flex
-        xs9
+        xs5
       >
-        <div class="pl-3" style="height: 30px;">
+        <div class="pl-0" style="height: 30px;">
+          <v-select
+            label="Заказ"
+            :items="clientOrdersList"
+            item-text="id"
+            item-value="id"
+            solo
+            flat
+            hide-details
+            no-data-text="Нет заказов"
+            v-model="order"
+            class="scs-small"
+            @change="updateProps()"
+          ></v-select>
+        </div>
+      </v-flex>
+      <v-flex
+        xs7
+      >
+        <div class="pr-0" style="height: 30px;">
           <v-select
             label="Букет"
             :items="orderBouquets"
@@ -88,23 +91,9 @@
           ></v-select>
         </div>
       </v-flex>
-      <v-flex
-        xs3
-      >
-        <div class="pr-3" style="height: 30px;" title="Кол-во">
-          <v-text-field
-            label="0"
-            solo
-            flat
-            hide-details
-            v-model="bouquetCount"
-            class="scs-small"
-          ></v-text-field>
-        </div>
-      </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="Оформление, %"
         solo
@@ -119,7 +108,7 @@
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumFlowers }}</span>
     </div> -->
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
         solo
@@ -131,7 +120,7 @@
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="Доставка"
         solo
@@ -146,7 +135,7 @@
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumDecor }}</span>
     </div> -->
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
         solo
@@ -159,7 +148,7 @@
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="Скидка, %"
         solo
@@ -176,7 +165,7 @@
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumSale }}</span>
     </div> -->
-    <div class="px-3" style="height: 30px;">
+    <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
         solo
@@ -191,23 +180,44 @@
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumPay }}</span>
     </div> -->
-    <div class="px-3" style="height: 30px;">
-      <v-text-field
-        label="0"
-        solo
-        flat
-        hide-details
-        :value="sumPay"
-        class="scs-small"
-        readonly
-      ></v-text-field>
-    </div>
+    <v-layout
+      row
+    >
+      <v-flex
+        xs6
+      >
+        <div class="pl-0" style="height: 30px;">
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            :value="sumPay"
+            class="scs-small"
+            readonly
+          ></v-text-field>
+        </div>
+      </v-flex>
+      <v-flex
+        xs6
+      >
+        <div class="pr-0" style="height: 30px;">
+          <v-text-field
+            label="Кол-во"
+            solo
+            flat
+            hide-details
+            v-model="bouquetCount"
+            class="scs-small text-lg-right"
+          ></v-text-field>
+        </div>
+      </v-flex>
+    </v-layout>
     <v-divider></v-divider>
-    <div class="px-3 text-xs-center" style="height: 40px;">
+    <div class="px-0 text-xs-center" style="height: 40px;">
       <v-btn
         color="info"
         @click.native="dialogPay = true"
-        :disabled="!activePayBtn"
         small
       >Оплатить</v-btn>
       <v-btn
@@ -405,7 +415,7 @@ export default {
           disabled: true,
         },
       ],
-      bouquetCount: null,
+      bouquetCount: 1,
       bouquet: null,
     };
   },

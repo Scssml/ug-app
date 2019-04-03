@@ -710,13 +710,19 @@
                   v-if="props.item.status === 3"
                 ></v-select>
               </td>
-              <td class="text-xs-right" style="width: 15%;">
+              <td class="text-xs-right" style="width: 25%;">
                 <v-icon
                   class="mr-2"
                   @click="createdBouquet(props.item)"
                   v-if="props.item.status === 1"
                 >
                   playlist_add
+                </v-icon>
+                <v-icon
+                  class="mr-2"
+                  @click="copyOrder(props.item)"
+                >
+                  add_to_photos
                 </v-icon>
                 <v-icon
                   class="mr-2"
@@ -1459,6 +1465,21 @@ export default {
     },
     bouquetDelete(index) {
       this.orderBouquets.splice(index, 1);
+    },
+    copyOrder: function editItem(item) {
+      this.editedIndex = -1;
+      this.editedItem = Object.assign({}, item);
+      this.dialogForm = true;
+
+      if (
+        (this.editedItem.addressee !== '' && this.editedItem.addressee !== undefined)
+        || (this.editedItem.addresseeName !== '' && this.editedItem.addresseeName !== undefined)
+        || (this.editedItem.addresseePhone !== '' && this.editedItem.addresseePhone !== undefined)
+      ) {
+        this.clientAddressee = false;
+      } else {
+        this.clientAddressee = true;
+      }
     },
   },
   mounted() {

@@ -564,7 +564,7 @@ export default {
         'Заказ | Букет',
         'Cтавка на оформление, %',
         'Сумма товара',
-        'Доставка',
+        'Доставка | Комментарий',
         'Оформление',
         'Ставка на скидку,%',
         'Сумма скидки',
@@ -1001,6 +1001,17 @@ export default {
         max-width: 116px;
         text-overflow: ellipsis;
         display: block;
+      }
+    }
+  }
+
+  .input-min {
+    width: 40px;
+    display: inline-block;
+
+    .v-text-field.v-text-field--enclosed {
+      .v-input__slot {
+        padding: 0 5px;
       }
     }
   }

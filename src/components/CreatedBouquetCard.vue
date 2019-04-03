@@ -120,22 +120,46 @@
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-0" style="height: 30px;">
-      <v-text-field
-        label="Доставка"
-        solo
-        flat
-        hide-details
-        v-model="delivery"
-        class="scs-small"
-        @change="updateProps()"
-      ></v-text-field>
-    </div>
+    <v-layout
+      row
+      wrap
+    >
+      <v-flex
+        xs3
+      >
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="Доставка"
+            solo
+            flat
+            hide-details
+            v-model="delivery"
+            class="scs-small"
+            @change="updateProps()"
+          ></v-text-field>
+        </div>
+      </v-flex>
+      <v-flex
+        xs9
+      >
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="Комментарий"
+            solo
+            flat
+            hide-details
+            v-model="comment"
+            class="scs-small"
+            @change="updateProps()"
+          ></v-text-field>
+        </div>
+      </v-flex>
+    </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumDecor }}</span>
     </div> -->
-    <div class="px-0" style="height: 30px;">
+    <!-- <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
         solo
@@ -146,7 +170,43 @@
         @input="sumDecorCustom = $event"
         @change="updateProps()"
       ></v-text-field>
-    </div>
+    </div> -->
+    <v-layout
+      row
+      wrap
+    >
+      <v-flex
+        xs6
+      >
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            :value="sumDecor"
+            class="scs-small"
+            readonly
+          ></v-text-field>
+        </div>
+      </v-flex>
+      <v-flex
+        xs6
+      >
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            type="number"
+            v-model="sumDecorAdditional"
+            class="scs-small"
+            @input="updateProps()"
+          ></v-text-field>
+        </div>
+      </v-flex>
+    </v-layout>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
       <v-text-field
@@ -180,39 +240,17 @@
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumPay }}</span>
     </div> -->
-    <v-layout
-      row
-    >
-      <v-flex
-        xs6
-      >
-        <div class="pl-0" style="height: 30px;">
-          <v-text-field
-            label="0"
-            solo
-            flat
-            hide-details
-            :value="sumPay"
-            class="scs-small"
-            readonly
-          ></v-text-field>
-        </div>
-      </v-flex>
-      <v-flex
-        xs6
-      >
-        <div class="pr-0" style="height: 30px;">
-          <v-text-field
-            label="Кол-во"
-            solo
-            flat
-            hide-details
-            v-model="bouquetCount"
-            class="scs-small text-lg-right"
-          ></v-text-field>
-        </div>
-      </v-flex>
-    </v-layout>
+    <div class="pl-0" style="height: 30px;">
+      <v-text-field
+        label="0"
+        solo
+        flat
+        hide-details
+        :value="sumPay"
+        class="scs-small"
+        readonly
+      ></v-text-field>
+    </div>
     <v-divider></v-divider>
     <div class="px-0 text-xs-center" style="height: 40px;">
       <v-btn
@@ -238,6 +276,16 @@
       >
         <v-icon dark>library_add</v-icon>
       </v-btn>
+      <div class="pr-0 input-min" style="height: 30px;">
+        <v-text-field
+          label="Кол-во"
+          solo
+          flat
+          hide-details
+          v-model="bouquetCount"
+          class="scs-small text-lg-right"
+        ></v-text-field>
+      </div>
       <v-btn
         @click="checkCard()"
         flat
@@ -383,6 +431,8 @@ export default {
       order: '',
       decorPersent: 10,
       delivery: 0,
+      comment: '',
+      sumDecorAdditional: 0,
       salePersent: null,
       dialogPay: false,
       sumClient: 0,
@@ -507,7 +557,7 @@ export default {
           order: +this.order,
           sum: this.sumFlowers,
           decorPersent: this.decorPersent,
-          sumDecor: this.sumDecor,
+          sumDecor: +this.sumDecor + +this.sumDecorAdditional,
           delivery: +this.delivery,
           salePersent: this.clientSale,
           sumSale: this.sumSale,
@@ -538,7 +588,7 @@ export default {
         order: +this.order,
         sum: this.sumFlowers,
         decorPersent: this.decorPersent,
-        sumDecor: this.sumDecor,
+        sumDecor: +this.sumDecor + +this.sumDecorAdditional,
         delivery: +this.delivery,
         salePersent: this.clientSale,
         sumSale: this.sumSale,

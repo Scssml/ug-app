@@ -208,34 +208,46 @@
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <div class="px-0" style="height: 30px;">
-      <v-text-field
-        label="Скидка, %"
-        solo
-        flat
-        hide-details
-        :value="clientSale"
-        :background-color="(clientSale > 0) ? 'deep-orange lighten-4' : ''"
-        class="scs-small"
-        @input="clientSaleCustom = $event"
-        @change="updateProps()"
-      ></v-text-field>
-    </div>
-    <v-divider></v-divider>
-    <!-- <div class="py-1 px-3" style="height: 30px;">
-      <span class="px-3">{{ sumSale }}</span>
-    </div> -->
-    <div class="px-0" style="height: 30px;">
-      <v-text-field
-        label="0"
-        solo
-        flat
-        hide-details
-        :value="sumSale"
-        class="scs-small"
-        readonly
-      ></v-text-field>
-    </div>
+    <v-layout
+      row
+      wrap
+    >
+      <v-flex
+        xs6
+      >
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="Скидка, %"
+            solo
+            flat
+            hide-details
+            :value="clientSale"
+            :background-color="(clientSale > 0) ? 'deep-orange lighten-4' : ''"
+            class="scs-small"
+            @input="clientSaleCustom = $event"
+            @change="updateProps()"
+          ></v-text-field>
+        </div>
+      </v-flex>
+      <v-flex
+        xs6
+      >
+        <!-- <div class="py-1 px-3" style="height: 30px;">
+          <span class="px-3">{{ sumSale }}</span>
+        </div> -->
+        <div class="px-0" style="height: 30px;">
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            :value="sumSale"
+            class="scs-small"
+            readonly
+          ></v-text-field>
+        </div>
+      </v-flex>
+    </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumPay }}</span>
@@ -498,7 +510,11 @@ export default {
       return this.priceRound(sum);
     },
     sumPay: function sumPay() {
-      const sum = (this.sumFlowers + this.sumDecor + +this.delivery) - this.sumSale;
+      let sum = this.sumFlowers;
+      sum += this.sumDecor;
+      sum += +this.delivery;
+      sum += +this.sumDecorAdditional;
+      sum -= this.sumSale;
       return this.priceRound(sum);
     },
     sumChange: function sumChange() {

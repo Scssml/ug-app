@@ -1,6 +1,6 @@
 module.exports = {
   devServer: {
-    proxy: 'http://dev.ug-21.ru',
+    proxy: 'http://192.168.10.151',
     // proxy: {
     //   '/api': {
     //     target: 'http://10.0.0.18:3000',

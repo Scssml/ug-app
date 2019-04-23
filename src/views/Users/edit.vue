@@ -4,7 +4,7 @@
       :value="createdSuccess"
       type="success"
       class="my-0"
-    >Группа изменена</v-alert>
+    >Пользователь изменен</v-alert>
     <v-form
       ref="form"
       lazy-validation
@@ -12,27 +12,41 @@
       <v-card-title
         class="px-4"
       >
-        <span class="headline">Изменение группы</span>
+        <span class="headline">Изменение пользователя</span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text
         class="px-4"
       >
-        <v-checkbox
-          label="Активность"
-          v-model="editedItem.isActive"
-          color="primary"
-        ></v-checkbox>
         <v-text-field
           label="Имя"
           :rules="[v => !!v || 'Заполните поле']"
           v-model="editedItem.name"
         ></v-text-field>
         <v-text-field
-          label="Код"
+          label="Логин"
           :rules="[v => !!v || 'Заполните поле']"
-          v-model="editedItem.code"
+          v-model="editedItem.login"
         ></v-text-field>
+        <!-- <v-text-field
+          label="Пароль"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model="editedItem.password"
+          type="password"
+        ></v-text-field> -->
+        <v-select
+          label="Группа"
+          :items="usersGroupsList"
+          :rules="[v => !!v || 'Заполните поле']"
+          item-text="name"
+          item-value="id"
+          v-model="editedItem.group"
+        ></v-select>
+        <v-checkbox
+          label="Активность"
+          v-model="editedItem.isActive"
+          color="primary"
+        ></v-checkbox>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -62,22 +76,41 @@ export default {
     return {
       editedItem: {},
       createdSuccess: false,
+      usersGroupsList: [],
     };
   },
   methods: {
     getItem() {
       if (this.id) {
         const itemParams = {
-          type: 'users-groups',
+          type: 'users',
           id: this.id,
         };
 
         this.$store.dispatch('getItem', itemParams).then((response) => {
           this.editedItem = response;
+          this.editedItem.group = +response.group.id;
         }).catch(() => {
           console.log('error');
         });
       }
+    },
+    getUsersGroupsList() {
+      const itemParams = {
+        type: 'users-groups',
+        filter: {
+          isActive: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersGroupsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
     },
     cancel() {
       this.editedItem = {};
@@ -91,7 +124,7 @@ export default {
         delete propsItem.id;
 
         const itemParams = {
-          type: 'users-groups',
+          type: 'users',
           id: this.id,
           props: propsItem,
         };
@@ -107,6 +140,7 @@ export default {
   },
   mounted() {
     this.getItem();
+    this.getUsersGroupsList();
   },
 };
 </script>

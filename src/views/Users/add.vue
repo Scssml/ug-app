@@ -4,7 +4,7 @@
       :value="createdSuccess"
       type="success"
       class="my-0"
-    >Группа изменена</v-alert>
+    >Пользователь добавлен</v-alert>
     <v-form
       ref="form"
       lazy-validation
@@ -12,27 +12,41 @@
       <v-card-title
         class="px-4"
       >
-        <span class="headline">Изменение группы</span>
+        <span class="headline">Добавление пользователя</span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text
         class="px-4"
       >
-        <v-checkbox
-          label="Активность"
-          v-model="editedItem.isActive"
-          color="primary"
-        ></v-checkbox>
         <v-text-field
           label="Имя"
           :rules="[v => !!v || 'Заполните поле']"
           v-model="editedItem.name"
         ></v-text-field>
         <v-text-field
-          label="Код"
+          label="Логин"
           :rules="[v => !!v || 'Заполните поле']"
-          v-model="editedItem.code"
+          v-model="editedItem.login"
         ></v-text-field>
+        <v-text-field
+          label="Пароль"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model="editedItem.password"
+          type="password"
+        ></v-text-field>
+        <v-select
+          label="Группа"
+          :items="usersGroupsList"
+          :rules="[v => !!v || 'Заполните поле']"
+          item-text="name"
+          item-value="id"
+          v-model="editedItem.group"
+        ></v-select>
+        <v-checkbox
+          label="Активность"
+          v-model="editedItem.isActive"
+          color="primary"
+        ></v-checkbox>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -52,32 +66,36 @@
 
 <script>
 export default {
-  props: {
-    id: {
-      type: Number,
-      required: true,
-    },
-  },
   data() {
     return {
-      editedItem: {},
+      editedItem: {
+        name: '',
+        login: '',
+        password: '',
+        group: 0,
+        isActive: true,
+      },
       createdSuccess: false,
+      usersGroupsList: [],
     };
   },
   methods: {
-    getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'users-groups',
-          id: this.id,
-        };
+    getUsersGroupsList() {
+      const itemParams = {
+        type: 'users-groups',
+        filter: {
+          isActive: true,
+        },
+      };
 
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-        }).catch(() => {
-          console.log('error');
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersGroupsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
         });
-      }
+      }).catch(() => {
+        console.log('error');
+      });
     },
     cancel() {
       this.editedItem = {};
@@ -88,15 +106,13 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
 
         const itemParams = {
-          type: 'users-groups',
-          id: this.id,
+          type: 'users',
           props: propsItem,
         };
 
-        this.$store.dispatch('updateItem', itemParams).then(() => {
+        this.$store.dispatch('addItem', itemParams).then(() => {
           this.createdSuccess = true;
           setTimeout(() => {
             this.$emit('cancel');
@@ -106,7 +122,7 @@ export default {
     },
   },
   mounted() {
-    this.getItem();
+    this.getUsersGroupsList();
   },
 };
 </script>

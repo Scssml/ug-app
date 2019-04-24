@@ -31,33 +31,6 @@
       </v-list>
     </v-dialog>
     <template v-if="!loadingDialog">
-      <v-dialog
-        v-model="dialogDeleted"
-        persistent
-        max-width="320px"
-      >
-        <v-card>
-          <v-card-title
-            class="px-4"
-          >
-            <span class="headline">Удалить?</span>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-actions
-            class="px-4 py-3"
-          >
-            <v-btn
-              @click.native="dialogDeleted = false"
-            >Отмена</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="error"
-              @click="deletedItem(deletedId)"
-            >Удалить</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
       <v-card>
         <v-card-title>
           <v-text-field
@@ -75,52 +48,15 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <v-card>
-              <v-alert
-                :value="createdSuccess"
-                type="success"
-                class="my-0"
-              >
-                {{ formAlertTitle }}
-              </v-alert>
-              <v-form
-                ref="form"
-                lazy-validation
-              >
-                <v-card-title
-                  class="px-4"
-                >
-                  <span class="headline">{{ formTitle }}</span>
-                </v-card-title>
-                <v-divider></v-divider>
-                <v-card-text
-                  class="px-4"
-                >
-                  <v-text-field
-                    label="Имя"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.name"
-                  ></v-text-field>
-                  <v-checkbox
-                    label="Активность"
-                    v-model="editedItem.active"
-                    color="primary"
-                  ></v-checkbox>
-                </v-card-text>
-                <v-card-actions
-                  class="px-4 pb-4"
-                >
-                  <v-btn
-                    @click.native="closeDialog()"
-                  >Отмена</v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    color="info"
-                    @click="submitForm"
-                  >Сохранить</v-btn>
-                </v-card-actions>
-              </v-form>
-            </v-card>
+            <florist-edit
+              v-if="editedId"
+              :id="editedId"
+              @cancel="closeDialog()"
+            ></florist-edit>
+            <florist-add
+              v-else
+              @cancel="closeDialog()"
+            ></florist-add>
           </v-dialog>
         </v-card-title>
 
@@ -133,22 +69,16 @@
           :search="search"
         >
           <template slot="items" slot-scope="props">
-            <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
-            <td style="width: 60%;">{{ props.item.name }}</td>
-            <td class="text-xs-right" style="width: 10%;">
-              {{ (!!props.item.active) ? 'Да' : 'Нет' }}
+            <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
+            <td>{{ props.item.name }}</td>
+            <td class="text-xs-right">
+              {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 7%;">
+            <td class="text-xs-right" style="width: 110px;">
               <v-icon
-                class="mr-2"
-                @click="editItem(props.item)"
+                @click="editItem(props.item.id)"
               >
                 edit
-              </v-icon>
-              <v-icon
-                @click="confirmDeleted(props.item.id)"
-              >
-                delete
               </v-icon>
             </td>
           </template>
@@ -159,8 +89,15 @@
 </template>
 
 <script>
+import FloristEdit from './edit.vue';
+import FloristAdd from './add.vue';
+
 export default {
-  name: 'Clients',
+  name: 'Florists',
+  components: {
+    FloristEdit,
+    FloristAdd,
+  },
   data() {
     return {
       loadingData: [
@@ -197,33 +134,14 @@ export default {
         },
       ],
       dialogForm: false,
+      editedId: 0,
       floristsList: [],
-      editedIndex: -1,
-      editedItem: {
-        name: '',
-        id: 0,
-        active: true,
-      },
-      defaultItem: {
-        name: '',
-        id: 0,
-        active: true,
-      },
-      createdSuccess: false,
-      dialogDeleted: false,
-      deletedId: -1,
     };
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
-    },
-    formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Новый флорист' : 'Изменение флориста';
-    },
-    formAlertTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Флорист создан' : 'Флорист изменен';
     },
   },
   methods: {
@@ -247,70 +165,14 @@ export default {
         loadData.error = true;
       });
     },
-    submitForm: function submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-
-        const itemParams = {
-          type: 'florists',
-          props: propsItem,
-        };
-
-        if (this.editedIndex > -1) {
-          itemParams.id = this.editedItem.id;
-          this.$store.dispatch('updateItem', itemParams).then(() => {
-            this.createdSuccess = true;
-            this.getFloristsList();
-            setTimeout(() => {
-              this.closeDialog();
-            }, 1000);
-          });
-        } else {
-          this.$store.dispatch('addItem', itemParams).then(() => {
-            this.createdSuccess = true;
-            this.getFloristsList();
-            setTimeout(() => {
-              this.closeDialog();
-            }, 1000);
-          });
-        }
-      }
-    },
-    closeDialog: function closeDialog() {
+    closeDialog() {
+      this.getFloristsList();
       this.dialogForm = false;
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-        this.createdSuccess = false;
-      }, 300);
+      this.editedId = 0;
     },
-    editItem: function editItem(item) {
-      this.editedIndex = this.floristsList.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+    editItem(id) {
+      this.editedId = +id;
       this.dialogForm = true;
-    },
-    confirmDeleted: function confirmDeleted(id) {
-      this.dialogDeleted = true;
-      this.deletedId = id;
-    },
-    deletedItem: function deletedItem(elemId) {
-      const itemParams = {
-        type: 'florists',
-        id: elemId,
-      };
-
-      this.$store.dispatch('deleteItem', itemParams).then(() => {
-        this.getFloristsList();
-        this.closeConfirm();
-      });
-    },
-    closeConfirm: function closeDialog() {
-      this.dialogDeleted = false;
-      setTimeout(() => {
-        this.deletedId = -1;
-      }, 300);
     },
   },
   mounted() {

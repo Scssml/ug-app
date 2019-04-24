@@ -31,33 +31,6 @@
       </v-list>
     </v-dialog>
     <template v-if="!loadingDialog">
-      <v-dialog
-        v-model="dialogDeleted"
-        persistent
-        max-width="320px"
-      >
-        <v-card>
-          <v-card-title
-            class="px-4"
-          >
-            <span class="headline">Удалить?</span>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-actions
-            class="px-4 py-3"
-          >
-            <v-btn
-              @click.native="dialogDeleted = false"
-            >Отмена</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="error"
-              @click="deletedItem(deletedId)"
-            >Удалить</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
       <v-card>
         <v-card-title>
           <v-layout
@@ -98,113 +71,15 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <v-card>
-              <v-alert
-                :value="createdSuccess"
-                type="success"
-                class="my-0"
-              >
-                {{ formAlertTitle }}
-              </v-alert>
-              <v-form
-                ref="form"
-                lazy-validation
-              >
-                <v-card-title
-                  class="px-4"
-                >
-                  <span class="headline">{{ formTitle }}</span>
-                </v-card-title>
-                <v-divider></v-divider>
-                <v-card-text
-                  class="px-4"
-                >
-                  <v-select
-                    label="Тип клиента"
-                    :items="typeClient"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    item-text="name"
-                    item-value="id"
-                    v-model="editedItem.type"
-                    hide-details
-                    class="mb-4"
-                  ></v-select>
-                  <v-text-field
-                    label="Имя"
-                    :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.name"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Телефон"
-                    v-model="editedItem.phone"
-                  ></v-text-field>
-                  <v-menu
-                    :close-on-content-click="false"
-                    v-model="dataPicker"
-                    :nudge-right="40"
-                    lazy
-                    transition="scale-transition"
-                    offset-y
-                    full-width
-                    min-width="290px"
-                    class="mb-4"
-                  >
-                    <v-text-field
-                      slot="activator"
-                      label="День рождения"
-                      v-model="editedItem.birthDay"
-                      prepend-icon="event"
-                      hide-details
-                      readonly
-                    ></v-text-field>
-                    <v-date-picker
-                      v-model="editedItem.birthDay"
-                      @input="dataPicker = false"
-                      no-title
-                      scrollable
-                      locale="ru-ru"
-                      first-day-of-week="1"
-                    ></v-date-picker>
-                  </v-menu>
-                  <!-- <v-text-field
-                    label="День рождения"
-                    v-model="editedItem.birthDay"
-                  ></v-text-field> -->
-                  <v-text-field
-                    label="Счет"
-                    v-model="editedItem.bill"
-                    type="number"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Лимит"
-                    v-model="editedItem.credit"
-                    type="number"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Скидка"
-                    v-model="editedItem.sale"
-                    type="number"
-                  ></v-text-field>
-                  <v-checkbox
-                    label="Активность"
-                    v-model="editedItem.active"
-                    color="primary"
-                  ></v-checkbox>
-                </v-card-text>
-                <v-card-actions
-                  class="px-4 pb-4"
-                >
-                  <v-btn
-                    @click.native="closeDialog()"
-                  >Отмена</v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    color="info"
-                    @click="submitForm"
-                  >Сохранить</v-btn>
-                </v-card-actions>
-              </v-form>
-            </v-card>
+            <client-edit
+              v-if="editedId"
+              :id="editedId"
+              @cancel="closeDialog()"
+            ></client-edit>
+            <client-add
+              v-else
+              @cancel="closeDialog()"
+            ></client-add>
           </v-dialog>
         </v-card-title>
 
@@ -218,20 +93,17 @@
           :custom-filter="customFilter"
         >
           <template slot="items" slot-scope="props">
-            <td class="text-xs-right" style="width: 2%;">{{ props.item.id }}</td>
-            <td style="width: 25%;">{{ props.item.name }}</td>
-            <td style="width: 15%;">{{ props.item.phone }}</td>
-            <td style="width: 10%;">
-              {{ (findItem = typeClient.find(item => item.id === props.item.type))
-                  ? findItem.name : '' }}
-            </td>
-            <td style="width: 10%;">{{ props.item.birthDay }}</td>
-            <td class="text-xs-right" style="width: 8%;">{{ props.item.bill }}</td>
-            <td class="text-xs-right" style="width: 8%;">{{ props.item.sale }}</td>
-            <td class="text-xs-right" style="width: 8%;">
+            <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
+            <td>{{ props.item.name }}</td>
+            <td>{{ props.item.phone }}</td>
+            <td>{{ props.item.type }}</td>
+            <td>{{ props.item.birthDay }}</td>
+            <td class="text-xs-right">{{ props.item.bill }}</td>
+            <td class="text-xs-right">{{ props.item.sale }}</td>
+            <td class="text-xs-right">
               {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 10%;">
+            <td class="text-xs-right" style="width: 110px;">
               <v-icon
                 class="mr-2"
                 @click="showOrders(props.item.id)"
@@ -239,15 +111,9 @@
                 assignment
               </v-icon>
               <v-icon
-                class="mr-2"
-                @click="editItem(props.item)"
+                @click="editItem(props.item.id)"
               >
                 edit
-              </v-icon>
-              <v-icon
-                @click="confirmDeleted(props.item.id)"
-              >
-                delete
               </v-icon>
             </td>
           </template>
@@ -258,11 +124,17 @@
 </template>
 
 <script>
+import ClientEdit from './edit.vue';
+import ClientAdd from './add.vue';
+
 export default {
   name: 'Clients',
+  components: {
+    ClientEdit,
+    ClientAdd,
+  },
   data() {
     return {
-      dataPicker: false,
       loadingData: [
         {
           title: 'Получение клиентов',
@@ -275,20 +147,7 @@ export default {
       filter: {
         type: '',
       },
-      typeClient: [
-        {
-          id: 1,
-          name: 'Физ. лицо',
-        },
-        {
-          id: 2,
-          name: 'Юр. лицо',
-        },
-        {
-          id: 3,
-          name: 'Наши',
-        },
-      ],
+      typeClient: [],
       search: '',
       headersTable: [
         {
@@ -339,45 +198,14 @@ export default {
         },
       ],
       dialogForm: false,
+      editedId: 0,
       clientsList: [],
-      editedIndex: -1,
-      editedItem: {
-        name: '',
-        id: 0,
-        bill: 0,
-        sale: 0,
-        active: true,
-        birthDay: '',
-        phone: '',
-        type: '',
-        credit: 0,
-      },
-      defaultItem: {
-        name: '',
-        id: 0,
-        bill: 0,
-        sale: 0,
-        active: true,
-        birthDay: '',
-        phone: '',
-        type: '',
-        credit: 0,
-      },
-      createdSuccess: false,
-      dialogDeleted: false,
-      deletedId: -1,
     };
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
-    },
-    formTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Новый клиент' : 'Изменение клиента';
-    },
-    formAlertTitle: function formTitle() {
-      return this.editedIndex === -1 ? 'Клиент создан' : 'Клиент изменен';
     },
   },
   methods: {
@@ -423,76 +251,28 @@ export default {
         loadData.error = true;
       });
     },
-    submitForm: function submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-        delete propsItem.type;
-        delete propsItem.credit;
-        propsItem.bill = +propsItem.bill;
-        propsItem.sale = +propsItem.sale;
-
-        // propsItem.birthDay = `${propsItem.birthDay}T00:00:00.000-00:00`;
-
-        const itemParams = {
-          type: 'clients',
-          props: propsItem,
-        };
-
-        if (this.editedIndex > -1) {
-          itemParams.id = this.editedItem.id;
-          this.$store.dispatch('updateItem', itemParams).then(() => {
-            this.createdSuccess = true;
-            this.getClientsList();
-            setTimeout(() => {
-              this.closeDialog();
-            }, 1000);
-          });
-        } else {
-          this.$store.dispatch('addItem', itemParams).then(() => {
-            this.createdSuccess = true;
-            this.getClientsList();
-            setTimeout(() => {
-              this.closeDialog();
-            }, 1000);
-          });
-        }
-      }
-    },
-    closeDialog: function closeDialog() {
-      this.dialogForm = false;
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-        this.createdSuccess = false;
-      }, 300);
-    },
-    editItem: function editItem(item) {
-      this.editedIndex = this.clientsList.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialogForm = true;
-    },
-    confirmDeleted: function confirmDeleted(id) {
-      this.dialogDeleted = true;
-      this.deletedId = id;
-    },
-    deletedItem: function deletedItem(elemId) {
+    getClientTypeList() {
       const itemParams = {
-        type: 'clients',
-        id: elemId,
+        type: 'client-type',
       };
 
-      this.$store.dispatch('deleteItem', itemParams).then(() => {
-        this.getClientsList();
-        this.closeConfirm();
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.typeClient = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
       });
     },
-    closeConfirm: function closeDialog() {
-      this.dialogDeleted = false;
-      setTimeout(() => {
-        this.deletedId = -1;
-      }, 300);
+    closeDialog() {
+      this.getClientsList();
+      this.dialogForm = false;
+      this.editedId = 0;
+    },
+    editItem(id) {
+      this.editedId = +id;
+      this.dialogForm = true;
     },
     showOrders(id) {
       this.$router.push({ path: `/orders/?client=${id}` });
@@ -500,6 +280,7 @@ export default {
   },
   mounted() {
     this.getClientsList();
+    this.getClientTypeList();
   },
 };
 </script>

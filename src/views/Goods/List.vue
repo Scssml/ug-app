@@ -32,89 +32,13 @@
     </v-dialog>
     <template v-if="!loadingDialog">
       <v-dialog
-        v-model="dialogDeleted"
-        persistent
-        max-width="320px"
-      >
-        <v-card>
-          <v-card-title
-            class="px-4"
-          >
-            <span class="headline">Удалить?</span>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-actions
-            class="px-4 py-3"
-          >
-            <v-btn
-              @click.native="dialogDeleted = false"
-            >Отмена</v-btn>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="error"
-              @click="deletedItem(deletedId)"
-            >Удалить</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <v-dialog
         v-model="dialogForm"
         persistent
         max-width="420px"
       >
-        <v-card>
-          <v-alert
-            :value="createdSuccessAdd"
-            type="success"
-            class="my-0"
-          >
-            Товар добавлен
-          </v-alert>
-          <v-form
-            ref="formAdd"
-            lazy-validation
-          >
-            <v-card-title
-              class="px-4"
-            >
-              <span class="headline">Добавление товара</span>
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text
-              class="px-4"
-            >
-              <v-text-field
-                label="Название"
-                :rules="[v => !!v || 'Заполните поле']"
-                v-model="editedItem.name"
-              ></v-text-field>
-              <v-text-field
-                label="Цена"
-                :rules="[v => !!v || 'Заполните поле']"
-                v-model="editedItem.price"
-                type="number"
-              ></v-text-field>
-              <v-text-field
-                label="На складе"
-                :rules="[v => !!v || 'Заполните поле']"
-                v-model="editedItem.store"
-                type="number"
-              ></v-text-field>
-            </v-card-text>
-            <v-card-actions
-              class="px-4 pb-4"
-            >
-              <v-btn
-                @click.native="closeDialogAdd()"
-              >Отмена</v-btn>
-              <v-spacer></v-spacer>
-              <v-btn
-                color="info"
-                @click="addGoods"
-              >Сохранить</v-btn>
-            </v-card-actions>
-          </v-form>
-        </v-card>
+        <good-add
+          @cancel="closeDialogAdd()"
+        ></good-add>
       </v-dialog>
       <v-card>
         <v-alert
@@ -140,7 +64,9 @@
                   label="Тип изменения"
                   :items="typeEdit"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-model="dataEdit.type"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="dataEdit.type"
                   hide-details
                   class="pr-4"
                 ></v-select>
@@ -234,7 +160,7 @@
                 solo
                 flat
                 hide-details
-                :value="+props.item.store + +props.item.count"
+                :value="+props.item.stockBalance + +props.item.count"
                 class="scs-small"
                 readonly
               ></v-text-field>
@@ -251,11 +177,11 @@
             </td>
             <td>
               <v-text-field
-                label="Тип"
+                label="Сортировка"
                 solo
                 flat
                 hide-details
-                v-model="props.item.type"
+                v-model="props.item.sortIndex"
                 class="scs-small"
               ></v-text-field>
             </td>
@@ -282,13 +208,7 @@
                 class="scs-small"
               ></v-text-field>
             </td>
-            <td class="text-xs-right" style="width: 7%;">
-              <v-icon
-                @click="confirmDeleted(props.item.id)"
-              >
-                delete
-              </v-icon>
-            </td>
+            <td class="text-xs-right" style="width: 7%;"></td>
           </template>
         </v-data-table>
         <v-btn
@@ -305,8 +225,13 @@
 </template>
 
 <script>
+import GoodAdd from './add.vue';
+
 export default {
   name: 'Goods',
+  components: {
+    GoodAdd,
+  },
   data() {
     return {
       loadingData: [
@@ -318,14 +243,9 @@ export default {
           id: 'goods',
         },
       ],
-      typeEdit: [
-        'Приход',
-        'Инвентаризация',
-        'Переоценка',
-        'Брак',
-      ],
+      typeEdit: [],
       dataEdit: {
-        type: '',
+        type: 0,
         company: '',
         purchase: 0,
       },
@@ -334,7 +254,7 @@ export default {
         {
           text: 'Остаток',
           align: 'left',
-          value: 'store',
+          value: 'stockBalance',
         },
         {
           text: 'Название',
@@ -342,9 +262,9 @@ export default {
           value: 'name',
         },
         {
-          text: 'Тип',
+          text: 'Сортировка',
           align: 'left',
-          value: 'type',
+          value: 'sortIndex',
         },
         {
           text: 'Цена',
@@ -365,29 +285,15 @@ export default {
       ],
       goodsList: [],
       createdSuccess: false,
-      dialogDeleted: false,
-      deletedId: -1,
       dialogForm: false,
-      editedIndex: -1,
-      editedItem: {
-        name: '',
-        price: 0,
-        store: 0,
-      },
-      defaultItem: {
-        name: '',
-        price: 0,
-        store: 0,
-      },
-      createdSuccessAdd: false,
     };
   },
   computed: {
-    loadingDialog: function loadingDialog() {
+    loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
-    formAlertTitle: function formTitle() {
+    formAlertTitle() {
       return 'Остатки изменены';
     },
     arrival() {
@@ -412,9 +318,12 @@ export default {
       /* eslint no-eval: 0 */
       return eval(val);
     },
-    getGoodsList: function getGoodsList() {
+    getGoodsList() {
       const itemParams = {
         type: 'goods',
+        sort: {
+          sortIndex: 'asc',
+        },
       };
 
       const successData = 'Товары получены!';
@@ -436,31 +345,43 @@ export default {
         loadData.error = true;
       });
     },
-    submitForm: function submitForm() {
+    getPurchaseTypesList() {
+      const itemParams = {
+        type: 'purchase-types',
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.typeEdit = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const goods = this.goodsList.map((item, i) => {
-          this.goodsList[i].store = +item.store + +item.count;
-          const good = Object.assign({}, item);
-          delete good.count;
-          return good;
-        });
+        // const goods = this.goodsList.map((item, i) => {
+        //   //this.goodsList[i].stockBalance = +item.stockBalance + +item.count;
+        //   const good = Object.assign({}, item);
+        //   //delete good.count;
+        //   return good;
+        // });
 
         const purchaseGoods = this.goodsList.map((item) => {
-          const good = Object.assign({}, item);
-          good.good_id = good.id;
-          good.price = +good.price;
-          delete good.id;
+          const good = {
+            estimate: item.count,
+            newPrice: item.price,
+            stockQuantity: item.stockBalance,
+            good: item.id,
+          };
+
           return good;
         });
 
         const propsItem = Object.assign({}, this.dataEdit);
-        [propsItem.date, propsItem.goods, propsItem.arrival, propsItem.user] = [
-          new Date().toISOString(),
-          purchaseGoods,
-          this.arrival,
-          this.$store.state.authUser,
-        ];
+        [propsItem.purchasedGoods, propsItem.arrival] = [purchaseGoods, this.arrival];
 
         const itemParams = {
           type: 'purchase',
@@ -475,12 +396,13 @@ export default {
           }, 1000);
         });
 
-        goods.forEach((elem) => {
+        this.goodsList.forEach((elem) => {
           const propsGood = Object.assign({}, elem);
+          propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
           delete propsGood.id;
+          delete propsGood.count;
 
           propsGood.price = +propsGood.price;
-          propsGood.store = +propsGood.store;
 
           const goodParams = {
             type: 'goods',
@@ -492,64 +414,17 @@ export default {
         });
       }
     },
-    closeDialog: function closeDialog() {
+    closeDialog() {
       this.createdSuccess = false;
     },
-    closeDialogAdd: function closeDialogAdd() {
+    closeDialogAdd() {
+      this.getGoodsList();
       this.dialogForm = false;
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-        this.createdSuccess = false;
-      }, 300);
-    },
-    confirmDeleted: function confirmDeleted(id) {
-      this.dialogDeleted = true;
-      this.deletedId = id;
-    },
-    deletedItem: function deletedItem(elemId) {
-      const itemParams = {
-        type: 'goods',
-        id: elemId,
-      };
-
-      this.$store.dispatch('deleteItem', itemParams).then(() => {
-        this.getGoodsList();
-        this.closeConfirm();
-      });
-    },
-    closeConfirm: function closeDialog() {
-      this.dialogDeleted = false;
-      setTimeout(() => {
-        this.deletedId = -1;
-      }, 300);
-    },
-    addGoods() {
-      const validate = this.$refs.formAdd.validate();
-      if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-
-        propsItem.price = +propsItem.price;
-        propsItem.store = +propsItem.store;
-
-        const itemParams = {
-          type: 'goods',
-          props: propsItem,
-        };
-
-        this.$store.dispatch('addItem', itemParams).then(() => {
-          this.createdSuccessAdd = true;
-          this.getGoodsList();
-          setTimeout(() => {
-            this.closeDialogAdd();
-          }, 1000);
-        });
-      }
     },
   },
   mounted() {
     this.getGoodsList();
+    this.getPurchaseTypesList();
   },
 };
 </script>

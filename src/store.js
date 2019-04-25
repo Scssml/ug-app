@@ -126,7 +126,16 @@ export default new Vuex.Store({
           }
         }
 
-        axios.get(url + filterQuery).then((response) => {
+        let sortQuery = '';
+        if (item.sort !== undefined) {
+          const keysSort = Object.keys(item.sort);
+          const valSort = Object.values(item.sort);
+          for (let i = 0; i < keysSort.length; i += 1) {
+            sortQuery += `&sort[${keysSort[i]}]=${valSort[i]}`;
+          }
+        }
+
+        axios.get(url + filterQuery + sortQuery).then((response) => {
           const elemList = response.data;
           resolve(elemList);
         }).catch((error) => {

@@ -52,13 +52,15 @@
           :search="search"
         >
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.date }}</td>
-            <td>{{ props.item.type }}</td>
+            <td></td>
+            <td>
+              <!-- {{ props.item.type.name }} -->
+            </td>
             <td>{{ props.item.purchase }}</td>
             <td>{{ props.item.arrival }}</td>
             <td>{{ markup(props.item) }}</td>
             <td>{{ props.item.company }}</td>
-            <td>{{ usersList.find(item => item.id === props.item.user).name }}</td>
+            <td>{{ props.item.createdBy.name }}</td>
 
             <td class="text-xs-right" style="width: 7%;">
               <v-icon
@@ -90,13 +92,6 @@ export default {
           loading: true,
           color: 'indigo',
           id: 'purchase',
-        },
-        {
-          title: 'Получение пользователей',
-          error: false,
-          loading: true,
-          color: 'blue lighten-4',
-          id: 'users',
         },
       ],
       search: '',
@@ -134,7 +129,7 @@ export default {
         {
           text: 'Менеджер',
           align: 'left',
-          value: 'user',
+          value: 'createdBy.name',
         },
         {
           text: '',
@@ -173,30 +168,10 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.purchaseList = response.map((item) => {
           const purchase = item;
-          const dateCreated = purchase.date.split('T')[0];
-          purchase.date = dateCreated;
+          // const dateCreated = purchase.date.split('T')[0];
+          // purchase.date = dateCreated;
           return purchase;
         });
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
-    getUsersList: function getUsersList() {
-      const itemParams = {
-        type: 'users',
-      };
-
-      const successData = 'Пользователи получены!';
-      const errorData = 'Ошибка получения пользователей!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -210,7 +185,6 @@ export default {
   },
   mounted() {
     this.getPurchaseList();
-    this.getUsersList();
   },
 };
 </script>

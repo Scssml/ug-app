@@ -36,17 +36,22 @@
           <v-dialog
             v-model="dialogForm"
             persistent
-            max-width="1200px"
+            :max-width="(editStatus) ? '420px' : '1200px'"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
+            <change-status
+              v-if="editStatus"
+              :id="editedId"
+              @cancel="closeDialog()"
+            ></change-status>
             <order-edit
-              v-if="editedId"
+              v-if="editedId && !editStatus"
               :id="editedId"
               :copy="copyElem"
               @cancel="closeDialog()"
             ></order-edit>
             <order-add
-              v-else
+              v-if="!editedId && !editStatus"
               @cancel="closeDialog()"
             ></order-add>
           </v-dialog>
@@ -207,28 +212,12 @@
                 <br>{{ props.item.deliveryTime }}
               </td>
               <td>{{ props.item.orderCost }}</td>
-              <td>
+              <td
+                @click="changeStatus(props.item.id)"
+                style="cursor: pointer"
+              >
                 {{ props.item.orderStatus.name }}
-                <!-- <v-select
-                  label="Статус"
-                  :items="statusList"
-                  item-text="name"
-                  item-value="id"
-                  v-model="props.item.status"
-                  @change="updateStatus(props.index, props.item.id)"
-                  color="grey darken-2"
-                ></v-select>
-
-                <v-select
-                  label="Курьер"
-                  :items="couriersList"
-                  item-text="name"
-                  item-value="id"
-                  v-model="props.item.courier"
-                  @change="updateСourier(props.index, props.item.id)"
-                  color="grey darken-2"
-                  v-if="props.item.status === 3"
-                ></v-select> -->
+                <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
               <td class="text-xs-right" style="width: 110px;">
                 <v-icon
@@ -269,12 +258,14 @@
 <script>
 import OrderEdit from './edit.vue';
 import OrderAdd from './add.vue';
+import ChangeStatus from './changeStatus.vue';
 
 export default {
   name: 'Orders',
   components: {
     OrderEdit,
     OrderAdd,
+    ChangeStatus,
   },
   data() {
     return {
@@ -352,6 +343,7 @@ export default {
       typeClient: [],
       editedId: 0,
       copyElem: false,
+      editStatus: false,
     };
   },
   computed: {
@@ -405,46 +397,6 @@ export default {
       });
 
       return itemsFind;
-    },
-    updateStatus(index, id) {
-      if (id > 0) {
-        const propsItem = Object.assign({}, this.ordersList[index]);
-        delete propsItem.id;
-
-        propsItem.sum = +propsItem.sum;
-
-        const itemParams = {
-          type: 'orders',
-          props: propsItem,
-        };
-
-        itemParams.id = id;
-
-        console.log(itemParams);
-
-        this.$store.dispatch('updateItem', itemParams).then(() => {
-          // this.getOrdersList();
-        });
-      }
-    },
-    updateСourier(index, id) {
-      if (id > 0) {
-        const propsItem = Object.assign({}, this.ordersList[index]);
-        delete propsItem.id;
-
-        propsItem.sum = +propsItem.sum;
-
-        const itemParams = {
-          type: 'orders',
-          props: propsItem,
-        };
-
-        itemParams.id = id;
-
-        this.$store.dispatch('updateItem', itemParams).then(() => {
-          // this.getOrdersList();
-        });
-      }
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
@@ -524,26 +476,19 @@ export default {
       this.dialogForm = false;
       this.copyElem = false;
       this.editedId = 0;
+      setTimeout(() => {
+        this.editStatus = false;
+      }, 300);
     },
     editItem(id, copy = false) {
       this.editedId = +id;
       this.copyElem = copy;
       this.dialogForm = true;
     },
-    copyOrder: function editItem(item) {
-      this.editedIndex = -1;
-      this.editedItem = Object.assign({}, item);
+    changeStatus(id) {
+      this.editedId = +id;
+      this.editStatus = true;
       this.dialogForm = true;
-
-      if (
-        (this.editedItem.addressee !== '' && this.editedItem.addressee !== undefined)
-        || (this.editedItem.addresseeName !== '' && this.editedItem.addresseeName !== undefined)
-        || (this.editedItem.addresseePhone !== '' && this.editedItem.addresseePhone !== undefined)
-      ) {
-        this.clientAddressee = false;
-      } else {
-        this.clientAddressee = true;
-      }
     },
   },
   mounted() {

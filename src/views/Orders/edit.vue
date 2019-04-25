@@ -240,11 +240,11 @@
                     prepend-icon="event"
                     hide-details
                     readonly
-                    @change="getOrdersList()"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
+                    @change="getOrdersList()"
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -538,18 +538,21 @@ export default {
         };
 
         this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-          this.usersList = this.editedItem.createdBy;
-          this.editedItem.orderCost = +this.editedItem.orderCost;
+          const props = response;
+          this.usersList = props.createdBy;
+          props.orderCost = +props.orderCost;
 
-          this.editedItem.addressee = +this.editedItem.addressee.id;
-          this.editedItem.client = +this.editedItem.client.id;
-          this.editedItem.courier = +this.editedItem.courier.id;
-          this.editedItem.createdBy = +this.editedItem.createdBy.id;
-          this.editedItem.orderSourceType = +this.editedItem.orderSourceType.id;
-          this.editedItem.orderStatus = +this.editedItem.orderStatus.id;
-          this.editedItem.clientType = +this.editedItem.clientType.id;
-          this.editedItem.deliveryType = +this.editedItem.deliveryType.id;
+          props.addressee = (props.addressee) ? +props.addressee.id : 0;
+          props.client = (props.client) ? +props.client.id : 0;
+          props.courier = (props.courier) ? +props.courier.id : 0;
+          props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
+          props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
+          props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
+          props.clientType = (props.clientType) ? +props.clientType.id : 0;
+          props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
+
+          this.editedItem = props;
+          this.getOrdersList();
         }).catch(() => {
           console.log('error');
         });
@@ -651,7 +654,7 @@ export default {
         filter: {
           deliveryDate: this.editedItem.deliveryDate,
           deliveryType: 2,
-          status: [1, 2, 3],
+          orderStatus: [1, 2, 3],
         },
       };
 
@@ -685,8 +688,6 @@ export default {
         } else {
           itemParams.id = this.id;
         }
-
-
 
         this.$store.dispatch(methods, itemParams).then(() => {
           this.createdSuccess = true;

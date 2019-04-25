@@ -114,7 +114,15 @@ export default new Vuex.Store({
           const keys = Object.keys(item.filter);
           const values = Object.values(item.filter);
           for (let i = 0; i < keys.length; i += 1) {
-            filterQuery += `filter[${keys[i]}]=${values[i]}`;
+            filterQuery += (i !== 0) ? '&' : '';
+            if (Array.isArray(values[i])) {
+              for (let j = 0; j < values[i].length; j += 1) {
+                filterQuery += (j !== 0) ? '&' : '';
+                filterQuery += `filter[${keys[i]}][]=${values[i][j]}`;
+              }
+            } else {
+              filterQuery += `filter[${keys[i]}]=${values[i]}`;
+            }
           }
         }
 

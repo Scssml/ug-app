@@ -227,11 +227,11 @@
                     prepend-icon="event"
                     hide-details
                     readonly
-                    @change="getOrdersList()"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
+                    @change="getOrdersList()"
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -431,7 +431,7 @@ export default {
         createdBy: 0,
         orderSourceType: 0,
         description: '',
-        orderCost: 1500,
+        orderCost: 0,
         addressee: 0,
         addresseeName: '',
         addresseePhone: '',

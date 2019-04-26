@@ -58,7 +58,7 @@
             </td>
             <td>{{ props.item.purchase }}</td>
             <td>{{ props.item.arrival }}</td>
-            <td>{{ markup(props.item) }}</td>
+            <td>{{ markup(props.item) }}%</td>
             <td>{{ props.item.company }}</td>
             <td>{{ props.item.createdBy.name }}</td>
 

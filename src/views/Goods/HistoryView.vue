@@ -49,7 +49,7 @@
             <v-flex>
               <v-text-field
                 label="Тип изменения"
-                :value="purchase.type"
+                value=""
                 hide-details
                 class="pr-4"
                 readonly
@@ -82,9 +82,7 @@
                 readonly
               ></v-text-field>
             </v-flex>
-            <v-flex
-              v-if="purchase.type === 'Приход' || purchase.type ===  'Брак'"
-            >
+            <v-flex>
               <v-text-field
                 label="Компания"
                 v-model="purchase.company"
@@ -96,7 +94,7 @@
             <v-flex>
               <v-text-field
                 label="Менеджер"
-                :value="usersList.find(item => item.id === purchase.user).name"
+                :value="purchase.createdBy.name"
                 hide-details
                 class="pr-4"
                 readonly
@@ -118,7 +116,7 @@
         </v-card-title>
         <v-data-table
           :headers="headersTable"
-          :items="purchase.goods"
+          :items="purchase.purchasedGoods"
           hide-actions
           no-data-text="Товаров не найдено"
           no-results-text="Товаров не найдено"
@@ -126,11 +124,10 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.store }}</td>
-            <td>{{ props.item.name }}</td>
-            <td>{{ props.item.type }}</td>
-            <td>{{ props.item.price }}</td>
-            <td>{{ props.item.count }}</td>
+            <td>{{ props.item.good.name }}</td>
+            <td>{{ props.item.stockQuantity }}</td>
+            <td>{{ props.item.estimate }}</td>
+            <td>{{ props.item.newPrice }}</td>
           </template>
         </v-data-table>
       </v-card>
@@ -151,53 +148,31 @@ export default {
           color: 'indigo',
           id: 'purchase',
         },
-        {
-          title: 'Получение пользователей',
-          error: false,
-          loading: true,
-          color: 'blue lighten-4',
-          id: 'users',
-        },
       ],
       search: '',
       headersTable: [
         {
-          text: 'Остаток',
-          align: 'left',
-          value: 'store',
-        },
-        {
           text: 'Название',
           align: 'left',
-          value: 'name',
+          value: 'good.name',
         },
         {
-          text: 'Тип',
+          text: 'Было на складе',
           align: 'left',
-          value: 'type',
+          value: 'stockQuantity',
+        },
+        {
+          text: 'Пришло',
+          align: 'left',
+          value: 'estimate',
         },
         {
           text: 'Цена',
           align: 'left',
-          value: 'price',
-        },
-        {
-          text: 'Кол-во',
-          align: 'left',
-          value: 'count',
+          value: 'newPrice',
         },
       ],
-      purchase: {
-        arrival: 0,
-        company: '',
-        date: '',
-        goods: [],
-        id: '',
-        purchase: 0,
-        type: '',
-        user: '',
-      },
-      usersList: [],
+      purchase: {},
     };
   },
   computed: {
@@ -226,28 +201,6 @@ export default {
 
       this.$store.dispatch('getItem', itemParams).then((response) => {
         this.purchase = response;
-        const dateCreated = this.purchase.date.split('T')[0];
-        this.purchase.date = dateCreated;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
-    getUsersList: function getUsersList() {
-      const itemParams = {
-        type: 'users',
-      };
-
-      const successData = 'Пользователи получены!';
-      const errorData = 'Ошибка получения пользователей!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -261,7 +214,6 @@ export default {
   },
   mounted() {
     this.getPurchaseList();
-    this.getUsersList();
   },
 };
 </script>

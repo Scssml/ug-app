@@ -79,6 +79,7 @@
                   v-model.number="editedItem.deliveryType"
                   hide-details
                   class="mb-4"
+                  @change="editedItem.delivery = ($event === 2)"
                 ></v-select>
 
                 <v-menu
@@ -426,6 +427,7 @@ export default {
         clientName: '',
         clientPhone: '',
         courier: 0,
+        delivery: false,
         deliveryDate: '',
         deliveryTime: '',
         createdBy: 0,

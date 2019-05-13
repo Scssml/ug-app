@@ -233,14 +233,7 @@ export default {
       const errorData = 'Ошибка получения клиентов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          const client = item;
-          if (client.birthDay !== undefined) {
-            const dateArray = client.birthDay.split('/');
-            client.birthDay = `${dateArray[2]}-${dateArray[0]}-${dateArray[1]}`;
-          }
-          return client;
-        });
+        this.clientsList = response;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;

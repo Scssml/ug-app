@@ -14,7 +14,7 @@
         solo
         flat
         hide-details
-        v-model="florist"
+        v-model.number="florist"
         class="scs-small"
         no-data-text="Не найдено"
         @change="updateProps()"
@@ -42,7 +42,7 @@
         item-value="id"
         solo
         flat
-        v-model="client"
+        v-model.number="client"
         hide-details
         class="mb-4 scs-small"
         no-data-text="Не надено"
@@ -66,7 +66,7 @@
             flat
             hide-details
             no-data-text="Нет заказов"
-            v-model="order"
+            v-model.number="order"
             class="scs-small"
             @change="updateProps()"
           ></v-select>
@@ -85,7 +85,7 @@
             flat
             hide-details
             no-data-text="Нет букетов"
-            v-model="bouquet"
+            v-model.number="bouquet"
             class="scs-small"
             @change="updateProps()"
           ></v-select>
@@ -99,7 +99,7 @@
         solo
         flat
         hide-details
-        v-model="decorPersent"
+        v-model.number="decorPercent"
         class="scs-small"
         @change="updateProps()"
       ></v-text-field>
@@ -133,7 +133,7 @@
             solo
             flat
             hide-details
-            v-model="delivery"
+            v-model.number="delivery"
             class="scs-small"
             @change="updateProps()"
           ></v-text-field>
@@ -200,7 +200,7 @@
             flat
             hide-details
             type="number"
-            v-model="sumDecorAdditional"
+            v-model.number="sumDecorAdditional"
             class="scs-small"
             @input="updateProps()"
           ></v-text-field>
@@ -438,10 +438,10 @@ export default {
   data() {
     return {
       createdSuccess: false,
-      florist: '',
+      florist: 0,
       client: 0,
-      order: '',
-      decorPersent: 10,
+      order: 0,
+      decorPercent: 10,
       delivery: 0,
       comment: '',
       sumDecorAdditional: 0,
@@ -458,7 +458,7 @@ export default {
       // ],
       dialogClear: false,
       sumDecorCustom: '',
-      clientSaleCustom: '',
+      clientSaleCustom: 0,
       check: false,
       orderBouquets: [
         {
@@ -493,7 +493,7 @@ export default {
       return typePay;
     },
     clientOrdersList: function clientOrdersList() {
-      const ordersList = this.ordersList.filter(item => item.client === this.client);
+      const ordersList = this.ordersList.filter(item => item.client.id === this.client);
       return ordersList;
     },
     sumDecor: function decorSum() {
@@ -501,7 +501,7 @@ export default {
       if (this.sumDecorCustom !== '') {
         sum = this.sumDecorCustom;
       } else {
-        sum = Math.ceil(this.sumFlowers * (this.decorPersent / 100));
+        sum = Math.ceil(this.sumFlowers * (this.decorPercent / 100));
       }
       return this.priceRound(sum);
     },
@@ -545,9 +545,9 @@ export default {
       this.florist = 0;
       this.client = 0;
       this.order = 0;
-      this.decorPersent = 10;
+      this.decorPercent = 10;
       this.delivery = 0;
-      this.salePersent = null;
+      this.salePersent = 0;
 
       this.dialogClear = false;
       this.updateProps();
@@ -566,19 +566,34 @@ export default {
         this.createdSuccess = true;
 
         const props = {
-          date: new Date().toISOString().split('T')[0],
-          florist: this.florist,
-          user: this.$store.state.authUser,
-          client: this.client,
-          order: +this.order,
-          sum: this.sumFlowers,
-          decorPersent: this.decorPersent,
-          sumDecor: +this.sumDecor + +this.sumDecorAdditional,
-          delivery: +this.delivery,
-          salePersent: this.clientSale,
+          floristId: this.florist,
+          clientId: this.client,
+          orderId: this.order,
+          totalCost: this.sumPay,
+          decorPercent: this.decorPercent,
+          decorCost: this.sumDecor,
+          deliveryCost: this.delivery,
+          salePercent: +this.clientSale,
           sumSale: this.sumSale,
-          sumPay: this.sumPay,
-          typePay: this.typePay,
+          payment: {
+            paymentTypeId: 1,
+            amount: this.sumPay,
+            clientId: this.client,
+            description: '',
+          },
+          // date: new Date().toISOString().split('T')[0],
+          // florist: this.florist,
+          // user: this.$store.state.authUser,
+          // client: this.client,
+          // order: +this.order,
+          // sum: this.sumFlowers,
+          // decorPercent: this.decorPercent,
+          // sumDecor: +this.sumDecor + +this.sumDecorAdditional,
+          // delivery: +this.delivery,
+          // salePersent: this.clientSale,
+          // sumSale: this.sumSale,
+          // sumPay: this.sumPay,
+          // typePay: this.typePay,
         };
 
         setTimeout(() => {
@@ -589,27 +604,34 @@ export default {
     },
     updateProps: function updateProps() {
       const props = {
-        // florist: this.florist,
-        // client: this.client,
-        // order: this.order,
-        // decorPersent: this.decorPersent,
-        // delivery: this.delivery,
-        // salePersent: this.clientSale,
-
-
-        date: new Date().toISOString().split('T')[0],
-        florist: this.florist,
-        user: this.$store.state.authUser,
-        client: this.client,
-        order: +this.order,
-        sum: this.sumFlowers,
-        decorPersent: this.decorPersent,
-        sumDecor: +this.sumDecor + +this.sumDecorAdditional,
-        delivery: +this.delivery,
-        salePersent: this.clientSale,
+        floristId: this.florist,
+        clientId: this.client,
+        orderId: this.order,
+        totalCost: this.sumPay,
+        decorPercent: this.decorPercent,
+        decorCost: this.sumDecor,
+        deliveryCost: this.delivery,
+        salePercent: +this.clientSale,
         sumSale: this.sumSale,
-        sumPay: this.sumPay,
-        typePay: this.typePay,
+        payment: {
+          paymentTypeId: 1,
+          amount: this.sumPay,
+          clientId: this.client,
+          description: '',
+        },
+        // date: new Date().toISOString().split('T')[0],
+        // florist: this.florist,
+        // user: this.$store.state.authUser,
+        // client: this.client,
+        // order: +this.order,
+        // sum: this.sumFlowers,
+        // decorPercent: this.decorPercent,
+        // sumDecor: +this.sumDecor + +this.sumDecorAdditional,
+        // delivery: +this.delivery,
+        // salePersent: this.clientSale,
+        // sumSale: this.sumSale,
+        // sumPay: this.sumPay,
+        // typePay: this.typePay,
       };
 
       this.$emit('updateProps', props);
@@ -625,12 +647,12 @@ export default {
     },
     setValueDefault: function setValueDefault() {
       if (Object.keys(this.propsDefault).length > 0) {
-        this.florist = this.propsDefault.florist;
-        this.client = this.propsDefault.client;
-        this.order = this.propsDefault.order;
-        this.decorPersent = this.propsDefault.decorPersent;
-        this.delivery = this.propsDefault.delivery;
-        this.salePersent = this.propsDefault.salePersent;
+        this.florist = this.propsDefault.floristId;
+        this.client = this.propsDefault.clientId;
+        this.order = this.propsDefault.orderId;
+        this.decorPercent = this.propsDefault.decorPercent;
+        this.delivery = this.propsDefault.deliveryCost;
+        this.salePersent = this.propsDefault.salePercent;
       }
     },
   },

@@ -353,12 +353,12 @@
                   class="py-1 px-1 text-xs-center"
                   style="height: 30px;"
                   :key="index"
-                >{{ item.store }}</div>
+                >{{ item.stockBalance }}</div>
                 <v-divider :key="'divider-' + index"></v-divider>
               </template>
             </v-card>
           </v-flex>
-          <v-flex>
+          <!-- <v-flex>
             <v-card
               flat
             >
@@ -373,7 +373,7 @@
                 <v-divider :key="'divider-' + index"></v-divider>
               </template>
             </v-card>
-          </v-flex>
+          </v-flex> -->
           <v-flex>
             <v-card
               flat
@@ -721,12 +721,12 @@ export default {
 
         const newBouqet = props;
 
-        newBouqet.date = `${newBouqet.date}T00:00:00.000-00:00`;
+        // newBouqet.date = `${newBouqet.date}T00:00:00.000-00:00`;
 
         newBouqet.goods = item.goods.map((elem) => {
           const good = {
-            good_id: elem.id,
-            value: elem.value,
+            goodId: elem.id,
+            count: elem.value,
           };
           return good;
         });
@@ -745,28 +745,28 @@ export default {
 
         // localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
 
-        if (newBouqet.typePay === 'На баланс') {
-          const client = this.clientsList.find(elem => elem.id === newBouqet.client);
+        // if (newBouqet.typePay === 'На баланс') {
+        //   const client = this.clientsList.find(elem => elem.id === newBouqet.client);
 
-          const propsItem = Object.assign({}, client);
-          delete propsItem.id;
-          delete propsItem.type;
-          propsItem.bill -= newBouqet.sumPay;
-          propsItem.sale = +propsItem.sale;
+        //   const propsItem = Object.assign({}, client);
+        //   delete propsItem.id;
+        //   delete propsItem.type;
+        //   propsItem.bill -= newBouqet.sumPay;
+        //   propsItem.sale = +propsItem.sale;
 
-          const dateParam = propsItem.birthDay.split('/');
-          propsItem.birthDay = `${dateParam[2]}-${dateParam[0]}-${dateParam[1]}`;
+        //   const dateParam = propsItem.birthDay.split('/');
+        //   propsItem.birthDay = `${dateParam[2]}-${dateParam[0]}-${dateParam[1]}`;
 
-          const itemParams = {
-            type: 'clients',
-            props: propsItem,
-          };
+        //   const itemParams = {
+        //     type: 'clients',
+        //     props: propsItem,
+        //   };
 
-          itemParams.id = client.id;
-          this.$store.dispatch('updateItem', itemParams).then(() => {
-            this.getClientsList();
-          });
-        }
+        //   itemParams.id = client.id;
+        //   this.$store.dispatch('updateItem', itemParams).then(() => {
+        //     this.getClientsList();
+        //   });
+        // }
 
         item.goods.forEach((elem) => {
           const findGood = this.goodsList.find(good => good.id === elem.id);
@@ -803,6 +803,9 @@ export default {
     getClientsList: function getClientsList() {
       const itemParams = {
         type: 'clients',
+        filter: {
+          active: true,
+        },
       };
 
       const successData = 'Клиенты получены!';
@@ -834,6 +837,9 @@ export default {
     getFloristsList: function getFloristsList() {
       const itemParams = {
         type: 'florists',
+        filter: {
+          isActive: true,
+        },
       };
 
       const successData = 'Флористы получены!';
@@ -855,7 +861,7 @@ export default {
       const itemParams = {
         type: 'orders',
         filter: {
-          status: 1,
+          orderStatus: 1,
         },
       };
 

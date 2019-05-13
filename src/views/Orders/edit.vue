@@ -81,6 +81,7 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
+                  @change="editedItem.delivery = ($event === 2)"
                 ></v-select>
 
                 <v-menu

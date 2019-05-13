@@ -52,10 +52,8 @@
           :search="search"
         >
           <template slot="items" slot-scope="props">
-            <td></td>
-            <td>
-              <!-- {{ props.item.type.name }} -->
-            </td>
+            <td>{{ props.item.purchaseDate }}</td>
+            <td>{{ props.item.type.name }}</td>
             <td>{{ props.item.purchase }}</td>
             <td>{{ props.item.arrival }}</td>
             <td>{{ markup(props.item) }}%</td>

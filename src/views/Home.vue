@@ -804,7 +804,7 @@ export default {
       const itemParams = {
         type: 'clients',
         filter: {
-          active: true,
+          isActive: true,
         },
       };
 

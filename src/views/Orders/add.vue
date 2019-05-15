@@ -426,7 +426,7 @@ export default {
         client: 0,
         clientName: '',
         clientPhone: '',
-        courier: 0,
+        courier: null,
         delivery: false,
         deliveryDate: '',
         deliveryTime: '',
@@ -434,7 +434,7 @@ export default {
         orderSourceType: 0,
         description: '',
         orderCost: 0,
-        addressee: 0,
+        addressee: null,
         addresseeName: '',
         addresseePhone: '',
         address: '',
@@ -576,7 +576,7 @@ export default {
       const itemParams = {
         type: 'clients',
         filter: {
-          active: true,
+          isActive: true,
         },
       };
 
@@ -646,6 +646,8 @@ export default {
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
+
+        propsItem.delivery = false;
 
         const itemParams = {
           type: 'orders',

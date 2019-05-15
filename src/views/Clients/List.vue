@@ -101,7 +101,7 @@
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.sale }}</td>
             <td class="text-xs-right">
-              {{ (!!props.item.active) ? 'Да' : 'Нет' }}
+              {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
             <td class="text-xs-right" style="width: 110px;">
               <v-icon
@@ -188,7 +188,7 @@ export default {
         {
           text: 'Активность',
           align: 'right',
-          value: 'active',
+          value: 'isActive',
         },
         {
           text: '',

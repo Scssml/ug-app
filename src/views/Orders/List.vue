@@ -219,7 +219,7 @@
                 {{ props.item.orderStatus.name }}
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
-              <td class="text-xs-right" style="width: 110px;">
+              <td class="text-xs-right" style="width: 140px;">
                 <v-icon
                   class="mr-2"
                   @click="createdBouquet(props.item)"

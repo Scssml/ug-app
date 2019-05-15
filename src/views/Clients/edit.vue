@@ -82,7 +82,7 @@
         ></v-text-field>
         <v-checkbox
           label="Активность"
-          v-model="editedItem.active"
+          v-model="editedItem.isActive"
           color="primary"
         ></v-checkbox>
       </v-card-text>

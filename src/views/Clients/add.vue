@@ -82,7 +82,7 @@
         ></v-text-field>
         <v-checkbox
           label="Активность"
-          v-model="editedItem.active"
+          v-model="editedItem.isActive"
           color="primary"
         ></v-checkbox>
       </v-card-text>
@@ -113,7 +113,7 @@ export default {
         bill: 0,
         sale: 0,
         phone: '',
-        active: true,
+        isActive: true,
         type: 0,
       },
       typeClient: [],

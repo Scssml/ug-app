@@ -35,7 +35,7 @@
               >
                 <v-select
                   label="КТО"
-                  :items="[userInfo]"
+                  :items="userInfo"
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
@@ -543,9 +543,9 @@ export default {
           this.usersList = props.createdBy;
           props.orderCost = +props.orderCost;
 
-          props.addressee = (props.addressee) ? +props.addressee.id : 0;
+          props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
-          props.courier = (props.courier) ? +props.courier.id : 0;
+          props.courier = (props.courier) ? +props.courier.id : null;
           props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
           props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
@@ -554,6 +554,7 @@ export default {
 
           this.editedItem = props;
           this.getOrdersList();
+          this.getUsersList();
         }).catch(() => {
           console.log('error');
         });
@@ -665,6 +666,20 @@ export default {
         console.log('error');
       });
     },
+    getUsersList() {
+      const itemParams = {
+        type: 'users',
+        filter: {
+          id: this.editedItem.createdBy,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.userInfo = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
@@ -675,6 +690,8 @@ export default {
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
+
+        propsItem.delivery = false;
 
         const itemParams = {
           type: 'orders',

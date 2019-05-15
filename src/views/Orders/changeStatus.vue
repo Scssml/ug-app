@@ -87,9 +87,9 @@ export default {
           this.usersList = props.createdBy;
           props.orderCost = +props.orderCost;
 
-          props.addressee = (props.addressee) ? +props.addressee.id : 0;
+          props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
-          props.courier = (props.courier) ? +props.courier.id : 0;
+          props.courier = (props.courier) ? +props.courier.id : null;
           props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
           props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;

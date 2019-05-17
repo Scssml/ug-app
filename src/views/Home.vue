@@ -723,8 +723,6 @@ export default {
 
         const newBouqet = props;
 
-        // newBouqet.date = `${newBouqet.date}T00:00:00.000-00:00`;
-
         newBouqet.goods = item.goods.map((elem) => {
           const good = {
             goodId: elem.id,
@@ -815,15 +813,6 @@ export default {
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.clientsList = [];
-
-        this.clientsList.push({
-          active: true,
-          bill: 0,
-          id: 0,
-          name: 'Розничный покупатель',
-          sale: 0,
-          phone: '',
-        });
 
         this.clientsList = this.clientsList.concat(response);
 

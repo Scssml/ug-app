@@ -45,12 +45,12 @@
             ></v-text-field>
             <v-text-field
               label="Оформление"
-              :value="`${editedItem.decorCost} (${editedItem.decorPercent})`"
+              :value="`${editedItem.decorCost} (${editedItem.decorPercent}%)`"
               readonly
             ></v-text-field>
             <v-text-field
               label="Скидка"
-              :value="`${editedItem.sumSale} (${editedItem.salePercent})`"
+              :value="`${editedItem.sumSale} (${editedItem.salePercent}%)`"
               readonly
             ></v-text-field>
             <v-text-field

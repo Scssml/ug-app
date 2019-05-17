@@ -445,7 +445,7 @@ export default {
     return {
       createdSuccess: false,
       florist: 0,
-      client: 0,
+      client: 7,
       order: 0,
       decorPercent: 10,
       delivery: 0,
@@ -487,7 +487,7 @@ export default {
 
         if (item.code === 'Vozvrat') {
           show = false;
-        } else if (item.code === 'Na balans' && this.client === 0) {
+        } else if (item.code === 'Na balans' && this.client === 7) {
           show = false;
         }
 

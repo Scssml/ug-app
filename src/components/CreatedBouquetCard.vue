@@ -349,20 +349,22 @@
             ></v-text-field>
             <v-text-field
               label="Сумма"
-              :rules="[v => (v >= sumPay || typePay === 'На баланс') || 'Заполните поле']"
+              :rules="[v => (v >= sumPay || typePay === 5) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="typePay !== 'На баланс'"
+              v-if="typePay !== 5"
             ></v-text-field>
             <v-text-field
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="typePay !== 'На баланс'"
+              v-if="typePay !== 5"
             ></v-text-field>
             <v-select
               label="Способ оплаты"
               :items="typePayList"
               :rules="[v => !!v || 'Заполните поле']"
+              item-text="name"
+              item-value="id"
               v-model="typePay"
             ></v-select>
           </v-card-text>
@@ -423,6 +425,10 @@ export default {
       type: Array,
       required: true,
     },
+    paymentTypesList: {
+      type: Array,
+      required: true,
+    },
     ordersList: {
       type: Array,
       required: true,
@@ -448,14 +454,7 @@ export default {
       salePersent: null,
       dialogPay: false,
       sumClient: 0,
-      typePay: '',
-      // typePayList: [
-      //   'Наличные',
-      //   'На баланс',
-      //   'Яндекс',
-      //   'Карта',
-      //   'Терминал',
-      // ],
+      typePay: null,
       dialogClear: false,
       sumDecorCustom: '',
       clientSaleCustom: 0,
@@ -483,14 +482,17 @@ export default {
   },
   computed: {
     typePayList() {
-      const typePay = [
-        'Наличные',
-        'Яндекс',
-        'Карта',
-        'Терминал',
-      ];
-      if (this.client !== 0) typePay.push('На баланс');
-      return typePay;
+      return this.paymentTypesList.filter((item) => {
+        let show = true;
+
+        if (item.code === 'Vozvrat') {
+          show = false;
+        } else if (item.code === 'Na balans' && this.client === 0) {
+          show = false;
+        }
+
+        return show;
+      });
     },
     clientOrdersList: function clientOrdersList() {
       const ordersList = this.ordersList.filter(item => item.client.id === this.client);
@@ -576,7 +578,7 @@ export default {
           salePercent: +this.clientSale,
           sumSale: this.sumSale,
           payment: {
-            paymentTypeId: 1,
+            paymentTypeId: this.typePay,
             amount: this.sumPay,
             clientId: this.client,
             description: '',

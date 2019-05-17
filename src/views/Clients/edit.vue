@@ -54,6 +54,7 @@
             v-model="editedItem.birthDay"
             prepend-icon="event"
             hide-details
+            :rules="[v => !!v || 'Заполните поле']"
             readonly
           ></v-text-field>
           <v-date-picker

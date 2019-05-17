@@ -644,23 +644,49 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-
-        propsItem.delivery = false;
-
-        const itemParams = {
-          type: 'orders',
-          props: propsItem,
-        };
-
-        this.$store.dispatch('addItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+        if (this.editedItem.client) {
+          this.addOrder();
+        } else {
+          this.addClient();
+        }
       }
+    },
+    addOrder() {
+      const propsItem = Object.assign({}, this.editedItem);
+      delete propsItem.id;
+
+      propsItem.delivery = false;
+
+      const itemParams = {
+        type: 'orders',
+        props: propsItem,
+      };
+
+      this.$store.dispatch('addItem', itemParams).then(() => {
+        this.createdSuccess = true;
+        setTimeout(() => {
+          this.$emit('cancel');
+        }, 1000);
+      });
+    },
+    addClient() {
+      const itemParams = {
+        type: 'clients',
+        props: {
+          name: this.editedItem.clientName,
+          birthDay: '1900-01-01',
+          bill: 0,
+          sale: 0,
+          phone: this.editedItem.clientPhone,
+          isActive: true,
+          type: this.editedItem.clientType,
+        },
+      };
+
+      this.$store.dispatch('addItem', itemParams).then((client) => {
+        this.editedItem.client = client.id;
+        this.addOrder();
+      });
     },
   },
   mounted() {

@@ -304,6 +304,7 @@
                 <created-bouquet-card
                   :florists-list="floristsList"
                   :clients-list="clientsList"
+                  :payment-types-list="paymentTypesList"
                   :orders-list="ordersList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
@@ -573,6 +574,7 @@ export default {
       cardsList: [],
       floristsList: [],
       clientsList: [],
+      paymentTypesList: [],
       ordersList: [],
       goodsList: [],
       bouquetsList: [],
@@ -857,6 +859,20 @@ export default {
         loadData.error = true;
       });
     },
+    getPaymentTypesList() {
+      const itemParams = {
+        type: 'paymentTypes',
+        filter: {
+          isActive: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.paymentTypesList = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
     getOrdersList: function getOrdersWorksList() {
       const itemParams = {
         type: 'orders',
@@ -929,6 +945,7 @@ export default {
       this.getOrdersList();
       this.getGoodsList();
       this.getBouquetsList();
+      this.getPaymentTypesList();
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);

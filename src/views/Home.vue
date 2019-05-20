@@ -488,6 +488,8 @@
               label="Способ оплаты"
               :items="typePayList"
               :rules="[v => !!v || 'Заполните поле']"
+              item-text="name"
+              item-value="id"
               v-model="typePay"
             ></v-select>
           </v-card-text>
@@ -589,21 +591,22 @@ export default {
   },
   computed: {
     typePayList() {
-      const typePay = [
-        'Наличные',
-        'Яндекс',
-        'Карта',
-        'Терминал',
-      ];
-
-      const checkClients = this.checkCardList.every((item) => {
+      const checkClients = this.checkCardList.some((item) => {
         const card = this.cardsList[item.index];
-        return card.props.client !== 0;
+        return card.props.clientId === 7;
       });
 
-      if (checkClients) typePay.push('На баланс');
+      return this.paymentTypesList.filter((item) => {
+        let show = true;
 
-      return typePay;
+        if (item.code === 'Vozvrat') {
+          show = false;
+        } else if (item.code === 'Na balans' && checkClients) {
+          show = false;
+        }
+
+        return show;
+      });
     },
     sumChange: function sumChange() {
       const sum = this.sumClient - this.checkSum;

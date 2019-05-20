@@ -200,7 +200,12 @@ export default new Vuex.Store({
     deleteItem({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
-        axios.delete(url).then(() => {
+        axios.delete(
+          url,
+          {
+            data: item.props,
+          },
+        ).then(() => {
           resolve();
         }).catch((error) => {
           if (error.response.status === 401) {

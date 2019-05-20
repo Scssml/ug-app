@@ -490,6 +490,31 @@ export default {
       this.editStatus = true;
       this.dialogForm = true;
     },
+    createdBouquet: function createdBouquet(item) {
+      let cardsList = JSON.parse(localStorage.getItem('cardsList'));
+      cardsList = (cardsList !== null) ? cardsList : [];
+
+      const index = cardsList.findIndex(card => card.props.order === item.id);
+      if (index === -1) {
+        cardsList.push({
+          sum: 0,
+          success: false,
+          props: {
+            floristId: null,
+            orderId: item.id,
+            clientId: item.client.id,
+            decorPercent: 10,
+            deliveryCost: 0,
+            salePercent: 0,
+          },
+          goods: [],
+        });
+      } else {
+        cardsList[index].props.clientId = item.client.id;
+      }
+      localStorage.setItem('cardsList', JSON.stringify(cardsList));
+      this.$router.push({ path: '/', query: { selectOrder: item.id } });
+    },
   },
   mounted() {
     this.getOrdersList();

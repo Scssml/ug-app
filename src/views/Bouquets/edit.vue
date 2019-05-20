@@ -64,29 +64,37 @@
             xs6
             px-2
           >
-            <p class="title mb-4">Оплата</p>
-            <v-text-field
-              label="Дата"
-              :value="editedItem.payments[0].creationDate"
-              readonly
-            ></v-text-field>
-            <v-text-field
-              label="Стоимость"
-              :value="editedItem.payments[0].amount"
-              readonly
-            ></v-text-field>
-            <v-text-field
-              label="Тип оплаты"
-              :value="editedItem.payments[0].paymentType.name"
-              readonly
-            ></v-text-field>
-            <v-textarea
-              label="Комментарий"
-              auto-grow
-              :value="editedItem.payments[0].description"
-              row-height="20"
-              readonly
-            ></v-textarea>
+            <p class="title mb-4">Оплаты</p>
+            <template v-for="(payment, index) in editedItem.payments">
+              <v-card
+                :key="index"
+                flat
+              >
+                <v-text-field
+                  label="Дата"
+                  :value="payment.creationDate"
+                  readonly
+                ></v-text-field>
+                <v-text-field
+                  label="Стоимость"
+                  :value="payment.amount"
+                  readonly
+                ></v-text-field>
+                <v-text-field
+                  label="Тип оплаты"
+                  :value="payment.paymentType.name"
+                  readonly
+                ></v-text-field>
+                <v-textarea
+                  label="Комментарий"
+                  auto-grow
+                  :value="payment.description"
+                  row-height="20"
+                  readonly
+                  v-if="payment.paymentType.id === 7"
+                ></v-textarea>
+              </v-card>
+            </template>
           </v-flex>
           <v-flex
             xs12

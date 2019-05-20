@@ -45,13 +45,19 @@
           <v-dialog
             v-model="dialogForm"
             persistent
-            max-width="1200px"
+            :max-width="(editDialog) ? '1200px' : '420px'"
           >
             <bouquet-edit
-              v-if="editedId"
+              v-if="editedId && editDialog"
               :id="editedId"
               @cancel="closeDialog()"
             ></bouquet-edit>
+
+            <bouquet-cancel
+              v-if="editedId && cancelDialog"
+              :id="editedId"
+              @cancel="closeDialog()"
+            ></bouquet-cancel>
           </v-dialog>
         </v-card-title>
 
@@ -72,15 +78,22 @@
             <td>{{ props.item.florist }}</td>
             <td>{{ props.item.user.name }}</td>
             <td>
-              {{ props.item.payments[0].amount }}р
-              <br>{{ props.item.payments[0].creationDate }}
-              <br>{{ props.item.payments[0].paymentType.name }}
+              {{ props.item.payments[props.item.payments.length - 1].amount }}р
+              <br>{{ props.item.payments[props.item.payments.length - 1].creationDate }}
+              <br>{{ props.item.payments[props.item.payments.length - 1].paymentType.name }}
             </td>
             <td class="text-xs-right" style="width: 110px;">
               <v-icon
                 @click="editItem(props.item.id)"
               >
                 visibility
+              </v-icon>
+              <v-icon
+                @click="cancelItem(props.item.id)"
+                class="ml-2"
+                v-if="props.item.payments.every(item => item.paymentType.id !== 7)"
+              >
+                delete
               </v-icon>
             </td>
           </template>
@@ -92,11 +105,13 @@
 
 <script>
 import BouquetEdit from './edit.vue';
+import BouquetCancel from './cancel.vue';
 
 export default {
   name: 'Bouquets',
   components: {
     BouquetEdit,
+    BouquetCancel,
   },
   data() {
     return {
@@ -135,6 +150,7 @@ export default {
           text: 'Оплата',
           align: 'left',
           value: 'payments[0].amount',
+          sortable: false,
         },
         {
           text: '',
@@ -144,6 +160,8 @@ export default {
         },
       ],
       dialogForm: false,
+      editDialog: false,
+      cancelDialog: false,
       editedId: 0,
       bouquetsList: [],
     };
@@ -179,10 +197,18 @@ export default {
       this.getBouquetsList();
       this.dialogForm = false;
       this.editedId = 0;
+      this.cancelDialog = false;
+      this.editDialog = false;
     },
     editItem(id) {
       this.editedId = +id;
       this.dialogForm = true;
+      this.editDialog = true;
+    },
+    cancelItem(id) {
+      this.editedId = +id;
+      this.dialogForm = true;
+      this.cancelDialog = true;
     },
   },
   mounted() {

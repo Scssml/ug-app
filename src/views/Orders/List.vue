@@ -256,7 +256,7 @@
                     <v-list-tile
                       @click.prevent="printDoc(props.item.id, 'delivery')"
                       target="_blank"
-                      v-if="props.item.courier && props.item.deliveryType.id === 2"
+                      v-if="props.item.deliveryType.id === 2"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>

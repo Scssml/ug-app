@@ -82,9 +82,15 @@
               <br>{{ props.item.payments[props.item.payments.length - 1].creationDate }}
               <br>{{ props.item.payments[props.item.payments.length - 1].paymentType.name }}
             </td>
-            <td class="text-xs-right" style="width: 110px;">
+            <td class="text-xs-right" style="width: 140px;">
+              <v-icon
+                @click="printDoc(props.item.id)"
+              >
+                insert_drive_file
+              </v-icon>
               <v-icon
                 @click="editItem(props.item.id)"
+                class="ml-2"
               >
                 visibility
               </v-icon>
@@ -173,6 +179,11 @@ export default {
     },
   },
   methods: {
+    printDoc(id) {
+      const { protocol, hostname } = window.location;
+      const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
+      window.open(url, '_blank');
+    },
     getBouquetsList() {
       const itemParams = {
         type: 'bouquets',

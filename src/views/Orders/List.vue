@@ -219,7 +219,7 @@
                 {{ props.item.orderStatus.name }}
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
-              <td class="text-xs-right" style="width: 140px;">
+              <td class="text-xs-right" style="width: 180px;">
                 <v-icon
                   class="mr-2"
                   @click="createdBouquet(props.item)"
@@ -234,10 +234,34 @@
                   add_to_photos
                 </v-icon>
                 <v-icon
+                  class="mr-2"
                   @click="editItem(props.item.id)"
                 >
                   edit
                 </v-icon>
+                <v-menu
+                  style="vertical-align: top;"
+                >
+                  <v-icon
+                    slot="activator"
+                  >insert_drive_file</v-icon>
+
+                  <v-list>
+                    <v-list-tile
+                      @click.prevent="printDoc(props.item.id, 'florist')"
+                      target="_blank"
+                    >
+                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
+                    </v-list-tile>
+                    <v-list-tile
+                      @click.prevent="printDoc(props.item.id, 'delivery')"
+                      target="_blank"
+                      v-if="props.item.courier && props.item.deliveryType.id === 2"
+                    >
+                      <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
+                    </v-list-tile>
+                  </v-list>
+                </v-menu>
               </td>
             </tr>
           </template>
@@ -353,6 +377,11 @@ export default {
     },
   },
   methods: {
+    printDoc(id, type) {
+      const { protocol, hostname } = window.location;
+      const url = `${protocol}//${hostname}/print/order/${id}/${type}`;
+      window.open(url, '_blank');
+    },
     customFilter(items) {
       const filterProps = this.filter;
       let itemsFind = [];

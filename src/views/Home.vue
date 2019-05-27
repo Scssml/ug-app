@@ -50,217 +50,11 @@
       </v-list>
     </v-dialog>
 
-    <div
-      class="statPayBlock"
+    <payment-day
       v-if="!loadingDialog"
-    >
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма скидки:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumSale"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма оформления:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumDecor"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма доставки:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumDelivery"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма оплат:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumPay"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма наличка:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumPayCash"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сумма безнал:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="allSumPayNoCash"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Остаток в кассе:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="cashPrevDay"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Инкасация:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            v-model="sumEncashment"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-      <v-layout
-        row
-        wrap
-        align-center
-      >
-        <v-flex
-          xs7
-        >
-          <b>Сейчас в кассе:</b>
-        </v-flex>
-        <v-flex
-          xs5
-        >
-          <v-text-field
-            solo
-            flat
-            hide-details
-            readonly
-            :value="cashNow"
-            class="scs-small"
-          ></v-text-field>
-        </v-flex>
-      </v-layout>
-    </div>
+      :payments-list="paymentsList"
+      @input="getPaymentsList()"
+    ></payment-day>
 
     <v-layout
       row
@@ -514,15 +308,18 @@
 <script>
 import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
+import PaymentDay from './Pays/paymentDay.vue';
 
 export default {
   name: 'Home',
   components: {
     'created-bouquet-card': CreatedBouquetCard,
     'select-count-goods': SelectCountGoods,
+    PaymentDay,
   },
   data() {
     return {
+      dateNow: '',
       loadingData: [
         {
           title: 'Получение клиентов',
@@ -552,12 +349,19 @@ export default {
           color: 'blue-grey',
           id: 'goods',
         },
+        // {
+        //   title: 'Получение букетов',
+        //   error: false,
+        //   loading: true,
+        //   color: 'deep-orange',
+        //   id: 'bouquets',
+        // },
         {
-          title: 'Получение букетов',
+          title: 'Получение оплат',
           error: false,
           loading: true,
           color: 'deep-orange',
-          id: 'bouquets',
+          id: 'payments',
         },
       ],
       offsetLeft: 0,
@@ -579,9 +383,8 @@ export default {
       paymentTypesList: [],
       ordersList: [],
       goodsList: [],
-      bouquetsList: [],
-      cashPrevDay: 1200,
-      sumEncashment: 0,
+      // bouquetsList: [],
+      paymentsList: [],
       checkCardList: [],
       createdSuccess: false,
       dialogPay: false,
@@ -621,55 +424,6 @@ export default {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
-    },
-    allSumSale() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const subtotal = sum + ((item.sumSale !== undefined) ? +item.sumSale : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    allSumDecor() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const subtotal = sum + ((item.sumDecor !== undefined) ? +item.sumDecor : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    allSumDelivery() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const subtotal = sum + ((item.delivery !== undefined) ? +item.delivery : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    allSumPay() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const subtotal = sum + ((item.sumPay !== undefined) ? +item.sumPay : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    allSumPayCash() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const sumPay = (item.sumPay !== undefined) ? +item.sumPay : 0;
-        const subtotal = sum + ((item.typePay === 'Наличные') ? sumPay : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    allSumPayNoCash() {
-      const allSum = this.bouquetsList.reduce((sum, item) => {
-        const sumPay = (item.sumPay !== undefined) ? +item.sumPay : 0;
-        const subtotal = sum + ((item.typePay !== 'Наличные') ? sumPay : 0);
-        return subtotal;
-      }, 0);
-      return allSum;
-    },
-    cashNow() {
-      let allSum = this.cashPrevDay + this.allSumPayCash;
-      allSum -= this.sumEncashment;
-      return allSum;
     },
   },
   methods: {
@@ -740,46 +494,15 @@ export default {
         };
 
         this.$store.dispatch('addItem', bouquetParams).then(() => {
-          this.getBouquetsList();
+          // this.getBouquetsList();
+          this.getPaymentsList();
         });
 
-
-        // this.bouquetsList.push(newBouqet);
-
-        // localStorage.setItem('bouquets', JSON.stringify(this.bouquetsList));
-
-        // if (newBouqet.typePay === 'На баланс') {
-        //   const client = this.clientsList.find(elem => elem.id === newBouqet.client);
-
-        //   const propsItem = Object.assign({}, client);
-        //   delete propsItem.id;
-        //   delete propsItem.type;
-        //   propsItem.bill -= newBouqet.sumPay;
-        //   propsItem.sale = +propsItem.sale;
-
-        //   const dateParam = propsItem.birthDay.split('/');
-        //   propsItem.birthDay = `${dateParam[2]}-${dateParam[0]}-${dateParam[1]}`;
-
-        //   const itemParams = {
-        //     type: 'clients',
-        //     props: propsItem,
-        //   };
-
-        //   itemParams.id = client.id;
-        //   this.$store.dispatch('updateItem', itemParams).then(() => {
-        //     this.getClientsList();
-        //   });
-        // }
 
         item.goods.forEach((elem) => {
           const findGood = this.goodsList.find(good => good.id === elem.id);
           findGood.store -= elem.value;
         });
-
-        // axios.post(`${this.$store.state.apiSrc}goods/edit.php`, {
-        //   ELEMS: this.goodsList,
-        // });
-        // localStorage.setItem('goods', JSON.stringify(this.goodsList));
 
         const cardNoEmpty = this.cardsList.filter(elem =>
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
@@ -908,19 +631,42 @@ export default {
         loadData.error = true;
       });
     },
-    getBouquetsList: function getBouquetsList() {
+    // getBouquetsList() {
+    //   const itemParams = {
+    //     type: 'bouquets',
+    //     filter: {
+    //       creationDate: this.dateNow,
+    //     },
+    //   };
+
+    //   const successData = 'Букеты получены!';
+    //   const errorData = 'Ошибка получения букетов!';
+
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.bouquetsList = response;
+
+    //     const loadData = this.loadingData.find(item => item.id === itemParams.type);
+    //     loadData.title = successData;
+    //     loadData.loading = false;
+    //   }).catch(() => {
+    //     const loadData = this.loadingData.find(item => item.id === itemParams.type);
+    //     loadData.title = errorData;
+    //     loadData.error = true;
+    //   });
+    // },
+    getPaymentsList() {
       const itemParams = {
-        type: 'bouquets',
-        // filter: {
-        //   date: '2019-02-11T00:00:00.000-00:00',
-        // },
+        type: 'payments',
+        filter: {
+          // creationDate: this.dateNow,
+        },
       };
 
-      const successData = 'Букеты получены!';
-      const errorData = 'Ошибка получения букетов!';
+      const successData = 'Оплаты получены!';
+      const errorData = 'Ошибка получения оплат!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.bouquetsList = response;
+        this.paymentsList = response;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -936,7 +682,8 @@ export default {
       this.getFloristsList();
       this.getOrdersList();
       this.getGoodsList();
-      this.getBouquetsList();
+      // this.getBouquetsList();
+      this.getPaymentsList();
       this.getPaymentTypesList();
     },
     copyItem(index) {
@@ -985,6 +732,9 @@ export default {
     },
   },
   mounted() {
+    const dateNow = new Date().toISOString().split('T')[0];
+    this.dateNow = dateNow;
+
     const cardsList = JSON.parse(localStorage.getItem('cardsList'));
     this.cardsList = (cardsList !== null) ? cardsList : [];
     const addCountElem = 1 - this.cardsList.length;
@@ -1042,15 +792,5 @@ export default {
     .flex {
       max-width: 300px;
     }
-  }
-  .statPayBlock {
-    position: absolute;
-    top: 15px;
-    left: 0;
-    z-index: 1;
-    background: #fff;
-    width: 260px;
-    padding: 10px;
-    border: 1px solid #ccc;
   }
 </style>

@@ -485,9 +485,9 @@ export default {
       return this.paymentTypesList.filter((item) => {
         let show = true;
 
-        if (item.code === 'Vozvrat') {
+        if (item.id === 7) {
           show = false;
-        } else if (item.code === 'Na balans' && this.client === 7) {
+        } else if (item.id === 5 && this.client === 7) {
           show = false;
         }
 

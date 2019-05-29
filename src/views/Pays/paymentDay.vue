@@ -302,13 +302,20 @@ export default {
   },
   data() {
     return {
+      dateNow: '',
+      dateYesterday: '',
       createdSuccess: false,
       dialog: false,
-      cashPrevDay: 0,
       sumEncashment: 0,
     };
   },
   computed: {
+    paymentsNow() {
+      return this.paymentsList.filter(item => item.creationDate === this.dateNow);
+    },
+    paymentsPrevDay() {
+      return this.paymentsList.filter(item => item.creationDate === this.dateYesterday);
+    },
     // allSumSale() {
     //   const allSum = this.bouquetsList.reduce((sum, item) => {
     //     const subtotal = sum + item.sumSale;
@@ -344,7 +351,7 @@ export default {
     //   return allSum;
     // },
     allSumPay() {
-      const allSum = this.paymentsList.reduce((sum, item) => {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id !== 7 && item.paymentType.id !== 8) {
           amountPay = item.amount;
@@ -367,7 +374,17 @@ export default {
     //   return allSum;
     // },
     allSumPayCash() {
-      const allSum = this.paymentsList.reduce((sum, item) => {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 1) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayCashPrevDay() {
+      const allSum = this.paymentsPrevDay.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id === 1) {
           amountPay = item.amount;
@@ -390,7 +407,7 @@ export default {
     //   return allSum;
     // },
     allSumPayNoCash() {
-      const allSum = this.paymentsList.reduce((sum, item) => {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id !== 1 && item.paymentType.id !== 7 && item.paymentType.id !== 8) {
           amountPay = item.amount;
@@ -413,7 +430,7 @@ export default {
     //   return allSum;
     // },
     allSumReturn() {
-      const allSum = this.paymentsList.reduce((sum, item) => {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id === 7) {
           amountPay = item.amount;
@@ -423,7 +440,7 @@ export default {
       return allSum;
     },
     allSumEncashment() {
-      const allSum = this.paymentsList.reduce((sum, item) => {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id === 8) {
           amountPay = item.amount;
@@ -431,6 +448,19 @@ export default {
         return sum + amountPay;
       }, 0);
       return allSum;
+    },
+    allSumEncashmentPrevDay() {
+      const allSum = this.paymentsPrevDay.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 8) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    cashPrevDay() {
+      return this.allSumPayCashPrevDay - this.allSumEncashmentPrevDay;
     },
     cashNow() {
       let allSum = this.cashPrevDay + this.allSumPayCash;
@@ -466,6 +496,14 @@ export default {
         });
       }
     },
+  },
+  mounted() {
+    const dateNow = new Date();
+    const dateNowStr = dateNow.toISOString().split('T')[0];
+    this.dateNow = dateNowStr;
+    dateNow.setDate(dateNow.getDate() - 1);
+    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
+    this.dateYesterday = dateYesterdayStr;
   },
 };
 </script>

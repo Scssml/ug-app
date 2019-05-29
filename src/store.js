@@ -118,7 +118,12 @@ export default new Vuex.Store({
             if (Array.isArray(values[i])) {
               for (let j = 0; j < values[i].length; j += 1) {
                 filterQuery += (j !== 0) ? '&' : '';
-                filterQuery += `filter[${keys[i]}][]=${values[i][j]}`;
+
+                if (keys[i] === 'creationDate') {
+                  filterQuery += `filter[${keys[i]}][btw][]=${values[i][j]}`;
+                } else {
+                  filterQuery += `filter[${keys[i]}][]=${values[i][j]}`;
+                }
               }
             } else {
               filterQuery += `filter[${keys[i]}]=${values[i]}`;

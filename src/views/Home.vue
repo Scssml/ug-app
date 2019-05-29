@@ -320,6 +320,7 @@ export default {
   data() {
     return {
       dateNow: '',
+      dateYesterday: '',
       loadingData: [
         {
           title: 'Получение клиентов',
@@ -658,7 +659,7 @@ export default {
       const itemParams = {
         type: 'payments',
         filter: {
-          // creationDate: this.dateNow,
+          creationDate: [this.dateYesterday, this.dateNow],
         },
       };
 
@@ -732,8 +733,12 @@ export default {
     },
   },
   mounted() {
-    const dateNow = new Date().toISOString().split('T')[0];
-    this.dateNow = dateNow;
+    const dateNow = new Date();
+    const dateNowStr = dateNow.toISOString().split('T')[0];
+    this.dateNow = `${dateNowStr} 23:59:59`;
+    dateNow.setDate(dateNow.getDate() - 1);
+    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
+    this.dateYesterday = `${dateYesterdayStr} 00:00:00`;
 
     const cardsList = JSON.parse(localStorage.getItem('cardsList'));
     this.cardsList = (cardsList !== null) ? cardsList : [];

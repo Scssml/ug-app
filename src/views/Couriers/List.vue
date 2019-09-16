@@ -48,15 +48,19 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <courier-edit
-              v-if="editedId"
-              :id="editedId"
-              @cancel="closeDialog()"
-            ></courier-edit>
-            <courier-add
-              v-else
-              @cancel="closeDialog()"
-            ></courier-add>
+            <template
+              v-if="dialogForm"
+            >
+              <courier-edit
+                v-if="editedId"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></courier-edit>
+              <courier-add
+                v-else
+                @cancel="closeDialog()"
+              ></courier-add>
+            </template>
           </v-dialog>
         </v-card-title>
 

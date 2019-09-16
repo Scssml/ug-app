@@ -48,15 +48,19 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <florist-edit
-              v-if="editedId"
-              :id="editedId"
-              @cancel="closeDialog()"
-            ></florist-edit>
-            <florist-add
-              v-else
-              @cancel="closeDialog()"
-            ></florist-add>
+            <template
+              v-if="dialogForm"
+            >
+              <florist-edit
+                v-if="editedId"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></florist-edit>
+              <florist-add
+                v-else
+                @cancel="closeDialog()"
+              ></florist-add>
+            </template>
           </v-dialog>
         </v-card-title>
 

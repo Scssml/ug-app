@@ -39,21 +39,25 @@
             :max-width="(editStatus) ? '420px' : '1200px'"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <change-status
-              v-if="editStatus"
-              :id="editedId"
-              @cancel="closeDialog()"
-            ></change-status>
-            <order-edit
-              v-if="editedId && !editStatus"
-              :id="editedId"
-              :copy="copyElem"
-              @cancel="closeDialog()"
-            ></order-edit>
-            <order-add
-              v-if="!editedId && !editStatus"
-              @cancel="closeDialog()"
-            ></order-add>
+            <template
+              v-if="dialogForm"
+            >
+              <change-status
+                v-if="editStatus"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></change-status>
+              <order-edit
+                v-if="editedId && !editStatus"
+                :id="editedId"
+                :copy="copyElem"
+                @cancel="closeDialog()"
+              ></order-edit>
+              <order-add
+                v-if="!editedId && !editStatus"
+                @cancel="closeDialog()"
+              ></order-add>
+            </template>
           </v-dialog>
           <v-spacer></v-spacer>
           <v-layout

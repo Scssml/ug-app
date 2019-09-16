@@ -185,7 +185,7 @@
 
                 <v-text-field
                   label="Сумма"
-                  v-model.number="editedItem.orderCost"
+                  v-model="editedItem.orderCost"
                   hide-details
                   class="mb-4"
                 ></v-text-field>
@@ -431,9 +431,9 @@ export default {
         deliveryDate: '',
         deliveryTime: '',
         createdBy: 0,
-        orderSourceType: 0,
+        orderSourceType: 7,
         description: '',
-        orderCost: 0,
+        orderCost: '0',
         addressee: null,
         addresseeName: '',
         addresseePhone: '',
@@ -446,6 +446,7 @@ export default {
         deliveryType: 1,
         incognito: false,
         coordinates: [],
+        bouquets: [],
       },
       createdSuccess: false,
       userInfo: {},

@@ -36,9 +36,13 @@
         persistent
         max-width="420px"
       >
-        <good-add
-          @cancel="closeDialogAdd()"
-        ></good-add>
+        <template
+          v-if="dialogForm"
+        >
+          <good-add
+            @cancel="closeDialogAdd()"
+          ></good-add>
+        </template>
       </v-dialog>
       <v-card>
         <v-alert

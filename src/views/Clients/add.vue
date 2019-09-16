@@ -77,8 +77,8 @@
           type="number"
         ></v-text-field>
         <v-text-field
-          label.number="Скидка"
-          v-model="editedItem.sale"
+          label="Скидка"
+          v-model.number="editedItem.sale"
           type="number"
         ></v-text-field>
         <v-checkbox

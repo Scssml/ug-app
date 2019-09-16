@@ -58,6 +58,13 @@
               :value="editedItem.deliveryCost"
               readonly
             ></v-text-field>
+            <v-textarea
+              label="Комментарий к доставке"
+              auto-grow
+              :value="editedItem.comment"
+              row-height="15"
+              readonly
+            ></v-textarea>
           </v-flex>
 
           <v-flex
@@ -86,7 +93,7 @@
                   readonly
                 ></v-text-field>
                 <v-textarea
-                  label="Комментарий"
+                  label="Комментарий к оплате"
                   auto-grow
                   :value="payment.description"
                   row-height="20"

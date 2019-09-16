@@ -457,7 +457,7 @@ export default {
       typePay: null,
       dialogClear: false,
       sumDecorCustom: '',
-      clientSaleCustom: 0,
+      clientSaleCustom: '',
       check: false,
       orderBouquets: [
         {
@@ -532,7 +532,7 @@ export default {
       let salePersent = 0;
       if (this.clientSaleCustom !== '') {
         salePersent = this.clientSaleCustom;
-      } else if (client !== undefined && client.sale > 0) {
+      } else if (client !== 7 && client.sale > 0) {
         salePersent = client.sale;
       } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
         salePersent = 5;
@@ -583,6 +583,7 @@ export default {
             clientId: this.client,
             description: '',
           },
+          comment: this.comment,
           // date: new Date().toISOString().split('T')[0],
           // florist: this.florist,
           // user: this.$store.state.authUser,
@@ -621,6 +622,7 @@ export default {
           clientId: this.client,
           description: '',
         },
+        comment: this.comment,
         // date: new Date().toISOString().split('T')[0],
         // florist: this.florist,
         // user: this.$store.state.authUser,
@@ -655,6 +657,7 @@ export default {
         this.decorPercent = this.propsDefault.decorPercent;
         this.delivery = this.propsDefault.deliveryCost;
         this.clientSaleCustom = this.propsDefault.salePercent;
+        this.comment = this.propsDefault.comment;
       }
     },
   },

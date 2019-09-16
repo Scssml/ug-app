@@ -33,8 +33,11 @@ export default {
   },
   methods: {
     setPrefix(value) {
-      const address = value.replace('г. Самара, ', '');
-      this.address = `г. Самара, ${address}`;
+      // const address = value.replace('г. Самара, ', '');
+      // this.address = `г. Самара, ${address}`;
+
+      const address = value;
+      this.address = `${address}`;
 
       this.$emit('change', {
         address: this.address,

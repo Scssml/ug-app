@@ -48,15 +48,19 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <user-group-edit
-              v-if="editedId"
-              :id="editedId"
-              @cancel="closeDialog()"
-            ></user-group-edit>
-            <user-group-add
-              v-else
-              @cancel="closeDialog()"
-            ></user-group-add>
+            <template
+              v-if="dialogForm"
+            >
+              <user-group-edit
+                v-if="editedId"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></user-group-edit>
+              <user-group-add
+                v-else
+                @cancel="closeDialog()"
+              ></user-group-add>
+            </template>
           </v-dialog>
         </v-card-title>
 

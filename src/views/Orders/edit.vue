@@ -195,11 +195,11 @@
 
                 <v-text-field
                   label="Сумма"
-                  v-model.number="editedItem.orderCost"
+                  v-model="editedItem.orderCost"
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
-                  type="number"
+                  type="text"
                 ></v-text-field>
               </v-flex>
 
@@ -541,7 +541,7 @@ export default {
         this.$store.dispatch('getItem', itemParams).then((response) => {
           const props = response;
           this.usersList = props.createdBy;
-          props.orderCost = +props.orderCost;
+          // props.orderCost = +props.orderCost;
 
           props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
@@ -551,6 +551,7 @@ export default {
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
+          props.bouquets = (props.bouquets) ? props.bouquets : [];
 
           this.editedItem = props;
           this.getOrdersList();

@@ -71,15 +71,19 @@
             max-width="420px"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <client-edit
-              v-if="editedId"
-              :id="editedId"
-              @cancel="closeDialog()"
-            ></client-edit>
-            <client-add
-              v-else
-              @cancel="closeDialog()"
-            ></client-add>
+            <template
+              v-if="dialogForm"
+            >
+              <client-edit
+                v-if="editedId"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></client-edit>
+              <client-add
+                v-else
+                @cancel="closeDialog()"
+              ></client-add>
+            </template>
           </v-dialog>
         </v-card-title>
 
@@ -96,7 +100,9 @@
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.phone }}</td>
-            <td>{{ props.item.type }}</td>
+            <td>
+              {{ props.item.typeName }}
+            </td>
             <td>{{ props.item.birthDay }}</td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.sale }}</td>
@@ -233,7 +239,12 @@ export default {
       const errorData = 'Ошибка получения клиентов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response;
+        this.clientsList = response.map((item) => {
+          const itemTypeClient = this.typeClient.find(elem => elem.id === item.type);
+          item.typeName = (itemTypeClient) ? itemTypeClient.name : '-';
+
+          return item;
+        });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -254,6 +265,7 @@ export default {
           item.id = +item.id;
           return item;
         });
+        this.getClientsList();
       }).catch(() => {
         console.log('error');
       });
@@ -272,7 +284,6 @@ export default {
     },
   },
   mounted() {
-    this.getClientsList();
     this.getClientTypeList();
   },
 };

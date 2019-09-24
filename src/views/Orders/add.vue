@@ -326,11 +326,11 @@
               </v-flex>
             </v-layout>
 
-            <!-- <p class="mb-0">Букеты</p>
+            <p class="mb-0">Букеты</p>
             <v-layout
               row
               wrap
-              v-for="(bouquet, index) in orderBouquets"
+              v-for="(bouquet, index) in editedItem.bouquets"
               :key="'bouquet-' + index"
               align-center
             >
@@ -344,7 +344,6 @@
                   v-model="bouquet.name"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                 ></v-text-field>
               </v-flex>
               <v-flex
@@ -357,7 +356,6 @@
                   v-model="bouquet.count"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                 ></v-text-field>
               </v-flex>
               <v-flex
@@ -374,7 +372,7 @@
               @click="bouquetAdd()"
             >
               add
-            </v-icon> -->
+            </v-icon>
           </v-flex>
 
           <v-flex
@@ -688,6 +686,15 @@ export default {
         this.editedItem.client = client.id;
         this.addOrder();
       });
+    },
+    bouquetAdd() {
+      this.editedItem.bouquets.push({
+        name: null,
+        count: null,
+      });
+    },
+    bouquetDelete(index) {
+      this.editedItem.bouquets.splice(index, 1);
     },
   },
   mounted() {

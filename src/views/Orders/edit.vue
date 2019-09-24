@@ -35,7 +35,7 @@
               >
                 <v-select
                   label="КТО"
-                  :items="userInfo"
+                  :items="[userInfo]"
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
@@ -349,11 +349,11 @@
               </v-flex>
             </v-layout>
 
-            <!-- <p class="mb-0">Букеты</p>
+            <p class="mb-0">Букеты</p>
             <v-layout
               row
               wrap
-              v-for="(bouquet, index) in orderBouquets"
+              v-for="(bouquet, index) in editedItem.bouquets"
               :key="'bouquet-' + index"
               align-center
             >
@@ -397,7 +397,7 @@
               @click="bouquetAdd()"
             >
               add
-            </v-icon> -->
+            </v-icon>
           </v-flex>
 
           <v-flex
@@ -715,6 +715,15 @@ export default {
           }, 1000);
         });
       }
+    },
+    bouquetAdd() {
+      this.editedItem.bouquets.push({
+        name: null,
+        count: null,
+      });
+    },
+    bouquetDelete(index) {
+      this.editedItem.bouquets.splice(index, 1);
     },
   },
   mounted() {

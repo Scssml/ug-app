@@ -99,7 +99,6 @@
                   :florists-list="floristsList"
                   :clients-list="clientsList"
                   :payment-types-list="paymentTypesList"
-                  :orders-list="ordersList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
                   @saveProps="saveProps(index, $event)"
@@ -337,13 +336,6 @@ export default {
           id: 'florists',
         },
         {
-          title: 'Получение заказов',
-          error: false,
-          loading: true,
-          color: 'amber',
-          id: 'orders',
-        },
-        {
           title: 'Получение товаров',
           error: false,
           loading: true,
@@ -382,7 +374,6 @@ export default {
       floristsList: [],
       clientsList: [],
       paymentTypesList: [],
-      ordersList: [],
       goodsList: [],
       // bouquetsList: [],
       paymentsList: [],
@@ -479,31 +470,52 @@ export default {
         this.$set(this.cardsList, index, item);
         this.addCard();
 
-        const newBouqet = props;
-
-        newBouqet.goods = item.goods.map((elem) => {
-          const good = {
-            goodId: elem.id,
-            count: elem.value,
+        if (props.payment.paymentTypeId === 5) {
+          const itemParams = {
+            type: 'payments',
+            props: {
+              paymentType: {
+                id: props.payment.paymentTypeId,
+                name: 'На баланс',
+                isActive: true,
+                code: 'balance',
+              },
+              amount: props.payment.amount,
+              clientId: props.payment.clientId,
+              description: '',
+            },
           };
-          return good;
-        });
 
-        const bouquetParams = {
-          type: 'bouquets',
-          props: newBouqet,
-        };
+          this.$store.dispatch('addItem', itemParams).then(() => {
+            this.getPaymentsList();
+          });
+        } else {
+          const newBouqet = props;
 
-        this.$store.dispatch('addItem', bouquetParams).then(() => {
-          // this.getBouquetsList();
-          this.getPaymentsList();
-        });
+          newBouqet.goods = item.goods.map((elem) => {
+            const good = {
+              goodId: elem.id,
+              count: elem.value,
+            };
+            return good;
+          });
+
+          const bouquetParams = {
+            type: 'bouquets',
+            props: newBouqet,
+          };
+
+          this.$store.dispatch('addItem', bouquetParams).then(() => {
+            // this.getBouquetsList();
+            this.getPaymentsList();
+          });
 
 
-        item.goods.forEach((elem) => {
-          const findGood = this.goodsList.find(good => good.id === elem.id);
-          findGood.store -= elem.value;
-        });
+          item.goods.forEach((elem) => {
+            const findGood = this.goodsList.find(good => good.id === elem.id);
+            findGood.store -= elem.value;
+          });
+        }
 
         const cardNoEmpty = this.cardsList.filter(elem =>
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0)
@@ -589,29 +601,6 @@ export default {
         console.log('error');
       });
     },
-    getOrdersList: function getOrdersWorksList() {
-      const itemParams = {
-        type: 'orders',
-        filter: {
-          orderStatus: 1,
-        },
-      };
-
-      const successData = 'Заказы получены!';
-      const errorData = 'Ошибка получения заказов!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.ordersList = response;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
     getGoodsList: function getGoodsList() {
       const itemParams = {
         type: 'goods',
@@ -681,7 +670,6 @@ export default {
     getDataProps: function getDataProps() {
       this.getClientsList();
       this.getFloristsList();
-      this.getOrdersList();
       this.getGoodsList();
       // this.getBouquetsList();
       this.getPaymentsList();

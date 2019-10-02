@@ -117,7 +117,7 @@ export default {
         decorCost: item.decorCost,
         decorPercent: item.decorPercent,
         deliveryCost: item.deliveryCost,
-        floristId: item.florist,
+        floristId: (item.florist) ? item.florist : 0,
         orderId: 0,
         payment: {
           amount: item.payments[0].amount,

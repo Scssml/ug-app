@@ -46,7 +46,7 @@
         hide-details
         class="mb-4 scs-small"
         no-data-text="Не надено"
-        @change="updateProps()"
+        @change="updateProps(); getOrdersClient();"
       ></v-autocomplete>
     </div>
     <v-divider></v-divider>
@@ -79,13 +79,13 @@
           <v-select
             label="Букет"
             :items="orderBouquets"
-            item-text="name"
+            item-text="fullName"
             item-value="id"
             solo
             flat
             hide-details
             no-data-text="Нет букетов"
-            v-model.number="bouquet"
+            v-model.number="orderBouquet"
             class="scs-small"
             @change="updateProps()"
           ></v-select>
@@ -346,6 +346,12 @@
               label="К оплате"
               readonly
               :value="sumPay"
+              v-if="typePay !== 5"
+            ></v-text-field>
+            <v-text-field
+              label="К оплате"
+              v-model.number="sumPayCustom"
+              v-if="typePay === 5"
             ></v-text-field>
             <v-text-field
               label="Сумма"
@@ -429,10 +435,6 @@ export default {
       type: Array,
       required: true,
     },
-    ordersList: {
-      type: Array,
-      required: true,
-    },
     sumFlowers: {
       type: Number,
       required: true,
@@ -443,6 +445,7 @@ export default {
   },
   data() {
     return {
+      sumPayCustom: 0,
       createdSuccess: false,
       florist: 0,
       client: 7,
@@ -459,28 +462,25 @@ export default {
       sumDecorCustom: '',
       clientSaleCustom: '',
       check: false,
-      orderBouquets: [
-        {
-          name: 'Букет 1 (2шт)',
-          id: 1,
-          disabled: false,
-        },
-        {
-          name: 'Букет 2 (1шт)',
-          id: 2,
-          disabled: false,
-        },
-        {
-          name: 'Букет 3 (0шт)',
-          id: 3,
-          disabled: true,
-        },
-      ],
       bouquetCount: 1,
-      bouquet: null,
+      orderBouquet: null,
+      clientOrdersList: [],
     };
   },
   computed: {
+    orderBouquets() {
+      const orderSelected = this.clientOrdersList.find(item => item.id === this.order);
+      let orderList = [];
+
+      if (orderSelected) {
+        orderList = orderSelected.bouquets.map((item) => {
+          item.fullName = `${item.name} - ${item.count}шт`;
+          return item;
+        });
+      }
+
+      return orderList;
+    },
     typePayList() {
       return this.paymentTypesList.filter((item) => {
         let show = true;
@@ -494,10 +494,10 @@ export default {
         return show;
       });
     },
-    clientOrdersList: function clientOrdersList() {
-      const ordersList = this.ordersList.filter(item => item.client.id === this.client);
-      return ordersList;
-    },
+    // clientOrdersList: function clientOrdersList() {
+    //   const ordersList = this.ordersList.filter(item => item.client.id === this.client);
+    //   return ordersList;
+    // },
     sumDecor: function decorSum() {
       let sum = 0;
       if (this.sumDecorCustom !== '') {
@@ -543,6 +543,26 @@ export default {
     },
   },
   methods: {
+    getOrdersClient(changeOrder = true) {
+      if (changeOrder) this.order = 0;
+
+      const itemParams = {
+        type: 'orders',
+        filter: {
+          client: this.client,
+          orderStatus: 1,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientOrdersList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
+    },
     clearProps() {
       this.florist = 0;
       this.client = 0;
@@ -584,6 +604,7 @@ export default {
             description: '',
           },
           comment: this.comment,
+          orderBouquet: this.orderBouquet,
           // date: new Date().toISOString().split('T')[0],
           // florist: this.florist,
           // user: this.$store.state.authUser,
@@ -598,6 +619,10 @@ export default {
           // sumPay: this.sumPay,
           // typePay: this.typePay,
         };
+
+        if (this.typePay === 5) {
+          props.payment.amount = this.sumPayCustom;
+        }
 
         setTimeout(() => {
           this.dialogPay = false;
@@ -623,6 +648,7 @@ export default {
           description: '',
         },
         comment: this.comment,
+        orderBouquet: this.orderBouquet,
         // date: new Date().toISOString().split('T')[0],
         // florist: this.florist,
         // user: this.$store.state.authUser,
@@ -658,6 +684,7 @@ export default {
         this.delivery = this.propsDefault.deliveryCost;
         this.clientSaleCustom = this.propsDefault.salePercent;
         this.comment = this.propsDefault.comment;
+        this.orderBouquet = this.propsDefault.orderBouquet;
       }
     },
   },
@@ -669,6 +696,7 @@ export default {
   },
   created() {
     this.setValueDefault();
+    this.getOrdersClient(false);
   },
 };
 </script>

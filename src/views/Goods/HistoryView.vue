@@ -40,7 +40,7 @@
             <v-flex>
               <v-text-field
                 label="Дата"
-                :value="purchase.date"
+                :value="purchase.purchaseDate"
                 hide-details
                 class="pr-4"
                 readonly
@@ -49,7 +49,7 @@
             <v-flex>
               <v-text-field
                 label="Тип изменения"
-                value=""
+                :value="purchase.type.name"
                 hide-details
                 class="pr-4"
                 readonly

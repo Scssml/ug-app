@@ -65,6 +65,18 @@
               row-height="15"
               readonly
             ></v-textarea>
+            <v-text-field
+              label="Заказ"
+              :value="editedItem.orderId"
+              readonly
+              v-if="editedItem.orderId"
+            ></v-text-field>
+            <v-text-field
+              label="Букет из заказа"
+              :value="editedItem.orderBouquet.name + ' - ' + editedItem.orderBouquet.count + 'шт'"
+              readonly
+              v-if="editedItem.orderBouquet"
+            ></v-text-field>
           </v-flex>
 
           <v-flex

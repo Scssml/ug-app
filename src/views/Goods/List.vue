@@ -320,7 +320,12 @@ export default {
   methods: {
     exelCalc(val) {
       /* eslint no-eval: 0 */
-      return eval(val);
+
+      const value = (val.length > 1) ? val.replace(/^0+/, '') : val;
+      console.log(value);
+
+      // return value;
+      return eval(value);
     },
     getGoodsList() {
       const itemParams = {

@@ -95,6 +95,7 @@ export default {
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
+          props.orderCost = (props.orderCost) ? String(props.orderCost) : '';
 
           this.editedItem = props;
         }).catch(() => {

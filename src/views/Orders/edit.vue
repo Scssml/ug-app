@@ -413,6 +413,29 @@
             >
             </yandex-map>
           </v-flex>
+          <v-flex
+            xs12
+            my-4
+          >
+            <v-btn
+              @click.native="showHistory = !showHistory"
+            >Показать историю</v-btn>
+            <template v-if="showHistory">
+              <v-data-table
+                :headers="headersTableHistory"
+                :items="history"
+                hide-actions
+                item-key="updated_at"
+                no-data-text="Изменений не найдено"
+                no-results-text="Изменений не найдено"
+              >
+                <template slot="items" slot-scope="props">
+                  <td>{{ props.item.updated_at }}</td>
+                  <td></td>
+                </template>
+              </v-data-table>
+            </template>
+          </v-flex>
         </v-layout>
       </v-card-text>
       <v-card-actions
@@ -470,6 +493,20 @@ export default {
       typeClient: [],
       couriersList: [],
       ordersList: [],
+      history: [],
+      showHistory: false,
+      headersTableHistory: [
+        {
+          text: 'Дата',
+          align: 'left',
+          value: 'updated_at',
+        },
+        {
+          text: 'Пользователь',
+          align: 'left',
+          value: 'user',
+        },
+      ],
     };
   },
   computed: {
@@ -477,14 +514,16 @@ export default {
       const placemarks = [];
 
       this.ordersList.forEach((item) => {
-        placemarks.push({
-          coords: item.coordinates,
-          properties: {
-            balloonContent: `${item.deliveryDate}, ${item.deliveryTime}<br>${item.address}`,
-          },
-          options: {},
-          clusterName: '1',
-        });
+        if (item.coordinates.length === 2) {
+          placemarks.push({
+            coords: item.coordinates,
+            properties: {
+              balloonContent: `${item.deliveryDate}, ${item.deliveryTime}<br>${item.address}`,
+            },
+            options: {},
+            clusterName: '1',
+          });
+        }
       });
 
       return placemarks;
@@ -556,6 +595,33 @@ export default {
           this.editedItem = props;
           this.getOrdersList();
           this.getUsersList();
+        }).catch(() => {
+          console.log('error');
+        });
+      }
+    },
+    getItemHistory() {
+      if (this.id) {
+        const itemParams = {
+          type: 'orders',
+          id: `${this.id}/history`,
+        };
+
+        this.$store.dispatch('getItem', itemParams).then((response) => {
+          this.history = response.map((item) => {
+            const elem = item;
+            const date = new Date(elem.updated_at);
+            elem.updated_at = date.toLocaleString('ru', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric',
+            });
+
+            return elem;
+          });
         }).catch(() => {
           console.log('error');
         });
@@ -671,12 +737,15 @@ export default {
       const itemParams = {
         type: 'users',
         filter: {
-          id: this.editedItem.createdBy,
+          id: +this.editedItem.createdBy,
         },
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.userInfo = response;
+        const [user] = response;
+        this.userInfo = user;
+        this.userInfo.id = +this.userInfo.id;
+        this.editedItem.createdBy = +this.userInfo.id;
       }).catch(() => {
         console.log('error');
       });
@@ -734,6 +803,7 @@ export default {
     this.getClientTypeList();
     this.getCouriersList();
     this.getItem();
+    this.getItemHistory();
   },
 };
 </script>

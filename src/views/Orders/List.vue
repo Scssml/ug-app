@@ -197,23 +197,43 @@
           no-results-text="Заказов не найдено"
           :search="search"
           :custom-filter="customFilter"
-          disable-initial-sort
+          :pagination.sync="pagination"
         >
           <template slot="items" slot-scope="props">
             <tr
               :class="props.item.orderStatus.color"
             >
-              <td>{{ props.item.createdAt.split('T')[0] }}</td>
+              <td>
+                {{ props.item.createdAt }}
+                <br>{{ props.item.createdBy.name }}
+                <br>{{ props.item.orderSourceType.name }}
+              </td>
               <td style="width: 30px;">{{ props.item.id }}</td>
               <td>
                 {{ props.item.clientName }}
                 <br>{{ props.item.clientPhone }}
               </td>
               <td>{{ props.item.description }}</td>
+              <td>
+                <template v-for="(item, key) in props.item.bouquets">
+                  {{ item.name }} - {{ item.count }}
+                  <br :key="key">
+                </template>
+              </td>
               <td>{{ props.item.deliveryType.name }}</td>
               <td>
-                {{ props.item.deliveryDate }}
-                <br>{{ props.item.deliveryTime }}
+                {{ props.item.deliveryDateStr }}
+                <template v-if="props.item.deliveryTime">
+                  <br>{{ props.item.deliveryTime }}
+                </template>
+                <template v-if="props.item.addressee">
+                  <br>{{ props.item.addresseeName }}
+                  <br>{{ props.item.addresseePhone }}
+                </template>
+                <template v-else>
+                  <br>{{ props.item.clientName }}
+                  <br>{{ props.item.clientPhone }}
+                </template>
               </td>
               <td>{{ props.item.orderCost }}</td>
               <td
@@ -224,31 +244,65 @@
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
               <td class="text-xs-right" style="width: 180px;">
-                <v-icon
-                  class="mr-2"
+                <v-btn
+                  small
+                  outline
+                  color="grey darken-3"
                   @click="createdBouquet(props.item)"
                   v-if="props.item.orderStatus.id === 1"
                 >
-                  playlist_add
-                </v-icon>
-                <v-icon
-                  class="mr-2"
+                  <v-icon
+                    left
+                  >
+                    playlist_add
+                  </v-icon>
+                  Собрать
+                </v-btn>
+
+                <v-btn
+                  small
+                  outline
+                  color="grey darken-3"
                   @click="editItem(props.item.id, true)"
                 >
-                  add_to_photos
-                </v-icon>
-                <v-icon
-                  class="mr-2"
+                  <v-icon
+                    left
+                  >
+                    add_to_photos
+                  </v-icon>
+                  Скопировать
+                </v-btn>
+
+                <v-btn
+                  small
+                  outline
+                  color="grey darken-3"
                   @click="editItem(props.item.id)"
                 >
-                  edit
-                </v-icon>
+                  <v-icon
+                    left
+                  >
+                    edit
+                  </v-icon>
+                  Изменить
+                </v-btn>
+
                 <v-menu
                   style="vertical-align: top;"
                 >
-                  <v-icon
+                  <v-btn
+                    small
+                    outline
+                    color="grey darken-3"
                     slot="activator"
-                  >insert_drive_file</v-icon>
+                  >
+                    <v-icon
+                      left
+                    >
+                      insert_drive_file
+                    </v-icon>
+                    Печать
+                  </v-btn>
 
                   <v-list>
                     <v-list-tile
@@ -338,6 +392,12 @@ export default {
           value: 'description',
         },
         {
+          text: 'Букеты',
+          align: 'left',
+          value: 'bouquets',
+          sortable: false,
+        },
+        {
           text: 'Тип доставки',
           align: 'left',
           value: 'deliveryType.name',
@@ -364,6 +424,11 @@ export default {
           value: 'action',
         },
       ],
+      pagination: {
+        sortBy: 'deliveryDate',
+        descending: true,
+        rowsPerPage: -1,
+      },
       dialogForm: false,
       ordersList: [],
       statusList: [],
@@ -448,7 +513,30 @@ export default {
       const errorData = 'Ошибка получения заказов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.ordersList = response;
+        this.ordersList = response.map((item) => {
+          const elem = item;
+
+          if (elem.createdAt) {
+            const date = new Date(elem.createdAt);
+            elem.createdAt = date.toLocaleString('ru', {
+              day: 'numeric',
+              month: 'numeric',
+              year: 'numeric',
+            });
+          }
+
+          if (elem.deliveryDate) {
+            const date = new Date(elem.deliveryDate);
+            elem.deliveryDateStr = date.toLocaleString('ru', {
+              day: 'numeric',
+              month: 'numeric',
+              year: 'numeric',
+              weekday: 'long',
+            });
+          }
+
+          return elem;
+        });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -560,3 +648,9 @@ export default {
   },
 };
 </script>
+
+<style scoped land="scss">
+  .theme--light.v-table tbody tr:not(:last-child) {
+    border-bottom: 1px solid #9c9c9c !important;
+  }
+</style>

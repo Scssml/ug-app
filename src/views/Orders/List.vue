@@ -201,7 +201,7 @@
         >
           <template slot="items" slot-scope="props">
             <tr
-              :class="props.item.orderStatus.color"
+              :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
               <td>
                 {{ props.item.createdAt }}
@@ -507,14 +507,26 @@ export default {
     getOrdersList() {
       const itemParams = {
         type: 'orders',
+        sort: {
+          deliveryDate: 'desc',
+        },
       };
 
       const successData = 'Заказы получены!';
       const errorData = 'Ошибка получения заказов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        let deliveryDay = '';
+
         this.ordersList = response.map((item) => {
           const elem = item;
+
+          if (deliveryDay !== elem.deliveryDate) {
+            elem.topLine = true;
+            deliveryDay = elem.deliveryDate;
+          } else {
+            elem.topLine = false;
+          }
 
           if (elem.createdAt) {
             const date = new Date(elem.createdAt);
@@ -650,7 +662,11 @@ export default {
 </script>
 
 <style scoped land="scss">
+  .theme--light.v-table tbody tr:not(:last-child).top-line {
+    border-top: 2px solid #404040!important;
+  }
   .theme--light.v-table tbody tr:not(:last-child) {
-    border-bottom: 1px solid #9c9c9c !important;
+    border-bottom: none;
+    border-top: 1px solid #9c9c9c!important;
   }
 </style>

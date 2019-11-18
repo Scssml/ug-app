@@ -203,25 +203,7 @@
             <tr
               :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
-              <td>
-                {{ props.item.createdAt }}
-                <br>{{ props.item.createdBy.name }}
-                <br>{{ props.item.orderSourceType.name }}
-              </td>
-              <td style="width: 30px;">{{ props.item.id }}</td>
-              <td>
-                {{ props.item.clientName }}
-                <br>{{ props.item.clientPhone }}
-              </td>
-              <td>{{ props.item.description }}</td>
-              <td>
-                <template v-for="(item, key) in props.item.bouquets">
-                  {{ item.name }} - {{ item.count }}
-                  <br :key="key">
-                </template>
-              </td>
-              <td>{{ props.item.deliveryType.name }}</td>
-              <td>
+              <td class="px-1">
                 {{ props.item.deliveryDateStr }}
                 <template v-if="props.item.deliveryTime">
                   <br>{{ props.item.deliveryTime }}
@@ -235,16 +217,89 @@
                   <br>{{ props.item.clientPhone }}
                 </template>
               </td>
-              <td>{{ props.item.orderCost }}</td>
+              <td class="px-1">
+                {{ props.item.createdAt }}
+                <br>{{ props.item.createdBy.name }}
+                <br>{{ props.item.orderSourceType.name }}
+              </td>
+              <td style="width: 30px;" class="px-1">{{ props.item.id }}</td>
+              <td class="px-1">
+                {{ props.item.clientName }}
+                <br>{{ props.item.clientPhone }}
+              </td>
+              <td class="px-1">{{ props.item.description }}</td>
+              <td class="px-1">
+                <template v-for="(item, key) in props.item.bouquets">
+                  {{ item.name }} - {{ item.count }}
+                  <br :key="key">
+                </template>
+              </td>
+              <td class="px-1">{{ props.item.deliveryType.name }}</td>
+              <td class="px-1">{{ props.item.orderCost }}</td>
               <td
                 @click="changeStatus(props.item.id)"
                 style="cursor: pointer"
+                class="px-1"
               >
                 {{ props.item.orderStatus.name }}
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
-              <td class="text-xs-right" style="width: 180px;">
-                <v-btn
+              <td class="text-xs-right px-1" style="width: 180px;">
+                <v-icon
+                  left
+                  @click="createdBouquet(props.item)"
+                  v-if="props.item.orderStatus.id === 1"
+                  title="Собрать"
+                >
+                  playlist_add
+                </v-icon>
+
+                <v-icon
+                  left
+                  @click="editItem(props.item.id, true)"
+                  title="Скопировать"
+                >
+                  add_to_photos
+                </v-icon>
+
+                <br>
+
+                <v-icon
+                  left
+                  @click="editItem(props.item.id)"
+                  title="Изменить"
+                >
+                  edit
+                </v-icon>
+
+                <v-menu
+                  style="vertical-align: top;"
+                >
+                  <v-icon
+                    left
+                    slot="activator"
+                    title="Печать"
+                  >
+                    insert_drive_file
+                  </v-icon>
+
+                  <v-list>
+                    <v-list-tile
+                      @click.prevent="printDoc(props.item.id, 'florist')"
+                      target="_blank"
+                    >
+                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
+                    </v-list-tile>
+                    <v-list-tile
+                      @click.prevent="printDoc(props.item.id, 'delivery')"
+                      target="_blank"
+                      v-if="props.item.deliveryType.id === 2"
+                    >
+                      <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
+                    </v-list-tile>
+                  </v-list>
+                </v-menu>
+                <!-- <v-btn
                   small
                   outline
                   color="grey darken-3"
@@ -319,7 +374,7 @@
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>
                   </v-list>
-                </v-menu>
+                </v-menu> -->
               </td>
             </tr>
           </template>
@@ -372,6 +427,11 @@ export default {
       search: '',
       headersTable: [
         {
+          text: 'Дата доставки',
+          align: 'left',
+          value: 'deliveryDate',
+        },
+        {
           text: 'Дата',
           align: 'left',
           value: 'createdAt',
@@ -401,11 +461,6 @@ export default {
           text: 'Тип доставки',
           align: 'left',
           value: 'deliveryType.name',
-        },
-        {
-          text: 'Дата доставки',
-          align: 'left',
-          value: 'deliveryDate',
         },
         {
           text: 'Сумма',
@@ -533,7 +588,7 @@ export default {
             elem.createdAt = date.toLocaleString('ru', {
               day: 'numeric',
               month: 'numeric',
-              year: 'numeric',
+              // year: 'numeric',
             });
           }
 
@@ -542,7 +597,7 @@ export default {
             elem.deliveryDateStr = date.toLocaleString('ru', {
               day: 'numeric',
               month: 'numeric',
-              year: 'numeric',
+              // year: 'numeric',
               weekday: 'long',
             });
           }
@@ -663,10 +718,15 @@ export default {
 
 <style scoped land="scss">
   .theme--light.v-table tbody tr:not(:last-child).top-line {
-    border-top: 2px solid #404040!important;
+    border-top: 4px solid #404040!important;
   }
   .theme--light.v-table tbody tr:not(:last-child) {
     border-bottom: none;
     border-top: 1px solid #9c9c9c!important;
+  }
+  table.v-table thead th:first-child,
+  table.v-table thead th:not(:first-child) {
+    padding-left: 4px!important;
+    padding-right: 4px!important;
   }
 </style>

@@ -47,14 +47,19 @@
                 :id="editedId"
                 @cancel="closeDialog()"
               ></change-status>
+              <change-description
+                v-if="editDescription"
+                :id="editedId"
+                @cancel="closeDialog()"
+              ></change-description>
               <order-edit
-                v-if="editedId && !editStatus"
+                v-if="editedId && !editStatus && !editDescription"
                 :id="editedId"
                 :copy="copyElem"
                 @cancel="closeDialog()"
               ></order-edit>
               <order-add
-                v-if="!editedId && !editStatus"
+                v-if="!editedId && !editStatus && !editDescription"
                 @cancel="closeDialog()"
               ></order-add>
             </template>
@@ -68,12 +73,12 @@
               xs2
               class="px-3"
             >
-              <v-text-field
+              <!-- <v-text-field
                 v-model="search"
                 prepend-icon="search"
                 label="Поиск"
                 hide-details
-              ></v-text-field>
+              ></v-text-field> -->
             </v-flex>
             <v-flex
               xs2
@@ -84,8 +89,9 @@
                 :items="[{id: '', name: 'Все'}].concat(statusList)"
                 item-text="name"
                 item-value="id"
-                v-model="filter.status"
+                v-model="filter.orderStatus"
                 hide-details
+                @change="customFilter()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -102,6 +108,7 @@
                 hide-details
                 class="mb-4"
                 no-data-text="Не надено"
+                @change="customFilter()"
               ></v-autocomplete>
             </v-flex>
             <v-flex
@@ -113,8 +120,9 @@
                 :items="[{id: '', name: 'Все'}].concat(typeClient)"
                 item-text="name"
                 item-value="id"
-                v-model="filter.typeClient"
+                v-model="filter.clientType"
                 hide-details
+                @change="customFilter()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -139,7 +147,6 @@
                   prepend-icon="event"
                   hide-details
                   readonly
-                  clearable
                 ></v-text-field>
                 <v-date-picker
                   v-model="filter.dateStart"
@@ -149,6 +156,7 @@
                   locale="ru-ru"
                   first-day-of-week="1"
                   :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                  @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
             </v-flex>
@@ -173,7 +181,6 @@
                   prepend-icon="event"
                   hide-details
                   readonly
-                  clearable
                 ></v-text-field>
                 <v-date-picker
                   v-model="filter.dateEnd"
@@ -183,6 +190,7 @@
                   scrollable
                   first-day-of-week="1"
                   :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                  @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
             </v-flex>
@@ -195,9 +203,8 @@
           hide-actions
           no-data-text="Заказов не найдено"
           no-results-text="Заказов не найдено"
-          :search="search"
-          :custom-filter="customFilter"
           :pagination.sync="pagination"
+          class="orders-table"
         >
           <template slot="items" slot-scope="props">
             <tr
@@ -227,7 +234,11 @@
                 {{ props.item.clientName }}
                 <br>{{ props.item.clientPhone }}
               </td>
-              <td class="px-1">{{ props.item.description }}</td>
+              <td
+                class="px-1"
+                style="cursor: pointer;"
+                @click="changeDescription(props.item.id)"
+              >{{ props.item.description }}</td>
               <td class="px-1">
                 <template v-for="(item, key) in props.item.bouquets">
                   {{ item.name }} - {{ item.count }}
@@ -396,6 +407,7 @@
 import OrderEdit from './edit.vue';
 import OrderAdd from './add.vue';
 import ChangeStatus from './changeStatus.vue';
+import changeDescription from './changeDescription.vue';
 
 export default {
   name: 'Orders',
@@ -403,13 +415,14 @@ export default {
     OrderEdit,
     OrderAdd,
     ChangeStatus,
+    changeDescription,
   },
   data() {
     return {
       filter: {
-        status: '',
+        orderStatus: '',
         client: '',
-        typeClient: '',
+        clientType: '',
         dateStart: null,
         dateEnd: null,
       },
@@ -447,7 +460,7 @@ export default {
           value: 'client.clientName',
         },
         {
-          text: 'Состав заказа',
+          text: 'Комментарий',
           align: 'left',
           value: 'description',
         },
@@ -492,6 +505,7 @@ export default {
       editedId: 0,
       copyElem: false,
       editStatus: false,
+      editDescription: false,
     };
   },
   computed: {
@@ -506,50 +520,52 @@ export default {
       const url = `${protocol}//${hostname}/print/order/${id}/${type}`;
       window.open(url, '_blank');
     },
-    customFilter(items) {
-      const filterProps = this.filter;
-      let itemsFind = [];
+    customFilter() {
+      // const filterProps = this.filter;
+      // let itemsFind = [];
 
-      itemsFind = items.filter((item) => {
-        let find = false;
-        if (+item.orderStatus.id === filterProps.status || filterProps.status === '') {
-          find = true;
-        }
+      // itemsFind = items.filter((item) => {
+      //   let find = false;
+      //   if (+item.orderStatus.id === filterProps.status || filterProps.status === '') {
+      //     find = true;
+      //   }
 
-        return find;
-      });
+      //   return find;
+      // });
 
-      itemsFind = itemsFind.filter((item) => {
-        let find = false;
-        if (+item.clientType.id === filterProps.typeClient || filterProps.typeClient === '') {
-          find = true;
-        }
+      // itemsFind = itemsFind.filter((item) => {
+      //   let find = false;
+      //   if (+item.clientType.id === filterProps.typeClient || filterProps.typeClient === '') {
+      //     find = true;
+      //   }
 
-        return find;
-      });
+      //   return find;
+      // });
 
-      itemsFind = itemsFind.filter((item) => {
-        let find = false;
-        if (+item.client.id === filterProps.client || filterProps.client === '') {
-          find = true;
-        }
+      // itemsFind = itemsFind.filter((item) => {
+      //   let find = false;
+      //   if (+item.client.id === filterProps.client || filterProps.client === '') {
+      //     find = true;
+      //   }
 
-        return find;
-      });
+      //   return find;
+      // });
 
-      itemsFind = itemsFind.filter((item) => {
-        let find = false;
-        if (
-          (item.createdAt >= filterProps.dateStart || filterProps.dateStart === null)
-          && (item.createdAt <= filterProps.dateEnd || filterProps.dateEnd === null)
-        ) {
-          find = true;
-        }
+      // itemsFind = itemsFind.filter((item) => {
+      //   let find = false;
+      //   if (
+      //     (item.createdAt >= filterProps.dateStart || filterProps.dateStart === null)
+      //     && (item.createdAt <= filterProps.dateEnd || filterProps.dateEnd === null)
+      //   ) {
+      //     find = true;
+      //   }
 
-        return find;
-      });
+      //   return find;
+      // });
 
-      return itemsFind;
+      // return itemsFind;
+      console.log(123);
+      this.getOrdersList();
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
@@ -560,11 +576,30 @@ export default {
         textTwo.indexOf(searchText) > -1;
     },
     getOrdersList() {
+      const orderFilter = {
+        deliveryDate: [],
+      };
+
+      Object.keys(this.filter).forEach((key) => {
+        const val = this.filter[key];
+
+        if (val) {
+          if (key === 'dateStart') {
+            orderFilter.deliveryDate[0] = `${val}`;
+          } else if (key === 'dateEnd') {
+            orderFilter.deliveryDate[1] = `${val}`;
+          } else {
+            orderFilter[key] = val;
+          }
+        }
+      });
+
       const itemParams = {
         type: 'orders',
         sort: {
           deliveryDate: 'desc',
         },
+        filter: orderFilter,
       };
 
       const successData = 'Заказы получены!';
@@ -666,6 +701,7 @@ export default {
       this.editedId = 0;
       setTimeout(() => {
         this.editStatus = false;
+        this.editDescription = false;
       }, 300);
     },
     editItem(id, copy = false) {
@@ -676,6 +712,11 @@ export default {
     changeStatus(id) {
       this.editedId = +id;
       this.editStatus = true;
+      this.dialogForm = true;
+    },
+    changeDescription(id) {
+      this.editedId = +id;
+      this.editDescription = true;
       this.dialogForm = true;
     },
     createdBouquet: function createdBouquet(item) {
@@ -716,17 +757,16 @@ export default {
 };
 </script>
 
-<style scoped land="scss">
-  .theme--light.v-table tbody tr:not(:last-child).top-line {
+<style land="scss">
+  .orders-table .theme--light.v-table tbody tr:not(:last-child).top-line {
     border-top: 4px solid #404040!important;
   }
-  .theme--light.v-table tbody tr:not(:last-child) {
+  .orders-table .theme--light.v-table tbody tr:not(:last-child) {
     border-bottom: none;
     border-top: 1px solid #9c9c9c!important;
   }
-  table.v-table thead th:first-child,
-  table.v-table thead th:not(:first-child) {
-    padding-left: 4px!important;
-    padding-right: 4px!important;
+  .orders-table table.v-table thead th:first-child,
+  .orders-table table.v-table thead th:not(:first-child) {
+    padding: 0 4px;
   }
 </style>

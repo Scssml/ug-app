@@ -49,9 +49,11 @@
                   :items="tsList"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.orderSourceType"
+                  v-model="editedItem.orderSourceType"
                   hide-details
                   class="mb-4"
+                  chips
+                  multiple
                 ></v-select>
 
                 <!-- <v-text-field
@@ -174,7 +176,7 @@
                 ></v-text-field>
 
                 <v-textarea
-                  label="Состав заказа"
+                  label="Комментарий"
                   auto-grow
                   :rules="[v => !!v || 'Заполните поле']"
                   v-model="editedItem.description"
@@ -430,7 +432,7 @@ export default {
         deliveryDate: '',
         deliveryTime: '',
         createdBy: 0,
-        orderSourceType: 7,
+        orderSourceType: [7],
         description: '',
         orderCost: '',
         addressee: null,

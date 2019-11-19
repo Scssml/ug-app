@@ -49,10 +49,12 @@
                   :items="tsList"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.orderSourceType"
+                  v-model="editedItem.orderSourceType"
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
+                  chips
+                  multiple
                 ></v-select>
 
                 <!-- <v-text-field
@@ -183,7 +185,7 @@
                 ></v-text-field>
 
                 <v-textarea
-                  label="Состав заказа"
+                  label="Комментарий"
                   auto-grow
                   :rules="[v => !!v || 'Заполните поле']"
                   v-model="editedItem.description"
@@ -586,7 +588,7 @@ export default {
           props.client = (props.client) ? +props.client.id : 0;
           props.courier = (props.courier) ? +props.courier.id : null;
           props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
-          props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
+          props.orderSourceType = [(props.orderSourceType) ? +props.orderSourceType.id : 0];
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;

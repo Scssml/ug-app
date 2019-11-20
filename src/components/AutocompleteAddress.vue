@@ -29,6 +29,7 @@ export default {
     return {
       address: '',
       autocomplete: null,
+      bounds: null,
     };
   },
   methods: {
@@ -49,8 +50,23 @@ export default {
     this.address = (this.value.length > 0) ? this.value : '';
   },
   mounted() {
+    this.bounds = new google.maps.LatLngBounds(
+      new google.maps.LatLng(50.00615400000004, 50.39000009999995),
+      new google.maps.LatLng(53.090497, 53.43131899999999),
+    );
+
     const ref = this.$refs.autocomplete.$refs.input;
-    this.autocomplete = new google.maps.places.Autocomplete(ref, { types: ['address'] });
+    this.autocomplete = new google.maps.places.Autocomplete(
+      ref,
+      {
+        bounds: this.bounds,
+        types: ['address'],
+        // types: ['geocode'],
+        componentRestrictions: {
+          country: 'ru',
+        },
+      },
+    );
 
     this.autocomplete.addListener('place_changed', () => {
       const place = this.autocomplete.getPlace();

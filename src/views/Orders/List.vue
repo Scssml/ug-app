@@ -255,11 +255,11 @@
                 {{ props.item.orderStatus.name }}
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
               </td>
-              <td class="text-xs-right px-1" style="width: 180px;">
+              <td class="text-xs-right px-1" style="width: 100px;">
                 <v-icon
                   left
                   @click="createdBouquet(props.item)"
-                  v-if="props.item.orderStatus.id === 1"
+                  v-if="props.item.orderStatus.id === 1 || props.item.orderStatus.id === 7"
                   title="Собрать"
                 >
                   playlist_add

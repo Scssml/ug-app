@@ -47,6 +47,7 @@
                 <v-select
                   label="Т/С"
                   :items="tsList"
+                  :rules="[v => v.length > 0 || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
                   v-model="editedItem.orderSourceType"

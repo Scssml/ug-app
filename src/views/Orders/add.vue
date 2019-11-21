@@ -433,7 +433,7 @@ export default {
         deliveryDate: '',
         deliveryTime: '',
         createdBy: 0,
-        orderSourceType: [7],
+        orderSourceType: [],
         description: '',
         orderCost: '',
         addressee: null,

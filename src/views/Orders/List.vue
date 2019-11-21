@@ -227,7 +227,9 @@
               <td class="px-1">
                 {{ props.item.createdAt }}
                 <br>{{ props.item.createdBy.name }}
-                <br>{{ props.item.orderSourceType.name }}
+                <template v-for="(item, index) in props.item.orderSourceType">
+                  <br :key="index">{{ item.name }}
+                </template>
               </td>
               <td style="width: 30px;" class="px-1">{{ props.item.id }}</td>
               <td class="px-1">
@@ -564,7 +566,6 @@ export default {
       // });
 
       // return itemsFind;
-      console.log(123);
       this.getOrdersList();
     },
     clientsFilter(item, queryText) {

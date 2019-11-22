@@ -228,7 +228,9 @@
                 {{ props.item.createdAt }}
                 <br>{{ props.item.createdBy.name }}
                 <template v-for="(item, index) in props.item.orderSourceType">
-                  <br :key="index">{{ item.name }}
+                  <template v-if="item">
+                    <br :key="index">{{ item.name }}
+                  </template>
                 </template>
               </td>
               <td style="width: 30px;" class="px-1">{{ props.item.id }}</td>

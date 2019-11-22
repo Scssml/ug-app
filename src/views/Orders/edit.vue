@@ -429,12 +429,17 @@
                 :items="history"
                 hide-actions
                 item-key="updated_at"
+                :pagination.sync="pagination"
                 no-data-text="Изменений не найдено"
                 no-results-text="Изменений не найдено"
               >
                 <template slot="items" slot-scope="props">
-                  <td>{{ props.item.updated_at }}</td>
-                  <td></td>
+                  <td>{{ props.item.updated_atStr }}</td>
+                  <td>
+                    <template v-if="props.item.updatedBy">
+                      {{ props.item.updatedBy.name }}
+                    </template>
+                  </td>
                 </template>
               </v-data-table>
             </template>
@@ -510,6 +515,11 @@ export default {
           value: 'user',
         },
       ],
+      pagination: {
+        sortBy: 'updated_at',
+        descending: true,
+        rowsPerPage: -1,
+      },
     };
   },
   computed: {
@@ -626,7 +636,7 @@ export default {
           this.history = response.map((item) => {
             const elem = item;
             const date = new Date(elem.updated_at);
-            elem.updated_at = date.toLocaleString('ru', {
+            elem.updated_atStr = date.toLocaleString('ru', {
               day: 'numeric',
               month: 'long',
               year: 'numeric',

@@ -56,6 +56,7 @@
                 v-if="editedId && !editStatus && !editDescription"
                 :id="editedId"
                 :copy="copyElem"
+                :orderSourceType="orderSourceTypeEditElem"
                 @cancel="closeDialog()"
               ></order-edit>
               <order-add
@@ -516,6 +517,10 @@ export default {
     loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
+    },
+    orderSourceTypeEditElem() {
+      const editElem = this.ordersList.find(item => item.id === this.editedId);
+      return (editElem) ? editElem.orderSourceType : [];
     },
   },
   methods: {

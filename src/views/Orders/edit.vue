@@ -486,6 +486,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    orderSourceType: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -599,8 +603,8 @@ export default {
 
           let orderSourceTypeId = [];
 
-          if (Array.isArray(props.orderSourceType)) {
-            orderSourceTypeId = props.orderSourceType.map(item => item.id);
+          if (Array.isArray(this.orderSourceType)) {
+            orderSourceTypeId = this.orderSourceType.map(item => item.id);
           }
 
           props.orderSourceType = orderSourceTypeId;

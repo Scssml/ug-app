@@ -69,18 +69,19 @@
           <v-layout
             row
             wrap
+            justify-space-around
           >
-            <v-flex
+            <!-- <v-flex
               xs2
               class="px-3"
             >
-              <!-- <v-text-field
+              <v-text-field
                 v-model="search"
                 prepend-icon="search"
                 label="Поиск"
                 hide-details
-              ></v-text-field> -->
-            </v-flex>
+              ></v-text-field>
+            </v-flex> -->
             <v-flex
               xs2
               class="px-3"
@@ -196,6 +197,13 @@
               </v-menu>
             </v-flex>
           </v-layout>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            dark
+            class="mb-2"
+            @click.prevent="printDayOrders()"
+          >Заказы за день</v-btn>
         </v-card-title>
 
         <v-data-table
@@ -301,17 +309,17 @@
 
                   <v-list>
                     <v-list-tile
-                      @click.prevent="printDoc(props.item.id, 'florist')"
-                      target="_blank"
-                    >
-                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
-                    </v-list-tile>
-                    <v-list-tile
                       @click.prevent="printDoc(props.item.id, 'delivery')"
                       target="_blank"
                       v-if="props.item.deliveryType.id === 2"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
+                    </v-list-tile>
+                    <v-list-tile
+                      @click.prevent="printDoc(props.item.id, 'florist')"
+                      target="_blank"
+                    >
+                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
                     </v-list-tile>
                   </v-list>
                 </v-menu>
@@ -527,6 +535,13 @@ export default {
     printDoc(id, type) {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/order/${id}/${type}`;
+      window.open(url, '_blank');
+    },
+    printDayOrders() {
+      const dateNow = new Date();
+      const dateNowStr = dateNow.toISOString().split('T')[0];
+      const { protocol, hostname } = window.location;
+      const url = `${protocol}//${hostname}/print/day-orders/${dateNowStr}`;
       window.open(url, '_blank');
     },
     customFilter() {

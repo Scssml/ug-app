@@ -529,16 +529,21 @@ export default {
     },
     clientSale: function clientSale() {
       const client = this.clientsList.find(item => item.id === this.client);
+      console.log(client);
       let salePersent = 0;
-      if (this.clientSaleCustom !== '') {
-        salePersent = this.clientSaleCustom;
-      } else if (client !== 7 && client.sale > 0) {
-        salePersent = client.sale;
-      } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
-        salePersent = 5;
-      } else {
-        salePersent = null;
+
+      if (client) {
+        if (this.clientSaleCustom !== '') {
+          salePersent = this.clientSaleCustom;
+        } else if (client !== 7 && client.sale > 0) {
+          salePersent = client.sale;
+        } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
+          salePersent = 5;
+        } else {
+          salePersent = null;
+        }
       }
+
       return salePersent;
     },
   },

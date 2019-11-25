@@ -119,7 +119,7 @@ export default new Vuex.Store({
               for (let j = 0; j < values[i].length; j += 1) {
                 filterQuery += (j !== 0) ? '&' : '';
 
-                if (keys[i] === 'creationDate') {
+                if (keys[i] === 'creationDate' || keys[i] === 'deliveryDate') {
                   filterQuery += `filter[${keys[i]}][btw][]=${values[i][j]}`;
                 } else {
                   filterQuery += `filter[${keys[i]}][]=${values[i][j]}`;

@@ -45,11 +45,13 @@
               <change-status
                 v-if="editStatus"
                 :id="editedId"
+                :orderSourceType="orderSourceTypeEditElem"
                 @cancel="closeDialog()"
               ></change-status>
               <change-description
                 v-if="editDescription"
                 :id="editedId"
+                :orderSourceType="orderSourceTypeEditElem"
                 @cancel="closeDialog()"
               ></change-description>
               <order-edit
@@ -202,7 +204,8 @@
             color="primary"
             dark
             class="mb-2"
-            @click.prevent="printDayOrders()"
+            :to="`/print/order/day-orders/${dateNowStr}/`"
+            target="_blank"
           >Заказы за день</v-btn>
         </v-card-title>
 
@@ -220,18 +223,21 @@
               :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
               <td class="px-1">
-                {{ props.item.deliveryDateStr }}
+                <b>{{ props.item.deliveryDateStr }}</b>
                 <template v-if="props.item.deliveryTime">
-                  <br>{{ props.item.deliveryTime }}
+                  <br><b>{{ props.item.deliveryTime }}</b>
                 </template>
-                <template v-if="props.item.addressee">
+                <template v-if="props.item.addresseeName">
                   <br>{{ props.item.addresseeName }}
+                </template>
+                <template v-if="props.item.addresseePhone">
                   <br>{{ props.item.addresseePhone }}
                 </template>
-                <template v-else>
+                <template v-if="!props.item.addresseeName && !props.item.addresseePhone">
                   <br>{{ props.item.clientName }}
                   <br>{{ props.item.clientPhone }}
                 </template>
+                <br>{{ props.item.address }}
               </td>
               <td class="px-1">
                 {{ props.item.createdAt }}
@@ -249,7 +255,7 @@
               </td>
               <td
                 class="px-1"
-                style="cursor: pointer;"
+                style="cursor: pointer; width: 30%;"
                 @click="changeDescription(props.item.id)"
               >{{ props.item.description }}</td>
               <td class="px-1">
@@ -309,14 +315,14 @@
 
                   <v-list>
                     <v-list-tile
-                      @click.prevent="printDoc(props.item.id, 'delivery')"
-                      target="_blank"
+                      :to="`/print/order/delivery/${props.item.id}/`"
                       v-if="props.item.deliveryType.id === 2"
+                      target="_blank"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>
                     <v-list-tile
-                      @click.prevent="printDoc(props.item.id, 'florist')"
+                      :to="`/print/order/florist/${props.item.id}/`"
                       target="_blank"
                     >
                       <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
@@ -519,6 +525,7 @@ export default {
       copyElem: false,
       editStatus: false,
       editDescription: false,
+      dataNowStr: '',
     };
   },
   computed: {
@@ -769,6 +776,10 @@ export default {
     },
   },
   mounted() {
+    const dateNow = new Date();
+    const dateNowStr = dateNow.toISOString().split('T')[0];
+    this.dateNowStr = dateNowStr;
+
     this.getOrdersList();
     this.getStatusList();
     this.getClientsList();

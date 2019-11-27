@@ -51,6 +51,10 @@ export default {
       type: Number,
       required: true,
     },
+    orderSourceType: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -70,11 +74,19 @@ export default {
           const props = response;
           props.orderCost = +props.orderCost;
 
+          let orderSourceTypeId = [];
+
+          if (Array.isArray(this.orderSourceType)) {
+            orderSourceTypeId = this.orderSourceType.map(item => item.id);
+          }
+
+          props.orderSourceType = orderSourceTypeId;
+
           props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
           props.courier = (props.courier) ? +props.courier.id : null;
           props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
-          props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
+          // props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0;
           props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;

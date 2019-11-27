@@ -176,16 +176,6 @@
                   class="mb-4"
                 ></v-text-field>
 
-                <v-textarea
-                  label="Комментарий"
-                  auto-grow
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.description"
-                  row-height="12"
-                  hide-details
-                  class="mb-4"
-                ></v-textarea>
-
                 <v-text-field
                   label="Сумма"
                   v-model="editedItem.orderCost"
@@ -377,6 +367,15 @@
             >
               add
             </v-icon>
+
+            <v-textarea
+              label="Комментарий"
+              auto-grow
+              v-model="editedItem.description"
+              row-height="12"
+              hide-details
+              class="my-4"
+            ></v-textarea>
           </v-flex>
 
           <v-flex
@@ -444,7 +443,7 @@ export default {
         flat: '',
         floor: '',
         orderStatus: 1,
-        clientType: 0,
+        clientType: 1,
         deliveryType: 1,
         incognito: false,
         coordinates: [],

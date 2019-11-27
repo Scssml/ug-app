@@ -4,6 +4,7 @@
       app
       color="blue-grey lighten-4"
       height="42px"
+      v-if="!$route.meta.pagePrint"
     >
       <v-toolbar-items>
         <template
@@ -38,6 +39,7 @@
       height="auto"
       color="blue-grey darken-3"
       dark
+      v-if="!$route.meta.pagePrint"
     >
       <v-layout
         justify-center
@@ -111,9 +113,9 @@ export default {
       });
     },
   },
-  created() {
+  mounted() {
     this.$store.dispatch('autoAuth').then(() => {
-      this.$router.push('/');
+
     }).catch(() => {
       this.$router.push('/login');
     });
@@ -125,4 +127,7 @@ export default {
   .fade-enter, .fade-leave-to { opacity: 0; }
   .fade-enter-active { transition: opacity .5s ease-in-out .5s; }
   .fade-leave-active { transition: opacity .5s ease-in-out; }
+
+  @media print
+    .print-btn { display: none; }
 </style>

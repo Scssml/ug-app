@@ -57,5 +57,10 @@ export default {
       }
     },
   },
+  mounted() {
+    this.$store.dispatch('autoAuth').then(() => {
+      this.$router.push('/');
+    });
+  },
 };
 </script>

@@ -346,24 +346,24 @@
               label="К оплате"
               readonly
               :value="sumPay"
-              v-if="typePay !== 5"
+              v-if="orderBouquet !== null"
             ></v-text-field>
             <v-text-field
               label="К оплате"
               v-model.number="sumPayCustom"
-              v-if="typePay === 5"
+              v-if="orderBouquet === null"
             ></v-text-field>
             <v-text-field
               label="Сумма"
               :rules="[v => (v >= sumPay || typePay === 5) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="typePay !== 5"
+              v-if="orderBouquet !== null"
             ></v-text-field>
             <v-text-field
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="typePay !== 5"
+              v-if="orderBouquet !== null"
             ></v-text-field>
             <v-select
               label="Способ оплаты"
@@ -625,7 +625,8 @@ export default {
           // typePay: this.typePay,
         };
 
-        if (this.typePay === 5) {
+        // if (this.typePay === 5) {
+        if (this.orderBouquet === null) {
           props.payment.amount = this.sumPayCustom;
         }
 

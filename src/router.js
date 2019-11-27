@@ -98,5 +98,32 @@ export default new Router({
       name: 'historyView',
       component: () => import('./views/Goods/HistoryView.vue'),
     },
+    {
+      path: '/print/order/delivery/:id/',
+      name: 'orderDelivery',
+      component: () => import('./views/Print/orderDelivery.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
+    {
+      path: '/print/order/florist/:id/',
+      name: 'orderFlorist',
+      component: () => import('./views/Print/orderFlorist.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
+    {
+      path: '/print/order/day-orders/:date/',
+      name: 'orderFlorist',
+      component: () => import('./views/Print/orderDeliveryDay.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
   ],
 });

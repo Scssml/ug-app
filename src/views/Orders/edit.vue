@@ -185,17 +185,6 @@
                   :readonly="editedItemReadOnly"
                 ></v-text-field>
 
-                <v-textarea
-                  label="Комментарий"
-                  auto-grow
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.description"
-                  row-height="12"
-                  hide-details
-                  class="mb-4"
-                  :readonly="editedItemReadOnly"
-                ></v-textarea>
-
                 <v-text-field
                   label="Сумма"
                   v-model="editedItem.orderCost"
@@ -222,7 +211,7 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
-                  v-if="editedItem.orderStatus === 3"
+                  v-if="editedItem.orderStatus === 3 || editedItem.orderStatus === 6"
                 ></v-select>
 
                 <v-menu
@@ -401,11 +390,21 @@
             >
               add
             </v-icon>
+
+            <v-textarea
+              label="Комментарий"
+              auto-grow
+              v-model="editedItem.description"
+              row-height="12"
+              hide-details
+              class="my-4"
+              :readonly="editedItemReadOnly"
+            ></v-textarea>
           </v-flex>
 
           <v-flex
             xs5
-            v-if="editedItem.deliveryType === 2"
+            v-if="editedItem.deliveryType === 2 && !loadOrder"
           >
             <yandex-map
               :coords="[53.05, 50.101783]"
@@ -434,12 +433,46 @@
                 no-results-text="Изменений не найдено"
               >
                 <template slot="items" slot-scope="props">
-                  <td>{{ props.item.updated_atStr }}</td>
-                  <td>
-                    <template v-if="props.item.updatedBy">
-                      {{ props.item.updatedBy.name }}
-                    </template>
-                  </td>
+                  <tr @click="props.expanded = !props.expanded">
+                    <td>{{ props.item.updated_atStr }}</td>
+                    <td>
+                      <template v-if="props.item.updatedBy">
+                        {{ props.item.updatedBy.name }}
+                      </template>
+                    </td>
+                  </tr>
+                </template>
+                <template slot="expand" slot-scope="props">
+                  <v-card flat>
+                    <v-card-text>
+                      <b>Активность:</b> {{ (props.item.active) ? 'Да': 'Нет' }}
+                      <br><b>Адрес:</b> {{ props.item.address }}
+                      <br><b>Получатель:</b> {{ props.item.addresseeId }}
+                      <br><b>Имя получателя:</b> {{ props.item.addresseeName }}
+                      <br><b>Телефон получателя:</b> {{ props.item.addresseePhone }}
+                      <br><b>Клиент:</b> {{ props.item.clientId }}
+                      <br><b>Имя клиента:</b> {{ props.item.clientName }}
+                      <br><b>Телефон клиента:</b> {{ props.item.clientPhone }}
+                      <br><b>Тип клиента:</b> {{ props.item.clientTypeStr }}
+                      <br><b>Координаты:</b> {{ props.item.coordinates }}
+                      <br><b>Курьер:</b> {{ props.item.courierStr }}
+                      <br><b>Кто создал:</b> {{ props.item.createdById }}
+                      <br><b>Дата создания:</b> {{ props.item.created_atStr }}
+                      <br><b>Доставка:</b> {{ (props.item.delivery) ? 'Да': 'Нет' }}
+                      <br><b>Дата доставки:</b> {{ props.item.deliveryDateStr }}
+                      <br><b>Время доставки:</b> {{ props.item.deliveryTime }}
+                      <br><b>Тип доставки:</b> {{ props.item.deliveryTypeStr }}
+                      <br><b>Комментарий:</b> {{ props.item.description }}
+                      <br><b>Подъезд:</b> {{ props.item.entrance }}
+                      <br><b>Квартира:</b> {{ props.item.flat }}
+                      <br><b>Этаж:</b> {{ props.item.floor }}
+                      <br><b>№ заказа:</b> {{ props.item.id }}
+                      <br><b>Инкогнито:</b> {{ (props.item.incognito) ? 'Да': 'Нет' }}
+                      <br><b>Стоимость:</b> {{ props.item.orderCost }}
+                      <br><b>Т/С:</b> {{ props.item.orderSourceTypesStr }}
+                      <br><b>Статус:</b> {{ props.item.orderStatusStr }}
+                    </v-card-text>
+                  </v-card>
                 </template>
               </v-data-table>
             </template>
@@ -524,6 +557,8 @@ export default {
         descending: true,
         rowsPerPage: -1,
       },
+      expand: false,
+      loadOrder: true,
     };
   },
   computed: {
@@ -621,9 +656,20 @@ export default {
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
           props.bouquets = (props.bouquets) ? props.bouquets : [];
 
+          if (this.copy) {
+            props.bouquets = props.bouquets.map((item) => {
+              const elem = item;
+              delete elem.id;
+
+              return elem;
+            });
+          }
+
           this.editedItem = props;
           this.getOrdersList();
           this.getUsersList();
+
+          this.loadOrder = false;
         }).catch(() => {
           console.log('error');
         });
@@ -639,7 +685,7 @@ export default {
         this.$store.dispatch('getItem', itemParams).then((response) => {
           this.history = response.map((item) => {
             const elem = item;
-            const date = new Date(elem.updated_at);
+            let date = new Date(elem.updated_at);
             elem.updated_atStr = date.toLocaleString('ru', {
               day: 'numeric',
               month: 'long',
@@ -647,6 +693,40 @@ export default {
               hour: 'numeric',
               minute: 'numeric',
               second: 'numeric',
+            });
+
+            date = new Date(elem.created_at);
+            elem.created_atStr = date.toLocaleString('ru', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric',
+            });
+
+            date = new Date(elem.deliveryDate);
+            elem.deliveryDateStr = date.toLocaleString('ru', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            });
+
+            const clientType = this.typeClient.find(item => item.id === +elem.clientTypeId);
+            elem.clientTypeStr = (clientType) ? clientType.name : elem.clientTypeId;
+
+            const courier = this.couriersList.find(item => item.id === +elem.courierId);
+            elem.courierStr = (courier) ? courier.name : elem.courierId;
+
+            const deliveryType = this.deliveryList.find(item => item.id === +elem.deliveryTypeId);
+            elem.deliveryTypeStr = (deliveryType) ? deliveryType.name : elem.deliveryTypeId;
+
+            const status = this.statusList.find(item => item.id === +elem.orderStatusId);
+            elem.orderStatusStr = (status) ? status.name : elem.orderStatusId;
+
+            elem.orderSourceTypesStr = elem.orderSourceTypeIds.map((itemId) => {
+              const ts = this.tsList.find(item => item.id === +itemId);
+              return (ts) ? ts.name : itemId;
             });
 
             return elem;

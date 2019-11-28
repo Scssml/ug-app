@@ -89,7 +89,6 @@ export default {
         this.$store.dispatch('getItem', itemParams).then((response) => {
           const props = response;
           this.usersList = props.createdBy;
-          props.orderCost = +props.orderCost;
 
           let orderSourceTypeId = [];
 

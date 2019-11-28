@@ -72,7 +72,6 @@ export default {
 
         this.$store.dispatch('getItem', itemParams).then((response) => {
           const props = response;
-          props.orderCost = +props.orderCost;
 
           let orderSourceTypeId = [];
 

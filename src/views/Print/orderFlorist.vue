@@ -9,8 +9,12 @@
           <tbody>
             <tr>
               <td style="width: 73px;"><b>Дата</b></td>
-              <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">{{ orderData.orderDate}}</td>
-              <td style="width: 204px; text-align: right;"><b>{{ orderData.orderDeliveryType}}</b></td>
+              <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">
+                {{ orderData.orderDate}}
+              </td>
+              <td style="width: 204px; text-align: right;">
+                <b>{{ orderData.orderDeliveryType}}</b>
+              </td>
             </tr>
             <tr>
               <td style="width: 182px;" colspan="2">
@@ -50,11 +54,11 @@
     </div>
     <br>
     <v-btn
-      color="primary"
+      :color="(orderData.isAlreadyPrinted) ? 'success' : 'primary'"
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-    >Распечатать</v-btn>
+    >{{ (orderData.isAlreadyPrinted) ? 'Повторная печать' : 'Распечатать' }}</v-btn>
   </div>
 </template>
 

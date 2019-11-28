@@ -118,6 +118,7 @@
 
                 <v-text-field
                   label="Время доставки"
+                  :rules="[v => !!v || 'Заполните поле']"
                   v-model="editedItem.deliveryTime"
                   hide-details
                   class="mb-4"
@@ -236,6 +237,7 @@
 
                 <v-text-field
                   label="Время доставки"
+                  :rules="[v => !!v || 'Заполните поле']"
                   v-model="editedItem.deliveryTime"
                   hide-details
                   class="mb-4"
@@ -332,13 +334,23 @@
                 xs9
                 class="pr-3"
               >
-                <v-text-field
+                <!-- <v-text-field
                   label="Название"
                   :rules="[v => !!v || 'Заполните поле']"
                   v-model="bouquet.name"
                   hide-details
                   class="mb-4"
-                ></v-text-field>
+                ></v-text-field> -->
+
+                <v-textarea
+                  label="Название"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  auto-grow
+                  v-model="bouquet.name"
+                  row-height="6"
+                  hide-details
+                  class="mb-4"
+                ></v-textarea>
               </v-flex>
               <v-flex
                 xs2

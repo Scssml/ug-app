@@ -72,7 +72,9 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">{{ orderData.orderDeliveryTime }}</span>
+          <span style="font-weight: 600; font-style: italic">
+            {{ orderData.orderDeliveryTime }}
+          </span>
         </div>
       </li>
       <li style="display: flex; width: inherit">
@@ -85,7 +87,18 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">{{ orderData.orderAddress }}</span>
+            <span style="font-weight: 600; font-style: italic">
+              {{ orderData.orderAddress }}
+              <template v-if="orderData.flat">
+                , кв. {{ orderData.flat }}
+              </template>
+              <template v-if="orderData.entrance">
+                , подъезд {{ orderData.entrance }}
+              </template>
+              <template v-if="orderData.floor">
+                , этаж {{ orderData.floor }}
+              </template>
+            </span>
         </div>
       </li>
       <li style="display: flex; width: inherit">
@@ -104,7 +117,7 @@
         </div>
       </li>
       <li style="display: flex; width: inherit">
-        <div style="width: 130px; font-weight: 600; font-style: italic">Покупатель:</div>
+        <div style="width: 130px; font-weight: 600; font-style: italic">Получатель:</div>
         <div
           style="
             width: 490px;
@@ -168,11 +181,11 @@
     </ul>
     <br>
     <v-btn
-      color="primary"
+      :color="(orderData.isAlreadyPrinted) ? 'success' : 'primary'"
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-    >Распечатать</v-btn>
+    >{{ (orderData.isAlreadyPrinted) ? 'Повторная печать' : 'Распечатать' }}</v-btn>
   </div>
 </template>
 

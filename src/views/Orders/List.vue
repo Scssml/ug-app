@@ -86,7 +86,7 @@
             </v-flex> -->
             <v-flex
               xs2
-              class="px-3"
+              class="px-2"
             >
               <v-select
                 label="Статус"
@@ -100,7 +100,7 @@
             </v-flex>
             <v-flex
               xs2
-              class="px-3"
+              class="px-2"
             >
               <v-autocomplete
                 label="Клиент"
@@ -117,7 +117,7 @@
             </v-flex>
             <v-flex
               xs2
-              class="px-3"
+              class="px-2"
             >
               <v-select
                 label="Тип клиента"
@@ -131,7 +131,7 @@
             </v-flex>
             <v-flex
               xs2
-              class="px-3"
+              class="pl-2"
             >
               <v-menu
                 :close-on-content-click="false"
@@ -146,7 +146,7 @@
               >
                 <v-text-field
                   slot="activator"
-                  label="Начальная дата"
+                  label="Дата доставки (с)"
                   v-model="filter.dateStart"
                   prepend-icon="event"
                   hide-details
@@ -166,6 +166,7 @@
             </v-flex>
             <v-flex
               xs2
+              class="pl-2"
             >
               <v-menu
                 :close-on-content-click="false"
@@ -180,7 +181,7 @@
               >
                 <v-text-field
                   slot="activator"
-                  label="Конечная дата"
+                  label="Дата доставки (по)"
                   v-model="filter.dateEnd"
                   prepend-icon="event"
                   hide-details
@@ -208,6 +209,41 @@
             target="_blank"
           >Заказы за день</v-btn>
         </v-card-title>
+
+        <v-layout
+          row
+          wrap
+          align-center
+        >
+          <v-flex
+            xs3
+            class="px-1"
+          >
+            Доставок на сегодня: {{ deliveryNow }}
+          </v-flex>
+          <v-flex
+            xs9
+            class="px-1 text-xs-right"
+          >
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="setFilterDateNow()"
+            >За сегодня</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="setFilterDateWeek()"
+            >За неделю</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="setFilterDateMonth()"
+            >За месяц</v-btn>
+          </v-flex>
+        </v-layout>
 
         <v-data-table
           :headers="headersTable"
@@ -237,7 +273,18 @@
                   <br>{{ props.item.clientName }}
                   <br>{{ props.item.clientPhone }}
                 </template>
-                <br>{{ props.item.address }}
+                <template v-if="props.item.address">
+                  <br>{{ props.item.address }}
+                </template>
+                <template v-if="props.item.flat">
+                  , кв. {{ props.item.flat }}
+                </template>
+                <template v-if="props.item.entrance">
+                  <br>Подъезд: {{ props.item.entrance }}
+                </template>
+                <template v-if="props.item.floor">
+                  <br>Этаж: {{ props.item.floor }}
+                </template>
               </td>
               <td class="px-1">
                 {{ props.item.createdAt }}
@@ -252,6 +299,7 @@
               <td class="px-1">
                 {{ props.item.clientName }}
                 <br>{{ props.item.clientPhone }}
+                <br>Инкогнито : {{ (props.item.incognito) ? 'Да' : 'Нет' }}
               </td>
               <td
                 class="px-1"
@@ -309,6 +357,7 @@
                     left
                     slot="activator"
                     title="Печать"
+                    @click="isAlreadyPrinted(props.item.id)"
                   >
                     insert_drive_file
                   </v-icon>
@@ -318,6 +367,7 @@
                       :to="`/print/order/delivery/${props.item.id}/`"
                       v-if="props.item.deliveryType.id === 2"
                       target="_blank"
+                      :class="(deliveryPrinted.find(item => item === props.item.id)) ? 'teal lighten-2' : '123'"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>
@@ -513,7 +563,7 @@ export default {
       ],
       pagination: {
         sortBy: 'deliveryDate',
-        descending: true,
+        descending: false,
         rowsPerPage: -1,
       },
       dialogForm: false,
@@ -526,6 +576,9 @@ export default {
       editStatus: false,
       editDescription: false,
       dataNowStr: '',
+      deliveryNow: 0,
+      deliveryPrinted: [],
+      floristPrinted: [],
     };
   },
   computed: {
@@ -673,10 +726,32 @@ export default {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
         loadData.loading = false;
+
+        this.getDeliveryNow();
       }).catch(() => {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = errorData;
         loadData.error = true;
+      });
+    },
+    getDeliveryNow() {
+      const orderFilter = {
+        deliveryDate: [this.dateNowStr, this.dateNowStr],
+        deliveryType: 2,
+      };
+
+      const itemParams = {
+        type: 'orders',
+        sort: {
+          deliveryDate: 'desc',
+        },
+        filter: orderFilter,
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.deliveryNow = response.length;
+      }).catch(() => {
+        console.log('error');
       });
     },
     getStatusList() {
@@ -774,11 +849,83 @@ export default {
       localStorage.setItem('cardsList', JSON.stringify(cardsList));
       this.$router.push({ path: '/', query: { selectOrder: item.id } });
     },
+    getWeekEndDate() {
+      const date = new Date();
+      let diff = 7 - date.getDay();
+      if (diff < 0) {
+        diff += 6;
+      }
+      date.setDate(date.getDate() + (1 * diff));
+      return date.toISOString().split('T')[0];
+    },
+    getWeekStartDate() {
+      const date = new Date();
+      let diff = date.getDay() - 8;
+      if (diff < 0) {
+        diff += 7;
+      }
+      date.setDate(date.getDate() + (-1 * diff));
+      return date.toISOString().split('T')[0];
+    },
+    setFilterDateNow() {
+      this.filter.dateStart = this.dateNowStr;
+      this.filter.dateEnd = this.dateNowStr;
+      this.getOrdersList();
+    },
+    setFilterDateWeek() {
+      this.filter.dateStart = this.getWeekStartDate();
+      this.filter.dateEnd = this.getWeekEndDate();
+      this.getOrdersList();
+    },
+    setFilterDateMonth() {
+      const date = new Date();
+      const firstDay = new Date(date.getUTCFullYear(), date.getUTCMonth(), 1, date.getUTCHours());
+      const lastDay = new Date(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59);
+      const dateStart = firstDay.toISOString().split('T')[0];
+      const dateEnd = lastDay.toISOString().split('T')[0];
+
+      this.filter.dateStart = dateStart;
+      this.filter.dateEnd = dateEnd;
+      this.getOrdersList();
+    },
+    isAlreadyPrinted(id) {
+      if (!this.deliveryPrinted.find(item => item === id)) {
+        const itemParams = {
+          type: 'print/order',
+        };
+
+        itemParams.id = `${id}/delivery`;
+
+        this.$store.dispatch('getItem', itemParams).then((response) => {
+          if (response.isAlreadyPrinted) {
+            this.deliveryPrinted.push(id);
+          }
+        }).catch(() => {
+          console.log('error');
+        });
+      }
+
+      // itemParams.id = `${id}/florist`;
+
+      // this.$store.dispatch('getItem', itemParams).then((response) => {
+      //   this.floristPrinted = response.isAlreadyPrinted;
+      // }).catch(() => {
+      //   console.log('error');
+      // });
+    },
   },
   mounted() {
-    const dateNow = new Date();
-    const dateNowStr = dateNow.toISOString().split('T')[0];
+    const date = new Date();
+    const dateNowStr = date.toISOString().split('T')[0];
     this.dateNowStr = dateNowStr;
+
+    const dateStart = dateNowStr;
+
+    date.setDate(date.getDate() + 7);
+    const dateEnd = date.toISOString().split('T')[0];
+
+    this.filter.dateStart = dateStart;
+    this.filter.dateEnd = dateEnd;
 
     this.getOrdersList();
     this.getStatusList();

@@ -35,8 +35,8 @@
         <v-card-title>
           <v-dialog
             v-model="dialogForm"
-            persistent
-            :max-width="(editStatus) ? '420px' : '1200px'"
+            :max-width="(editStatus || editDescription) ? '420px' : '1200px'"
+            :fullscreen="(editStatus || editDescription) ? false : true"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
             <template
@@ -581,6 +581,13 @@ export default {
       floristPrinted: [],
     };
   },
+  watch: {
+    dialogForm(newValue) {
+      if (!newValue) {
+        this.closeDialog();
+      }
+    },
+  },
   computed: {
     loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
@@ -888,22 +895,22 @@ export default {
       this.filter.dateEnd = dateEnd;
       this.getOrdersList();
     },
-    isAlreadyPrinted(id) {
-      if (!this.deliveryPrinted.find(item => item === id)) {
-        const itemParams = {
-          type: 'print/order',
-        };
+    isAlreadyPrinted() {
+      // if (!this.deliveryPrinted.find(item => item === id)) {
+      //   const itemParams = {
+      //     type: 'print/order',
+      //   };
 
-        itemParams.id = `${id}/delivery`;
+      //   itemParams.id = `${id}/delivery`;
 
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          if (response.isAlreadyPrinted) {
-            this.deliveryPrinted.push(id);
-          }
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      //   this.$store.dispatch('getItem', itemParams).then((response) => {
+      //     if (response.isAlreadyPrinted) {
+      //       this.deliveryPrinted.push(id);
+      //     }
+      //   }).catch(() => {
+      //     console.log('error');
+      //   });
+      // }
 
       // itemParams.id = `${id}/florist`;
 
@@ -949,5 +956,19 @@ export default {
   .orders-table table.v-table thead th:first-child,
   .orders-table table.v-table thead th:not(:first-child) {
     padding: 0 4px;
+  }
+  .orders-table table.v-table tbody td:first-child,
+  .orders-table table.v-table tbody td:not(:first-child),
+  .orders-table table.v-table tbody th:first-child,
+  .orders-table table.v-table tbody th:not(:first-child),
+  .orders-table table.v-table thead td:first-child,
+  .orders-table table.v-table thead td:not(:first-child),
+  .orders-table table.v-table thead th:first-child,
+  .orders-table table.v-table thead th:not(:first-child) {
+    border-right: 1px solid rgba(0,0,0,.12);
+  }
+
+  .theme--light.v-table thead tr:first-child {
+    border-top: 1px solid rgba(0,0,0,.12);
   }
 </style>

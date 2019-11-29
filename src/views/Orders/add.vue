@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="order">
     <v-alert
       :value="createdSuccess"
       type="success"
@@ -16,7 +16,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text
-        class="px-4 py-1"
+        class="px-4 pt-1"
       >
         <v-layout
           row
@@ -406,7 +406,7 @@
         </v-layout>
       </v-card-text>
       <v-card-actions
-        class="px-4 pb-4"
+        class="px-4 py-2"
       >
         <v-btn
           @click.native="cancel()"
@@ -728,3 +728,19 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  .order.v-card {
+    position: relative;
+  }
+  .order .v-card__text {
+    padding-bottom: 52px;
+  }
+  .order .v-card__actions {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    background: #fff;
+    box-shadow: 0 0 5px;
+  }
+</style>

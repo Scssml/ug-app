@@ -26,6 +26,7 @@ export default new Vuex.Store({
   getters: {
     isAuthenticated: state => !!state.authToken,
     authStatus: state => state.authStatus,
+    getAuthUser: state => state.authUser,
   },
   mutations: {
     authRequest: (state) => {

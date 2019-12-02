@@ -119,15 +119,41 @@
                   ></v-date-picker>
                 </v-menu>
 
-                <v-text-field
-                  label="Время доставки"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.deliveryTime"
-                  hide-details
-                  class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  v-if="editedItem.deliveryType !== 2"
-                ></v-text-field>
+                <v-layout
+                  row
+                  wrap
+                >
+                  <v-flex
+                    xs7
+                  >
+                    <v-text-field
+                      label="Время доставки"
+                      :rules="[v => !!v || 'Заполните поле']"
+                      v-model="editedItem.deliveryTime"
+                      hide-details
+                      class="mb-4"
+                      :readonly="editedItemReadOnly"
+                      v-if="editedItem.deliveryType !== 2"
+                    ></v-text-field>
+                  </v-flex>
+
+                  <v-flex
+                    xs5
+                  >
+                    <v-select
+                      label="Время дня"
+                      :items="deliveryTimeOfDayList"
+                      :rules="[v => !!v || 'Заполните поле']"
+                      item-text="name"
+                      item-value="id"
+                      v-model.number="editedItem.deliveryTimeOfDay"
+                      hide-details
+                      class="mb-4"
+                      :readonly="editedItemReadOnly"
+                      v-if="editedItem.deliveryType !== 2"
+                    ></v-select>
+                  </v-flex>
+                </v-layout>
 
                 <v-select
                   label="Статус"
@@ -247,14 +273,39 @@
                   ></v-date-picker>
                 </v-menu>
 
-                <v-text-field
-                  label="Время доставки"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.deliveryTime"
-                  hide-details
-                  class="mb-4"
-                  :readonly="editedItemReadOnly"
-                ></v-text-field>
+                <v-layout
+                  row
+                  wrap
+                >
+                  <v-flex
+                    xs7
+                  >
+                    <v-text-field
+                      label="Время доставки"
+                      :rules="[v => !!v || 'Заполните поле']"
+                      v-model="editedItem.deliveryTime"
+                      hide-details
+                      class="mb-4"
+                      :readonly="editedItemReadOnly"
+                    ></v-text-field>
+                  </v-flex>
+
+                  <v-flex
+                    xs5
+                  >
+                    <v-select
+                      label="Время дня"
+                      :items="deliveryTimeOfDayList"
+                      :rules="[v => !!v || 'Заполните поле']"
+                      item-text="name"
+                      item-value="id"
+                      v-model.number="editedItem.deliveryTimeOfDay"
+                      hide-details
+                      class="mb-4"
+                      :readonly="editedItemReadOnly"
+                    ></v-select>
+                  </v-flex>
+                </v-layout>
 
                 <v-checkbox
                   label="Инкогнито"
@@ -572,6 +623,20 @@ export default {
       },
       expand: false,
       loadOrder: true,
+      deliveryTimeOfDayList: [
+        {
+          name: 'Утро',
+          id: 1,
+        },
+        {
+          name: 'День',
+          id: 2,
+        },
+        {
+          name: 'Вечер',
+          id: 3,
+        },
+      ],
     };
   },
   computed: {
@@ -668,6 +733,7 @@ export default {
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
           props.bouquets = (props.bouquets) ? props.bouquets : [];
+          props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
 
           if (this.copy) {
             props.bouquets = props.bouquets.map((item) => {
@@ -852,7 +918,7 @@ export default {
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.ordersList = response;
+        this.ordersList = response.orders;
       }).catch(() => {
         console.log('error');
       });

@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 620px; margin: 0 auto; font-size: 16px">
+  <div style="width: 620px; margin: 0 0; font-size: 16px">
     <header style="display: flex; align-items: center; width: inherit">
       <div
         style="
@@ -38,7 +38,9 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">{{ orderData.orderDate }}</span>
+            <span style="font-weight: 600; font-style: italic" contenteditable>
+              {{ orderData.orderDate }}
+            </span>
         </div>
       </li>
       <li style="display: flex; width: inherit; margin-top: 10px">
@@ -56,8 +58,12 @@
       </tr>
       <template v-for="(elem, index) in orderData.bouquets">
         <tr :key="index">
-            <td style="border: 1px solid black; padding: 5px;">{{ elem.name }}</td>
-            <td style="border: 1px solid black; padding: 5px;">{{ elem.count }}</td>
+            <td style="border: 1px solid black; padding: 5px;" contenteditable>
+              {{ elem.name }}
+            </td>
+            <td style="border: 1px solid black; padding: 5px;" contenteditable>
+              {{ elem.count }}
+            </td>
         </tr>
       </template>
     </table>
@@ -72,7 +78,7 @@
             line-height: 1.1
           "
         >
-          <span style="font-weight: 600; font-style: italic">
+          <span style="font-weight: 600; font-style: italic" contenteditable>
             {{ orderData.orderDeliveryTime }}
           </span>
         </div>
@@ -87,7 +93,7 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">
+            <span style="font-weight: 600; font-style: italic" contenteditable>
               {{ orderData.orderAddress }}
               <template v-if="orderData.flat">
                 , кв. {{ orderData.flat }}
@@ -111,7 +117,7 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">
+            <span style="font-weight: 600; font-style: italic" contenteditable>
               {{ orderData.orderClient }} ({{ orderData.clientPhone }})
             </span>
         </div>
@@ -126,7 +132,7 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">
+            <span style="font-weight: 600; font-style: italic" contenteditable>
               {{ orderData.recipientName }} ({{ orderData.recipientPhone }})
             </span>
         </div>
@@ -171,7 +177,7 @@
             line-height: 1.1
           "
         >
-            <span style="font-weight: 600; font-style: italic">
+            <span style="font-weight: 600; font-style: italic" contenteditable>
               <template v-if="orderData.orderCourier">
                 {{ orderData.orderCourier }}
               </template>

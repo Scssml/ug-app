@@ -261,7 +261,13 @@
               <td class="px-1">
                 <b>{{ props.item.deliveryDateStr }}</b>
                 <template v-if="props.item.deliveryTime">
-                  <br><b>{{ props.item.deliveryTime }}</b>
+                  <br>
+                  <b>
+                    {{ props.item.deliveryTime }}
+                    <template v-if="props.item.deliveryTimeOfDay">
+                      ({{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }})
+                    </template>
+                  </b>
                 </template>
                 <template v-if="props.item.addresseeName">
                   <br>{{ props.item.addresseeName }}
@@ -579,6 +585,11 @@ export default {
       deliveryNow: 0,
       deliveryPrinted: [],
       floristPrinted: [],
+      deliveryTimeOfDayList: {
+        1: 'Утро',
+        2: 'День',
+        3: 'Вечер',
+      },
     };
   },
   watch: {
@@ -688,6 +699,7 @@ export default {
         type: 'orders',
         sort: {
           deliveryDate: 'desc',
+          deliveryTimeOfDay: 'asc',
         },
         filter: orderFilter,
       };
@@ -698,7 +710,7 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         let deliveryDay = '';
 
-        this.ordersList = response.map((item) => {
+        this.ordersList = response.orders.map((item) => {
           const elem = item;
 
           if (deliveryDay !== elem.deliveryDate) {
@@ -756,7 +768,7 @@ export default {
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.deliveryNow = response.length;
+        this.deliveryNow = response.orders.length;
       }).catch(() => {
         console.log('error');
       });

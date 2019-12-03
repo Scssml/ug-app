@@ -300,6 +300,7 @@
                       item-text="name"
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
+                      @change="getOrdersList()"
                       hide-details
                       class="mb-4"
                       :readonly="editedItemReadOnly"
@@ -648,7 +649,11 @@ export default {
           placemarks.push({
             coords: item.coordinates,
             properties: {
-              balloonContent: `${item.deliveryDate}, ${item.deliveryTime}<br>${item.address}`,
+              balloonContent: `${item.deliveryDate},
+                ${item.deliveryTime}
+                (${this.deliveryTimeOfDayList.find(elem => elem.id === +item.deliveryTimeOfDay).name})
+                <br>${item.address}
+              `,
             },
             options: {},
             clusterName: '1',
@@ -912,6 +917,7 @@ export default {
         type: 'orders',
         filter: {
           deliveryDate: this.editedItem.deliveryDate,
+          deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
           deliveryType: 2,
           orderStatus: [1, 2, 3],
         },

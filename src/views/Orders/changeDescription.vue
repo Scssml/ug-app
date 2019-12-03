@@ -90,6 +90,7 @@ export default {
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
           props.orderCost = (props.orderCost) ? String(props.orderCost) : '';
+          props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
 
           this.editedItem = props;
         }).catch(() => {

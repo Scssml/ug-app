@@ -125,11 +125,11 @@
               class="px-2"
             >
               <v-select
-                label="Тип клиента"
-                :items="[{id: '', name: 'Все'}].concat(typeClient)"
+                label="Время суток"
+                :items="[{id: '', name: 'Все'}].concat(deliveryTimeOfDayFilter)"
                 item-text="name"
                 item-value="id"
-                v-model="filter.clientType"
+                v-model="filter.deliveryTimeOfDay"
                 hide-details
                 @change="customFilter()"
               ></v-select>
@@ -578,7 +578,7 @@ export default {
       filter: {
         orderStatus: '',
         client: '',
-        clientType: '',
+        deliveryTimeOfDay: '',
         dateStart: null,
         dateEnd: null,
       },
@@ -614,6 +614,23 @@ export default {
         3: 'Вечер',
       },
       userSettings: [],
+      pagination: {
+        rowsPerPage: -1,
+      },
+      deliveryTimeOfDayFilter: [
+        {
+          name: 'Утро',
+          id: 1,
+        },
+        {
+          name: 'День',
+          id: 2,
+        },
+        {
+          name: 'Вечер',
+          id: 3,
+        },
+      ],
     };
   },
   watch: {
@@ -665,16 +682,6 @@ export default {
       });
 
       return cols;
-    },
-    pagination() {
-      const sort = {
-        rowsPerPage: -1,
-      };
-
-      sort.sortBy = this.userSettings[0].sortField;
-      sort.descending = (this.userSettings[0].sortOrder === 'desc');
-
-      return sort;
     },
   },
   methods: {
@@ -807,12 +814,19 @@ export default {
             });
           }
 
+          elem.deliveryTimeOfDay = +elem.deliveryTimeOfDay;
+
           return elem;
         });
 
         const { settings } = response;
 
         this.userSettings = (settings) ? settings : [];
+
+        if (settings) {
+          this.pagination.sortBy = this.userSettings[0].sortField;
+          this.pagination.descending = (this.userSettings[0].sortOrder === 'desc');
+        }
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;

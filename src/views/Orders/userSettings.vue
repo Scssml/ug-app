@@ -267,7 +267,7 @@ export default {
           name: 'Время доставки',
         },
         {
-          code: 'deliveryTimeOfDayList',
+          code: 'deliveryTimeOfDay',
           name: 'Время суток',
         },
         {

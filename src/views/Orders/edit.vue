@@ -141,7 +141,7 @@
                     xs5
                   >
                     <v-select
-                      label="Время дня"
+                      label="Время суток"
                       :items="deliveryTimeOfDayList"
                       :rules="[v => !!v || 'Заполните поле']"
                       item-text="name"
@@ -294,7 +294,7 @@
                     xs5
                   >
                     <v-select
-                      label="Время дня"
+                      label="Время суток"
                       :items="deliveryTimeOfDayList"
                       :rules="[v => !!v || 'Заполните поле']"
                       item-text="name"

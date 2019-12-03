@@ -62,9 +62,14 @@
                 @cancel="closeDialog()"
               ></order-edit>
               <order-add
-                v-if="!editedId && !editStatus && !editDescription"
+                v-if="!editedId && !editStatus && !editDescription && !editSettings"
                 @cancel="closeDialog()"
               ></order-add>
+              <user-settings
+                v-if="editSettings"
+                :userSettings="userSettings"
+                @cancel="closeDialog()"
+              ></user-settings>
             </template>
           </v-dialog>
           <v-spacer></v-spacer>
@@ -220,6 +225,12 @@
             class="px-1"
           >
             Доставок на сегодня: {{ deliveryNow }}
+
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="changeSettings()"
+            >Настройки</v-btn>
           </v-flex>
           <v-flex
             xs9
@@ -258,7 +269,72 @@
             <tr
               :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
-              <td class="px-1">
+              <template v-for="(col, colIndex) in colsTable">
+                <td
+                  class="px-1"
+                  :style="{
+                    width: `${col.width}px`,
+                    maxWidth: `${col.width}px`,
+                    minWidth: `${col.width}px`
+                  }"
+                  :key="`col-${colIndex}`"
+                >
+                  <template v-for="(prop, propIndex) in col.dataFields">
+                    <div :key="`prop-${colIndex}-${propIndex}`">
+                      <template v-if="prop.displayName">
+                        {{ prop.displayName }}:
+                      </template>
+                      <template v-if="props.item[prop.field]">
+                        <template v-if="prop.field === 'deliveryTimeOfDay'">
+                          {{ deliveryTimeOfDayList[props.item[prop.field]] }}
+                        </template>
+                        <template v-else-if="prop.field === 'createdBy'">
+                          {{ props.item[prop.field].name }}
+                        </template>
+                        <template v-else-if="prop.field === 'orderSourceType'">
+                          <template v-for="(item, index) in props.item[prop.field]">
+                            <template v-if="item">
+                              <br :key="index" v-if="index">{{ item.name }}
+                            </template>
+                          </template>
+                        </template>
+                        <template v-else-if="prop.field === 'incognito'">
+                          {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
+                        </template>
+                        <template v-else-if="prop.field === 'description'">
+                          <div @click="changeDescription(props.item.id)">
+                            {{ props.item[prop.field] }}
+                          </div>
+                        </template>
+                        <template v-else-if="prop.field === 'bouquets'">
+                          <template v-for="(item, key) in props.item[prop.field]">
+                            {{ item.name }} - {{ item.count }}
+                            <br :key="key">
+                          </template>
+                        </template>
+                        <template v-else-if="prop.field === 'orderStatus'">
+                          <div @click="changeStatus(props.item.id)" style="display: inline">
+                            {{ props.item[prop.field].name }}
+                          </div>
+                        </template>
+                        <template v-else-if="prop.field === 'deliveryType'">
+                          {{ props.item[prop.field].name }}
+                        </template>
+                        <template v-else-if="prop.field === 'deliveryDate'">
+                          {{ props.item[`${prop.field}Str`] }}
+                        </template>
+                        <template v-else-if="prop.field === 'courier'">
+                          {{ props.item[prop.field].name }}
+                        </template>
+                        <template v-else>
+                          {{ props.item[prop.field] }}
+                        </template>
+                      </template>
+                    </div>
+                  </template>
+                </td>
+              </template>
+              <!-- <td class="px-1">
                 <b>{{ props.item.deliveryDateStr }}</b>
                 <template v-if="props.item.deliveryTime">
                   <br>
@@ -327,8 +403,11 @@
               >
                 {{ props.item.orderStatus.name }}
                 <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
-              </td>
-              <td class="text-xs-right px-1" style="width: 100px;">
+              </td> -->
+              <td
+                class="text-xs-right px-1"
+                style="width: 100px; max-width: 100px; min-width: 100px;"
+              >
                 <v-icon
                   left
                   @click="createdBouquet(props.item)"
@@ -483,6 +562,7 @@ import OrderEdit from './edit.vue';
 import OrderAdd from './add.vue';
 import ChangeStatus from './changeStatus.vue';
 import changeDescription from './changeDescription.vue';
+import userSettings from './userSettings.vue';
 
 export default {
   name: 'Orders',
@@ -491,6 +571,7 @@ export default {
     OrderAdd,
     ChangeStatus,
     changeDescription,
+    userSettings,
   },
   data() {
     return {
@@ -513,65 +594,6 @@ export default {
       dataStartPicker: false,
       dataEndPicker: false,
       search: '',
-      headersTable: [
-        {
-          text: 'Дата доставки',
-          align: 'left',
-          value: 'deliveryDate',
-        },
-        {
-          text: 'Дата',
-          align: 'left',
-          value: 'createdAt',
-        },
-        {
-          text: '№ заказа',
-          align: 'left',
-          value: 'id',
-        },
-        {
-          text: 'Клиент',
-          align: 'left',
-          value: 'client.clientName',
-        },
-        {
-          text: 'Комментарий',
-          align: 'left',
-          value: 'description',
-        },
-        {
-          text: 'Букеты',
-          align: 'left',
-          value: 'bouquets',
-          sortable: false,
-        },
-        {
-          text: 'Тип доставки',
-          align: 'left',
-          value: 'deliveryType.name',
-        },
-        {
-          text: 'Сумма',
-          align: 'left',
-          value: 'orderCost',
-        },
-        {
-          text: 'Статус',
-          align: 'left',
-          value: 'orderStatus.name',
-        },
-        {
-          text: '',
-          align: 'right',
-          sortable: false,
-          value: 'action',
-        },
-      ],
-      pagination: {
-        sortBy: 'deliveryDate',
-        descending: false,
-        rowsPerPage: -1,
-      },
       dialogForm: false,
       ordersList: [],
       statusList: [],
@@ -581,6 +603,7 @@ export default {
       copyElem: false,
       editStatus: false,
       editDescription: false,
+      editSettings: false,
       dataNowStr: '',
       deliveryNow: 0,
       deliveryPrinted: [],
@@ -590,6 +613,7 @@ export default {
         2: 'День',
         3: 'Вечер',
       },
+      userSettings: [],
     };
   },
   watch: {
@@ -607,6 +631,50 @@ export default {
     orderSourceTypeEditElem() {
       const editElem = this.ordersList.find(item => item.id === this.editedId);
       return (editElem) ? editElem.orderSourceType : [];
+    },
+    headersTable() {
+      const cols = this.userSettings.map((item) => {
+        const elem = {
+          text: item.columnName,
+          align: 'left',
+          value: item.sortField,
+        };
+
+        return elem;
+      });
+
+      const colAction = {
+        text: '',
+        align: 'right',
+        sortable: false,
+        value: 'action',
+      };
+
+      cols.push(colAction);
+
+      return cols;
+    },
+    colsTable() {
+      const cols = this.userSettings.map((item) => {
+        const elem = {
+          width: item.width,
+          dataFields: item.dataFields,
+        };
+
+        return elem;
+      });
+
+      return cols;
+    },
+    pagination() {
+      const sort = {
+        rowsPerPage: -1,
+      };
+
+      sort.sortBy = this.userSettings[0].sortField;
+      sort.descending = (this.userSettings[0].sortOrder === 'desc');
+
+      return sort;
     },
   },
   methods: {
@@ -742,6 +810,10 @@ export default {
           return elem;
         });
 
+        const { settings } = response;
+
+        this.userSettings = (settings) ? settings : [];
+
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
         loadData.loading = false;
@@ -826,6 +898,7 @@ export default {
       setTimeout(() => {
         this.editStatus = false;
         this.editDescription = false;
+        this.editSettings = false;
       }, 300);
     },
     editItem(id, copy = false) {
@@ -841,6 +914,10 @@ export default {
     changeDescription(id) {
       this.editedId = +id;
       this.editDescription = true;
+      this.dialogForm = true;
+    },
+    changeSettings() {
+      this.editSettings = true;
       this.dialogForm = true;
     },
     createdBouquet: function createdBouquet(item) {

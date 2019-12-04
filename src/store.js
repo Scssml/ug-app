@@ -156,8 +156,10 @@ export default new Vuex.Store({
     getItem({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}/${item.id}`;
-
-        axios.get(url).then((response) => {
+        console.log(item.data);
+        axios.get(url, {
+          params: item.params,
+        }).then((response) => {
           const elem = response.data;
           resolve(elem);
         }).catch((error) => {

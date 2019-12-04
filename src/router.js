@@ -108,6 +108,15 @@ export default new Router({
       },
     },
     {
+      path: '/print/orders/delivery/:ids/',
+      name: 'ordersDelivery',
+      component: () => import('./views/Print/ordersDelivery.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
+    {
       path: '/print/order/florist/:id/',
       name: 'orderFlorist',
       component: () => import('./views/Print/orderFlorist.vue'),

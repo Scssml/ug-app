@@ -231,6 +231,12 @@
               dark
               @click.prevent="changeSettings()"
             >Настройки</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="printOrders('delivery')"
+            >Печать бланков</v-btn>
           </v-flex>
           <v-flex
             xs9
@@ -284,7 +290,7 @@
                       <template v-if="prop.displayName">
                         {{ prop.displayName }}:
                       </template>
-                      <template v-if="props.item[prop.field]">
+                      <template v-if="props.item[prop.field] || prop.field === 'incognito'">
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
@@ -324,6 +330,9 @@
                           {{ props.item[`${prop.field}Str`] }}
                         </template>
                         <template v-else-if="prop.field === 'courier'">
+                          {{ props.item[prop.field].name }}
+                        </template>
+                        <template v-else-if="prop.field === 'clientType'">
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else>
@@ -442,7 +451,6 @@
                     left
                     slot="activator"
                     title="Печать"
-                    @click="isAlreadyPrinted(props.item.id)"
                   >
                     insert_drive_file
                   </v-icon>
@@ -452,7 +460,7 @@
                       :to="`/print/order/delivery/${props.item.id}/`"
                       v-if="props.item.deliveryType.id === 2"
                       target="_blank"
-                      :class="(deliveryPrinted.find(item => item === props.item.id)) ? 'teal lighten-2' : '123'"
+                      :class="(props.item.isAlreadyPrinted) ? 'teal lighten-2' : ''"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>
@@ -685,6 +693,12 @@ export default {
     },
   },
   methods: {
+    printOrders(type) {
+      const arId = [70, 72];
+      if (type === 'delivery') {
+        this.$router.push({ name: 'ordersDelivery', params: { ids: arId } });
+      }
+    },
     printDoc(id, type) {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/order/${id}/${type}`;
@@ -997,31 +1011,6 @@ export default {
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
       this.getOrdersList();
-    },
-    isAlreadyPrinted() {
-      // if (!this.deliveryPrinted.find(item => item === id)) {
-      //   const itemParams = {
-      //     type: 'print/order',
-      //   };
-
-      //   itemParams.id = `${id}/delivery`;
-
-      //   this.$store.dispatch('getItem', itemParams).then((response) => {
-      //     if (response.isAlreadyPrinted) {
-      //       this.deliveryPrinted.push(id);
-      //     }
-      //   }).catch(() => {
-      //     console.log('error');
-      //   });
-      // }
-
-      // itemParams.id = `${id}/florist`;
-
-      // this.$store.dispatch('getItem', itemParams).then((response) => {
-      //   this.floristPrinted = response.isAlreadyPrinted;
-      // }).catch(() => {
-      //   console.log('error');
-      // });
     },
   },
   mounted() {

@@ -471,14 +471,16 @@
             xs5
             v-if="editedItem.deliveryType === 2 && !loadOrder"
           >
-            <yandex-map
-              :coords="[53.05, 50.101783]"
-              zoom="10"
-              style="height: 100%;"
-              :controls="['trafficControl']"
-              :placemarks="placemarks"
-            >
-            </yandex-map>
+            <div style="position: relative; height: 100%; overflow: hidden;">
+              <yandex-map
+                :coords="[53.05, 50.101783]"
+                zoom="10"
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                :controls="['trafficControl']"
+                :placemarks="placemarks"
+              >
+              </yandex-map>
+            </div>
           </v-flex>
           <v-flex
             xs12

@@ -232,11 +232,11 @@
               @click.prevent="changeSettings()"
             >Настройки</v-btn>
 
-            <v-btn
+            <!-- <v-btn
               color="primary"
               dark
               @click.prevent="printOrders('delivery')"
-            >Печать бланков</v-btn>
+            >Печать бланков</v-btn> -->
           </v-flex>
           <v-flex
             xs9
@@ -290,7 +290,11 @@
                       <template v-if="prop.displayName">
                         {{ prop.displayName }}:
                       </template>
-                      <template v-if="props.item[prop.field] || prop.field === 'incognito'">
+                      <template v-if="
+                        props.item[prop.field]
+                        || prop.field === 'incognito'
+                        || prop.field === 'description'
+                      ">
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
@@ -308,7 +312,14 @@
                           {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
                         </template>
                         <template v-else-if="prop.field === 'description'">
-                          <div @click="changeDescription(props.item.id)">
+                          <div
+                            @click="changeDescription(props.item.id)"
+                            :style="
+                              (!props.item[prop.field])
+                              ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
+                              : ''
+                            "
+                          >
                             {{ props.item[prop.field] }}
                           </div>
                         </template>

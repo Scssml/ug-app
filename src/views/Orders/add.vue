@@ -744,7 +744,7 @@ export default {
       const propsItem = Object.assign({}, this.editedItem);
       delete propsItem.id;
 
-      // propsItem.delivery = false;
+      propsItem.delivery = false;
 
       const itemParams = {
         type: 'orders',

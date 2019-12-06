@@ -130,4 +130,5 @@ export default {
 
   @media print
     .print-btn { display: none; }
+    .print-hidden { display: none; }
 </style>

@@ -31,6 +31,30 @@
       </v-list>
     </v-dialog>
     <template v-if="!loadingDialog">
+      <v-snackbar
+        :value="true"
+        v-if="selectedOrders.length > 0"
+        color="info"
+        bottom
+        :timeout="3600000"
+      >
+        <v-btn
+          dark
+          flat
+          depressed
+          :to="`/print/orders/delivery/${printOrdersIds}/`"
+          target="_blank"
+          class="ml-0"
+        >Печать бланков на доставку</v-btn>
+
+        <v-btn
+          dark
+          flat
+          depressed
+          :to="`/print/orders/florist/${printOrdersIds}/`"
+          target="_blank"
+        >Печать бланков флористов</v-btn>
+      </v-snackbar>
       <v-card>
         <v-card-title>
           <v-dialog
@@ -231,12 +255,6 @@
               dark
               @click.prevent="changeSettings()"
             >Настройки</v-btn>
-
-            <!-- <v-btn
-              color="primary"
-              dark
-              @click.prevent="printOrders('delivery')"
-            >Печать бланков</v-btn> -->
           </v-flex>
           <v-flex
             xs9
@@ -270,11 +288,55 @@
           no-results-text="Заказов не найдено"
           :pagination.sync="pagination"
           class="orders-table"
+          select-all
+          v-model="selectedOrders"
+          item-key="id"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th class="px-1 text-xs-left">
+                <v-checkbox
+                  :input-value="props.all"
+                  :indeterminate="props.indeterminate"
+                  color="primary"
+                  hide-details
+                  @click.stop="toggleAll"
+                ></v-checkbox>
+              </th>
+              <th
+                v-for="header in props.headers"
+                class="px-1 text-xs-left"
+                :key="header.text"
+                :class="[
+                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                :style="{
+                  width: `${header.width}px`,
+                  maxWidth: `${header.width}px`,
+                  minWidth: `${header.width}px`
+                }"
+                @click="changeSort(header.value)"
+              >
+                <v-icon small>arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
             <tr
               :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
+              <td
+                style="width: 30px; max-width: 30px; min-width: 30px;"
+                class="px-1"
+              >
+                <v-checkbox
+                  v-model="props.selected"
+                  color="primary"
+                  hide-details
+                ></v-checkbox>
+              </td>
               <template v-for="(col, colIndex) in colsTable">
                 <td
                   class="px-1"
@@ -462,6 +524,7 @@
                     left
                     slot="activator"
                     title="Печать"
+                    :color="(props.item.isAlreadyPrinted) ? 'teal darken-3' : ''"
                   >
                     insert_drive_file
                   </v-icon>
@@ -471,7 +534,6 @@
                       :to="`/print/order/delivery/${props.item.id}/`"
                       v-if="props.item.deliveryType.id === 2"
                       target="_blank"
-                      :class="(props.item.isAlreadyPrinted) ? 'teal lighten-2' : ''"
                     >
                       <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
                     </v-list-tile>
@@ -627,6 +689,7 @@ export default {
       deliveryNow: 0,
       deliveryPrinted: [],
       floristPrinted: [],
+      selectedOrders: [],
       deliveryTimeOfDayList: {
         1: 'Утро',
         2: 'День',
@@ -674,6 +737,7 @@ export default {
           text: item.columnName,
           align: 'left',
           value: item.sortField,
+          width: item.width,
         };
 
         return elem;
@@ -702,12 +766,17 @@ export default {
 
       return cols;
     },
+    printOrdersIds() {
+      return this.selectedOrders.map(item => item.id);
+    },
   },
   methods: {
     printOrders(type) {
-      const arId = [70, 72];
+      const arId = this.selectedOrders.map(item => item.id);
       if (type === 'delivery') {
         this.$router.push({ name: 'ordersDelivery', params: { ids: arId } });
+      } else if (type === 'florist') {
+        this.$router.push({ name: 'ordersFlorist', params: { ids: arId } });
       }
     },
     printDoc(id, type) {
@@ -849,8 +918,12 @@ export default {
         this.userSettings = (settings) ? settings : [];
 
         if (settings) {
-          this.pagination.sortBy = this.userSettings[0].sortField;
-          this.pagination.descending = (this.userSettings[0].sortOrder === 'desc');
+          const colSort = this.userSettings.find(item => item.sortOrder);
+
+          if (colSort) {
+            this.pagination.sortBy = colSort.sortField;
+            this.pagination.descending = (colSort.sortOrder === 'desc');
+          }
         }
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
@@ -1023,6 +1096,21 @@ export default {
       this.filter.dateEnd = dateEnd;
       this.getOrdersList();
     },
+    toggleAll() {
+      if (this.selectedOrders.length) {
+        this.selectedOrders = [];
+      } else {
+        this.selectedOrders = this.ordersList.slice();
+      }
+    },
+    changeSort(column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
   },
   mounted() {
     const date = new Date();
@@ -1073,5 +1161,10 @@ export default {
 
   .theme--light.v-table thead tr:first-child {
     border-top: 1px solid rgba(0,0,0,.12);
+  }
+
+  .orders-table .v-datatable thead th.column.sortable .v-icon {
+    display: block;
+    width: 16px;
   }
 </style>

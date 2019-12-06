@@ -734,13 +734,22 @@ export default {
 
           props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
-          props.courier = (props.courier) ? +props.courier.id : null;
           props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
-          props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
           props.bouquets = (props.bouquets) ? props.bouquets : [];
-          props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
+
+          if (this.copy) {
+            props.orderStatus = 1;
+            props.courier = null;
+            props.deliveryTimeOfDay = 1;
+            props.deliveryTime = '';
+            props.deliveryDate = '';
+          } else {
+            props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
+            props.courier = (props.courier) ? +props.courier.id : null;
+            props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
+          }
 
           if (this.copy) {
             props.bouquets = props.bouquets.map((item) => {
@@ -932,15 +941,25 @@ export default {
       });
     },
     getUsersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
+      const itemParams = {};
+
+      if (this.copy) {
+        itemParams.type = 'login';
+      } else {
+        itemParams.type = 'users';
+        itemParams.filter = {
           id: +this.editedItem.createdBy,
-        },
-      };
+        };
+      }
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        const [user] = response;
+        let user = {};
+        if (this.copy) {
+          user = response;
+        } else {
+          [user] = response;
+        }
+
         this.userInfo = user;
         this.userInfo.id = +this.userInfo.id;
         this.editedItem.createdBy = +this.userInfo.id;
@@ -959,7 +978,7 @@ export default {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
 
-        // propsItem.delivery = false;
+        propsItem.delivery = false;
 
         const itemParams = {
           type: 'orders',

@@ -126,6 +126,15 @@ export default new Router({
       },
     },
     {
+      path: '/print/orders/florist/:ids/',
+      name: 'ordersFlorist',
+      component: () => import('./views/Print/ordersFlorist.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
+    {
       path: '/print/order/day-orders/:date/',
       name: 'orderFlorist',
       component: () => import('./views/Print/orderDeliveryDay.vue'),

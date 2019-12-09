@@ -95,6 +95,10 @@ export default {
           link: '/couriers/',
         },
         {
+          title: 'Доставки',
+          link: '/deliveries/',
+        },
+        {
           title: 'Пользователи',
           link: '/users/',
         },

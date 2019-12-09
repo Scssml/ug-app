@@ -83,6 +83,12 @@ export default new Router({
       beforeEnter: ifAuthenticated,
     },
     {
+      path: '/deliveries/',
+      name: 'deliveries',
+      component: () => import('./views/Deliveries/List.vue'),
+      beforeEnter: ifAuthenticated,
+    },
+    {
       path: '/goods/',
       name: 'goods',
       component: () => import('./views/Goods/List.vue'),

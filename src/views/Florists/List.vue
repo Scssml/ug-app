@@ -75,6 +75,8 @@
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
+            <td>{{ props.item.address }}</td>
+            <td>{{ props.item.phone }}</td>
             <td class="text-xs-right">
               {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
@@ -124,6 +126,16 @@ export default {
           text: 'Флорист',
           align: 'left',
           value: 'name',
+        },
+        {
+          text: 'Адрес',
+          align: 'left',
+          value: 'address',
+        },
+        {
+          text: 'Телефон',
+          align: 'left',
+          value: 'phone',
         },
         {
           text: 'Активность',

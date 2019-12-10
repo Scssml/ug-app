@@ -596,9 +596,17 @@ export default {
       if (findClient !== undefined) {
         this.editedItem.addresseeName = findClient.name;
         this.editedItem.addresseePhone = findClient.phone;
+        this.editedItem.address = findClient.address;
+        this.editedItem.entrance = findClient.entrance;
+        this.editedItem.flat = findClient.flat;
+        this.editedItem.floor = findClient.floor;
       } else {
         this.editedItem.addresseeName = '';
         this.editedItem.addresseePhone = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     updateAddress(data) {

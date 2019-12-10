@@ -37,6 +37,22 @@
           label="Телефон"
           v-model="editedItem.phone"
         ></v-text-field>
+        <v-text-field
+          label="Адрес"
+          v-model="editedItem.address"
+        ></v-text-field>
+        <v-text-field
+          label="Подъезд"
+          v-model="editedItem.entrance"
+        ></v-text-field>
+        <v-text-field
+          label="Квартира"
+          v-model="editedItem.flat"
+        ></v-text-field>
+        <v-text-field
+          label="Этаж"
+          v-model="editedItem.floor"
+        ></v-text-field>
         <v-menu
           :close-on-content-click="false"
           v-model="dataPicker"

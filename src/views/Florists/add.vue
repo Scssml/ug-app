@@ -28,6 +28,14 @@
           v-model="editedItem.isActive"
           color="primary"
         ></v-checkbox>
+        <v-text-field
+          label="Адрес"
+          v-model="editedItem.address"
+        ></v-text-field>
+        <v-text-field
+          label="Телефон"
+          v-model="editedItem.phone"
+        ></v-text-field>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -52,6 +60,8 @@ export default {
       editedItem: {
         name: '',
         isActive: true,
+        address: '',
+        phone: '',
       },
       createdSuccess: false,
     };

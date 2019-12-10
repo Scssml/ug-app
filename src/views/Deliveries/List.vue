@@ -316,7 +316,7 @@ export default {
   data() {
     return {
       filter: {
-        orderStatus: 3,
+        orderStatus: [1, 2, 3, 4, 7],
         deliveryTimeOfDay: '',
         dateStart: null,
         dateEnd: null,
@@ -381,11 +381,16 @@ export default {
           placemarks.push({
             coords: item.coordinates,
             properties: {
-              balloonContent: `${item.deliveryDate},
+              // balloonContent: `${item.deliveryDate},
+              //   ${item.deliveryTime}
+              //   (${this.deliveryTimeOfDayList[+item.deliveryTimeOfDay]})
+              //   <br>${item.address}
+              // `,
+              balloonContentHeader: `${item.deliveryDate},
                 ${item.deliveryTime}
                 (${this.deliveryTimeOfDayList[+item.deliveryTimeOfDay]})
-                <br>${item.address}
               `,
+              balloonContentBody: `${item.address}`,
             },
             options: {},
             clusterName: '1',
@@ -621,6 +626,15 @@ export default {
         this.pagination.descending = false;
       }
     },
+    getDeliveries() {
+      const itemParams = {
+        type: 'deliveries',
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        console.log(response);
+      });
+    },
   },
   mounted() {
     const date = new Date();
@@ -639,6 +653,8 @@ export default {
     this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();
+
+    this.getDeliveries();
   },
 };
 </script>

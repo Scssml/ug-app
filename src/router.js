@@ -7,7 +7,15 @@ const ifNotAuthenticated = (to, from, next) => {
     next();
     return;
   }
-  next('/');
+
+  const userGroup = store.getters.getAuthUserGroup;
+  if (userGroup) {
+    if (userGroup.code === 'admin' || userGroup.code === 'manager') {
+      next('/');
+      return;
+    }
+  }
+  next('/deliveries/');
 };
 
 const ifAuthenticated = (to, from, next) => {
@@ -18,6 +26,23 @@ const ifAuthenticated = (to, from, next) => {
   next('/login');
 };
 
+const ifManager = (to, from, next) => {
+  if (store.getters.isAuthenticated) {
+    const userGroup = store.getters.getAuthUserGroup;
+    if (userGroup) {
+      if (userGroup.code === 'admin' || userGroup.code === 'manager') {
+        next();
+        return;
+      }
+    } else {
+      next('/deliveries/');
+      return;
+    }
+  }
+  next('/login');
+};
+
+
 Vue.use(Router);
 
 export default new Router({
@@ -26,7 +51,7 @@ export default new Router({
       path: '/',
       name: 'home',
       component: () => import('./views/Home.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/login/',
@@ -38,49 +63,49 @@ export default new Router({
       path: '/clients/',
       name: 'clients',
       component: () => import('./views/Clients/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/florists/',
       name: 'florists',
       component: () => import('./views/Florists/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/couriers/',
       name: 'couriers',
       component: () => import('./views/Couriers/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/users/',
       name: 'users',
       component: () => import('./views/Users/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/users-groups/',
       name: 'users-groups',
       component: () => import('./views/UsersGroups/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/bouquets/',
       name: 'bouquets',
       component: () => import('./views/Bouquets/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/pays/',
       name: 'pays',
       component: () => import('./views/Pays/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/orders/',
       name: 'orders',
       component: () => import('./views/Orders/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/deliveries/',
@@ -92,17 +117,19 @@ export default new Router({
       path: '/goods/',
       name: 'goods',
       component: () => import('./views/Goods/List.vue'),
-      beforeEnter: ifAuthenticated,
+      beforeEnter: ifManager,
     },
     {
       path: '/goods/history/',
       name: 'history',
       component: () => import('./views/Goods/History.vue'),
+      beforeEnter: ifManager,
     },
     {
       path: '/goods/history/:id/',
       name: 'historyView',
       component: () => import('./views/Goods/HistoryView.vue'),
+      beforeEnter: ifManager,
     },
     {
       path: '/print/order/delivery/:id/',
@@ -141,8 +168,17 @@ export default new Router({
       },
     },
     {
+      path: '/print/bouquet/receipt/:id/',
+      name: 'bouquet​Receipt',
+      component: () => import('./views/Print/bouquet​Receipt.vue'),
+      // beforeEnter: ifAuthenticated,
+      meta: {
+        pagePrint: true,
+      },
+    },
+    {
       path: '/print/order/day-orders/:date/',
-      name: 'orderFlorist',
+      name: 'ordersOfDay',
       component: () => import('./views/Print/orderDeliveryDay.vue'),
       // beforeEnter: ifAuthenticated,
       meta: {

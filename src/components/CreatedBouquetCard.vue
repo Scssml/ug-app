@@ -560,7 +560,7 @@ export default {
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientOrdersList = response.map((item) => {
+        this.clientOrdersList = response.orders.map((item) => {
           item.id = +item.id;
           return item;
         });

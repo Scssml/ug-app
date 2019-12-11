@@ -22,20 +22,23 @@ export default new Vuex.Store({
     apiUrl: '/',
     authToken: '',
     authStatus: '',
+    authUserGroup: {},
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
     authStatus: state => state.authStatus,
     getAuthUser: state => state.authUser,
+    getAuthUserGroup: state => state.authUserGroup,
   },
   mutations: {
     authRequest: (state) => {
       state.authStatus = 'loading';
     },
-    authSuccess: (state, { token, id }) => {
+    authSuccess: (state, { token, id, group }) => {
       state.authStatus = 'success';
       state.authToken = token;
       state.authUser = id;
+      state.authUserGroup = group;
     },
     authError: (state) => {
       state.authStatus = 'error';
@@ -44,6 +47,7 @@ export default new Vuex.Store({
       state.authStatus = '';
       state.authToken = '';
       state.authUser = 0;
+      state.authUserGroup = {};
     },
   },
   actions: {
@@ -71,10 +75,13 @@ export default new Vuex.Store({
           };
 
           dispatch('getItemsList', itemParams).then((users) => {
-            const { id } = users[0];
+            const { id, group } = users[0];
             localStorage.setItem('user-id', id);
-            commit('authSuccess', { token, id });
+            localStorage.setItem('user-group', JSON.stringify(group));
+            commit('authSuccess', { token, id, group });
             resolve(response);
+          }).catch((error) => {
+            console.log(error);
           });
         }).catch((error) => {
           commit('authError', error);
@@ -88,6 +95,7 @@ export default new Vuex.Store({
         commit('authLogout');
         localStorage.removeItem('user-token');
         localStorage.removeItem('user-id');
+        localStorage.removeItem('user-group');
         delete axios.defaults.headers.common.Authorization;
         resolve();
       });
@@ -96,9 +104,10 @@ export default new Vuex.Store({
       return new Promise((resolve, rejected) => {
         const token = localStorage.getItem('user-token');
         const id = +localStorage.getItem('user-id');
+        const group = JSON.parse(localStorage.getItem('user-group'));
         if (token !== null) {
           axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-          commit('authSuccess', { token, id });
+          commit('authSuccess', { token, id, group });
           resolve();
         } else {
           rejected();

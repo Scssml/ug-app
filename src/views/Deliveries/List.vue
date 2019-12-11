@@ -3,308 +3,434 @@
     fluid
     class="pa-0"
   >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
-      <v-list>
-        <v-list-tile
-          v-for="(item, index) in loadingData"
-          :key="index"
-          avatar
-          :color="(item.error) ? 'red' : item.color"
-        >
-          <v-list-tile-avatar>
-            <v-progress-circular
-              :value="100"
-              :size="30"
-              :color="(item.error) ? 'red' : item.color"
-              :indeterminate="item.loading"
-            ></v-progress-circular>
-          </v-list-tile-avatar>
-
-          <v-list-tile-content>
-            <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-dialog>
-    <template v-if="!loadingDialog">
+    <div class="hidden-sm-and-down">
       <v-dialog
-        v-model="dialogForm"
-        fullscreen
+        :value="loadingDialog"
+        persistent
+        max-width="320px"
       >
-        <template
-          v-if="dialogForm"
-        >
-          <user-settings
-            v-if="editSettings"
-            :userSettings="userSettings"
-            @cancel="closeDialog()"
-          ></user-settings>
-        </template>
-      </v-dialog>
-      <v-card>
-        <v-layout
-          row
-          wrap
-        >
-          <v-flex
-            xs7
+        <v-list>
+          <v-list-tile
+            v-for="(item, index) in loadingData"
+            :key="index"
+            avatar
+            :color="(item.error) ? 'red' : item.color"
           >
-            <v-card-title>
+            <v-list-tile-avatar>
+              <v-progress-circular
+                :value="100"
+                :size="30"
+                :color="(item.error) ? 'red' : item.color"
+                :indeterminate="item.loading"
+              ></v-progress-circular>
+            </v-list-tile-avatar>
+
+            <v-list-tile-content>
+              <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+      </v-dialog>
+      <template v-if="!loadingDialog">
+        <v-dialog
+          v-model="dialogForm"
+          fullscreen
+        >
+          <template
+            v-if="dialogForm"
+          >
+            <user-settings
+              v-if="editSettings"
+              :userSettings="userSettings"
+              @cancel="closeDialog()"
+            ></user-settings>
+            <order-show
+              v-if="showOrder"
+              :order="orderSelect"
+              @cancel="closeDialog()"
+            ></order-show>
+          </template>
+        </v-dialog>
+        <v-card>
+          <v-layout
+            row
+            wrap
+          >
+            <v-flex
+              xs7
+            >
+              <v-card-title>
+                <v-layout
+                  row
+                  wrap
+                >
+                  <v-flex
+                    xs4
+                    class="px-2"
+                  >
+                    <v-select
+                      label="Время суток"
+                      :items="[{id: '', name: 'Все'}].concat(deliveryTimeOfDayFilter)"
+                      item-text="name"
+                      item-value="id"
+                      v-model="filter.deliveryTimeOfDay"
+                      hide-details
+                      @change="customFilter()"
+                    ></v-select>
+                  </v-flex>
+                  <v-flex
+                    xs4
+                    class="pl-2"
+                  >
+                    <v-menu
+                      :close-on-content-click="false"
+                      v-model="dataStartPicker"
+                      :nudge-right="40"
+                      lazy
+                      transition="scale-transition"
+                      offset-y
+                      full-width
+                      min-width="290px"
+                      class="mb-4"
+                    >
+                      <v-text-field
+                        slot="activator"
+                        label="Дата доставки (с)"
+                        v-model="filter.dateStart"
+                        prepend-icon="event"
+                        hide-details
+                        readonly
+                      ></v-text-field>
+                      <v-date-picker
+                        v-model="filter.dateStart"
+                        @input="dataStartPicker = false"
+                        no-title
+                        scrollable
+                        locale="ru-ru"
+                        first-day-of-week="1"
+                        :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                        @change="customFilter()"
+                      ></v-date-picker>
+                    </v-menu>
+                  </v-flex>
+                  <v-flex
+                    xs4
+                    class="pl-2"
+                  >
+                    <v-menu
+                      :close-on-content-click="false"
+                      v-model="dataEndPicker"
+                      :nudge-right="40"
+                      lazy
+                      transition="scale-transition"
+                      offset-y
+                      full-width
+                      min-width="290px"
+                      class="mb-4"
+                    >
+                      <v-text-field
+                        slot="activator"
+                        label="Дата доставки (по)"
+                        v-model="filter.dateEnd"
+                        prepend-icon="event"
+                        hide-details
+                        readonly
+                      ></v-text-field>
+                      <v-date-picker
+                        v-model="filter.dateEnd"
+                        @input="dataEndPicker = false"
+                        no-title
+                        locale="ru-ru"
+                        scrollable
+                        first-day-of-week="1"
+                        :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                        @change="customFilter()"
+                      ></v-date-picker>
+                    </v-menu>
+                  </v-flex>
+                </v-layout>
+              </v-card-title>
+
               <v-layout
                 row
                 wrap
+                align-center
               >
                 <v-flex
-                  xs4
-                  class="px-2"
+                  xs12
+                  class="px-1"
                 >
-                  <v-select
-                    label="Время суток"
-                    :items="[{id: '', name: 'Все'}].concat(deliveryTimeOfDayFilter)"
-                    item-text="name"
-                    item-value="id"
-                    v-model="filter.deliveryTimeOfDay"
-                    hide-details
-                    @change="customFilter()"
-                  ></v-select>
-                </v-flex>
-                <v-flex
-                  xs4
-                  class="pl-2"
-                >
-                  <v-menu
-                    :close-on-content-click="false"
-                    v-model="dataStartPicker"
-                    :nudge-right="40"
-                    lazy
-                    transition="scale-transition"
-                    offset-y
-                    full-width
-                    min-width="290px"
-                    class="mb-4"
-                  >
-                    <v-text-field
-                      slot="activator"
-                      label="Дата доставки (с)"
-                      v-model="filter.dateStart"
-                      prepend-icon="event"
-                      hide-details
-                      readonly
-                    ></v-text-field>
-                    <v-date-picker
-                      v-model="filter.dateStart"
-                      @input="dataStartPicker = false"
-                      no-title
-                      scrollable
-                      locale="ru-ru"
-                      first-day-of-week="1"
-                      :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                      @change="customFilter()"
-                    ></v-date-picker>
-                  </v-menu>
-                </v-flex>
-                <v-flex
-                  xs4
-                  class="pl-2"
-                >
-                  <v-menu
-                    :close-on-content-click="false"
-                    v-model="dataEndPicker"
-                    :nudge-right="40"
-                    lazy
-                    transition="scale-transition"
-                    offset-y
-                    full-width
-                    min-width="290px"
-                    class="mb-4"
-                  >
-                    <v-text-field
-                      slot="activator"
-                      label="Дата доставки (по)"
-                      v-model="filter.dateEnd"
-                      prepend-icon="event"
-                      hide-details
-                      readonly
-                    ></v-text-field>
-                    <v-date-picker
-                      v-model="filter.dateEnd"
-                      @input="dataEndPicker = false"
-                      no-title
-                      locale="ru-ru"
-                      scrollable
-                      first-day-of-week="1"
-                      :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                      @change="customFilter()"
-                    ></v-date-picker>
-                  </v-menu>
+                  Доставок на сегодня: {{ deliveryNow }}
+
+                  <v-btn
+                    color="primary"
+                    dark
+                    @click.prevent="changeSettings()"
+                  >Настройки</v-btn>
                 </v-flex>
               </v-layout>
-            </v-card-title>
 
-            <v-layout
-              row
-              wrap
-              align-center
-            >
-              <v-flex
-                xs12
-                class="px-1"
+              <v-data-table
+                :headers="headersTable"
+                :items="ordersList"
+                hide-actions
+                no-data-text="Заказов не найдено"
+                no-results-text="Заказов не найдено"
+                :pagination.sync="pagination"
+                class="orders-table"
+                item-key="id"
               >
-                Доставок на сегодня: {{ deliveryNow }}
-
-                <v-btn
-                  color="primary"
-                  dark
-                  @click.prevent="changeSettings()"
-                >Настройки</v-btn>
-              </v-flex>
-            </v-layout>
-
-            <v-data-table
-              :headers="headersTable"
-              :items="ordersList"
-              hide-actions
-              no-data-text="Заказов не найдено"
-              no-results-text="Заказов не найдено"
-              :pagination.sync="pagination"
-              class="orders-table"
-              item-key="id"
-            >
-              <template slot="headers" slot-scope="props">
-                <tr>
-                  <th
-                    v-for="header in props.headers"
-                    class="px-1 text-xs-left"
-                    :key="header.text"
-                    :class="[
-                      'column sortable', pagination.descending ? 'desc' : 'asc',
-                      header.value === pagination.sortBy ? 'active' : ''
-                    ]"
-                    :style="{
-                      width: `${header.width}px`,
-                      maxWidth: `${header.width}px`,
-                      minWidth: `${header.width}px`
-                    }"
-                    @click="changeSort(header.value)"
-                  >
-                    <v-icon small>arrow_upward</v-icon>
-                    {{ header.text }}
-                  </th>
-                </tr>
-              </template>
-              <template slot="items" slot-scope="props">
-                <tr
-                  :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
-                >
-                  <template v-for="(col, colIndex) in colsTable">
-                    <td
-                      class="px-1"
+                <template slot="headers" slot-scope="props">
+                  <tr>
+                    <th
+                      v-for="header in props.headers"
+                      class="px-1 text-xs-left"
+                      :key="header.text"
+                      :class="[
+                        'column sortable', pagination.descending ? 'desc' : 'asc',
+                        header.value === pagination.sortBy ? 'active' : ''
+                      ]"
                       :style="{
-                        width: `${col.width}px`,
-                        maxWidth: `${col.width}px`,
-                        minWidth: `${col.width}px`
+                        width: `${header.width}px`,
+                        maxWidth: `${header.width}px`,
+                        minWidth: `${header.width}px`
                       }"
-                      :key="`col-${colIndex}`"
+                      @click="changeSort(header.value)"
                     >
-                      <template v-for="(prop, propIndex) in col.dataFields">
-                        <div :key="`prop-${colIndex}-${propIndex}`">
-                          <template v-if="prop.displayName">
-                            {{ prop.displayName }}:
-                          </template>
-                          <template v-if="
-                            props.item[prop.field]
-                            || prop.field === 'incognito'
-                            || prop.field === 'description'
-                          ">
-                            <template v-if="prop.field === 'deliveryTimeOfDay'">
-                              {{ deliveryTimeOfDayList[props.item[prop.field]] }}
+                      <v-icon small>arrow_upward</v-icon>
+                      {{ header.text }}
+                    </th>
+                  </tr>
+                </template>
+                <template slot="items" slot-scope="props">
+                  <tr
+                    :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+                  >
+                    <template v-for="(col, colIndex) in colsTable">
+                      <td
+                        class="px-1"
+                        :style="{
+                          width: `${col.width}px`,
+                          maxWidth: `${col.width}px`,
+                          minWidth: `${col.width}px`
+                        }"
+                        :key="`col-${colIndex}`"
+                      >
+                        <template v-for="(prop, propIndex) in col.dataFields">
+                          <div :key="`prop-${colIndex}-${propIndex}`">
+                            <template v-if="prop.displayName">
+                              {{ prop.displayName }}:
                             </template>
-                            <template v-else-if="prop.field === 'createdBy'">
-                              {{ props.item[prop.field].name }}
-                            </template>
-                            <template v-else-if="prop.field === 'orderSourceType'">
-                              <template v-for="(item, index) in props.item[prop.field]">
-                                <template v-if="item">
-                                  <br :key="index" v-if="index">{{ item.name }}
+                            <template v-if="
+                              props.item[prop.field]
+                              || prop.field === 'incognito'
+                              || prop.field === 'description'
+                            ">
+                              <template v-if="prop.field === 'deliveryTimeOfDay'">
+                                {{ deliveryTimeOfDayList[props.item[prop.field]] }}
+                              </template>
+                              <template v-else-if="prop.field === 'createdBy'">
+                                {{ props.item[prop.field].name }}
+                              </template>
+                              <template v-else-if="prop.field === 'orderSourceType'">
+                                <template v-for="(item, index) in props.item[prop.field]">
+                                  <template v-if="item">
+                                    <br :key="index" v-if="index">{{ item.name }}
+                                  </template>
                                 </template>
                               </template>
-                            </template>
-                            <template v-else-if="prop.field === 'incognito'">
-                              {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
-                            </template>
-                            <template v-else-if="prop.field === 'description'">
-                              <div
-                                :style="
-                                  (!props.item[prop.field])
-                                  ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
-                                  : ''
-                                "
-                              >
+                              <template v-else-if="prop.field === 'incognito'">
+                                {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
+                              </template>
+                              <template v-else-if="prop.field === 'description'">
+                                <div
+                                  :style="
+                                    (!props.item[prop.field])
+                                    ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
+                                    : ''
+                                  "
+                                >
+                                  {{ props.item[prop.field] }}
+                                </div>
+                              </template>
+                              <template v-else-if="prop.field === 'bouquets'">
+                                <template v-for="(item, key) in props.item[prop.field]">
+                                  {{ item.name }} - {{ item.count }}
+                                  <br :key="key">
+                                </template>
+                              </template>
+                              <template v-else-if="prop.field === 'orderStatus'">
+                                <div style="display: inline">
+                                  {{ props.item[prop.field].name }}
+                                </div>
+                              </template>
+                              <template v-else-if="prop.field === 'deliveryType'">
+                                {{ props.item[prop.field].name }}
+                              </template>
+                              <template v-else-if="prop.field === 'deliveryDate'">
+                                {{ props.item[`${prop.field}Str`] }}
+                              </template>
+                              <template v-else-if="prop.field === 'courier'">
+                                {{ props.item[prop.field].name }}
+                              </template>
+                              <template v-else-if="prop.field === 'clientType'">
+                                {{ props.item[prop.field].name }}
+                              </template>
+                              <template v-else>
                                 {{ props.item[prop.field] }}
-                              </div>
-                            </template>
-                            <template v-else-if="prop.field === 'bouquets'">
-                              <template v-for="(item, key) in props.item[prop.field]">
-                                {{ item.name }} - {{ item.count }}
-                                <br :key="key">
                               </template>
                             </template>
-                            <template v-else-if="prop.field === 'orderStatus'">
-                              <div style="display: inline">
-                                {{ props.item[prop.field].name }}
-                              </div>
-                            </template>
-                            <template v-else-if="prop.field === 'deliveryType'">
-                              {{ props.item[prop.field].name }}
-                            </template>
-                            <template v-else-if="prop.field === 'deliveryDate'">
-                              {{ props.item[`${prop.field}Str`] }}
-                            </template>
-                            <template v-else-if="prop.field === 'courier'">
-                              {{ props.item[prop.field].name }}
-                            </template>
-                            <template v-else-if="prop.field === 'clientType'">
-                              {{ props.item[prop.field].name }}
-                            </template>
-                            <template v-else>
-                              {{ props.item[prop.field] }}
-                            </template>
-                          </template>
-                        </div>
-                      </template>
-                    </td>
-                  </template>
-                </tr>
-              </template>
-            </v-data-table>
-          </v-flex>
-          <v-flex
-            xs5
+                          </div>
+                        </template>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+              </v-data-table>
+            </v-flex>
+            <v-flex
+              xs5
+            >
+              <div style="position: relative; height: 100%; min-height: 600px; overflow: hidden;">
+                <yandex-map
+                  :coords="[53.05, 50.101783]"
+                  zoom="10"
+                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                  :controls="['trafficControl']"
+                  :placemarks="placemarks"
+                >
+                </yandex-map>
+              </div>
+            </v-flex>
+          </v-layout>
+        </v-card>
+      </template>
+    </div>
+    <div class="hidden-md-and-up">
+      <div>
+        <v-btn
+          exact
+          @click="setFilterProp('courier', 4)"
+          :color="(filter.courier !== '') ? 'info' : ''"
+          style="min-width: 90px;"
+        >
+          Мои
+        </v-btn>
+        <v-btn
+          exact
+          @click="setFilterProp('courier', '')"
+          :color="(filter.courier === '') ? 'info' : ''"
+          style="min-width: 90px;"
+        >
+          Все
+        </v-btn>
+        <v-btn
+          @click="logout()"
+          exact
+          style="min-width: 90px;"
+        >
+          Выход
+        </v-btn>
+      </div>
+      <div>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryTimeOfDay', 1)"
+          :color="(filter.deliveryTimeOfDay === 1) ? 'info' : ''"
+          class="px-1"
+          style="min-width: 64px;"
+        >
+          Утро
+        </v-btn>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryTimeOfDay', 2)"
+          :color="(filter.deliveryTimeOfDay === 2) ? 'info' : ''"
+          class="px-1"
+          style="min-width: 64px;"
+        >
+          День
+        </v-btn>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryTimeOfDay', 3)"
+          :color="(filter.deliveryTimeOfDay === 3) ? 'info' : ''"
+          class="px-1"
+          style="min-width: 64px;"
+        >
+          Вечер
+        </v-btn>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryTimeOfDay', '')"
+          :color="(filter.deliveryTimeOfDay === '') ? 'info' : ''"
+          class="px-1"
+          style="min-width: 64px;"
+        >
+          Все
+        </v-btn>
+      </div>
+      <v-data-table
+        :headers="headersTableMobile"
+        :items="ordersList"
+        hide-actions
+        no-data-text="Заказов не найдено"
+        no-results-text="Заказов не найдено"
+        :pagination.sync="pagination"
+        class="orders-table"
+        item-key="id"
+      >
+        <template slot="headers" slot-scope="props">
+          <tr>
+            <th
+              v-for="header in props.headers"
+              class="px-1 text-xs-left"
+              :key="header.text"
+              :class="[
+                'column sortable', pagination.descending ? 'desc' : 'asc',
+                header.value === pagination.sortBy ? 'active' : ''
+              ]"
+              :style="{
+                width: `${header.width}px`,
+                maxWidth: `${header.width}px`,
+                minWidth: `${header.width}px`
+              }"
+              @click="changeSort(header.value)"
+            >
+              <v-icon small>arrow_upward</v-icon>
+              {{ header.text }}
+            </th>
+          </tr>
+        </template>
+        <template slot="items" slot-scope="props">
+          <tr
+            :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+            @click.prevent="viewOrder(props.item.id)"
           >
-            <div style="position: relative; height: 100%; min-height: 600px; overflow: hidden;">
-              <yandex-map
-                :coords="[53.05, 50.101783]"
-                zoom="10"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                :controls="['trafficControl']"
-                :placemarks="placemarks"
-              >
-              </yandex-map>
-            </div>
-          </v-flex>
-        </v-layout>
-      </v-card>
-    </template>
+            <td class="px-1">
+              {{ props.item.id }}
+            </td>
+            <td class="px-1">
+              {{ props.item.address }},
+              кв. {{ props.item.flat }},
+              подъезд {{ props.item.entrance }},
+              этаж {{ props.item.floor }},
+            </td>
+            <td class="px-1">
+              {{ props.item.deliveryTime }}
+              <br>{{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }}
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
+    </div>
   </v-container>
 </template>
 
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import userSettings from './userSettings.vue';
+import orderShow from './showOrder.vue';
 
 export default {
   name: 'Deliveries',
@@ -312,6 +438,7 @@ export default {
     yandexMap,
     ymapMarker,
     userSettings,
+    orderShow,
   },
   data() {
     return {
@@ -320,6 +447,7 @@ export default {
         deliveryTimeOfDay: '',
         dateStart: null,
         dateEnd: null,
+        courier: '',
       },
       loadingData: [
         {
@@ -338,6 +466,7 @@ export default {
       typeClient: [],
       dialogForm: false,
       editSettings: false,
+      showOrder: false,
       dataNowStr: '',
       deliveryNow: 0,
       deliveryTimeOfDayList: {
@@ -363,6 +492,21 @@ export default {
           id: 3,
         },
       ],
+      headersTableMobile: [
+        {
+          text: '№',
+          value: 'id',
+        },
+        {
+          text: 'Адрес',
+          value: 'address',
+        },
+        {
+          text: 'Время',
+          value: 'deliveryTime',
+        },
+      ],
+      orderSelect: {},
     };
   },
   watch: {
@@ -508,8 +652,8 @@ export default {
             elem.deliveryDateStr = date.toLocaleString('ru', {
               day: 'numeric',
               month: 'numeric',
-              // year: 'numeric',
-              weekday: 'long',
+              year: 'numeric',
+              // weekday: 'long',
             });
           }
 
@@ -612,10 +756,18 @@ export default {
       this.dialogForm = false;
       setTimeout(() => {
         this.editSettings = false;
+        this.showOrder = false;
+        this.orderSelect = {};
+        console.log(123);
       }, 300);
     },
     changeSettings() {
       this.editSettings = true;
+      this.dialogForm = true;
+    },
+    viewOrder(id) {
+      this.orderSelect = this.ordersList.find(item => item.id === id);
+      this.showOrder = true;
       this.dialogForm = true;
     },
     changeSort(column) {
@@ -634,6 +786,15 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         console.log(response);
       });
+    },
+    logout() {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      });
+    },
+    setFilterProp(code, value) {
+      this.filter[code] = value;
+      this.customFilter();
     },
   },
   mounted() {
@@ -654,7 +815,7 @@ export default {
     this.getClientsList();
     this.getClientTypeList();
 
-    this.getDeliveries();
+    // this.getDeliveries();
   },
 };
 </script>

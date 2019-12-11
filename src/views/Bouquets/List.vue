@@ -82,25 +82,33 @@
               <br>{{ props.item.payments[props.item.payments.length - 1].creationDate }}
               <br>{{ props.item.payments[props.item.payments.length - 1].paymentType.name }}
             </td>
-            <td class="text-xs-right" style="width: 140px;">
-              <v-icon
-                @click="printDoc(props.item.id)"
+            <td class="text-xs-right" style="width: 160px;">
+              <v-btn
+                flat
+                icon
+                :to="`/print/bouquet/receipt/${props.item.id}/`"
+                target="_blank"
+                class="mx-0"
               >
-                insert_drive_file
-              </v-icon>
-              <v-icon
+                <v-icon>insert_drive_file</v-icon>
+              </v-btn>
+              <v-btn
+                flat
+                icon
                 @click="editItem(props.item.id)"
-                class="ml-2"
+                class="mx-0"
               >
-                visibility
-              </v-icon>
-              <v-icon
+                <v-icon>visibility</v-icon>
+              </v-btn>
+              <v-btn
+                flat
+                icon
                 @click="cancelItem(props.item.id)"
-                class="ml-2"
                 v-if="props.item.payments.every(item => item.paymentType.id !== 7)"
+                class="mx-0"
               >
-                delete
-              </v-icon>
+                <v-icon>delete</v-icon>
+              </v-btn>
             </td>
           </template>
         </v-data-table>

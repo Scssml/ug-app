@@ -53,6 +53,8 @@ export default {
         const { login, password } = this;
         this.$store.dispatch('login', { login, password }).then(() => {
           this.$router.push('/');
+        }).catch(() => {
+          this.$router.push('/deliveries/');
         });
       }
     },

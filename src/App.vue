@@ -5,6 +5,7 @@
       color="blue-grey lighten-4"
       height="42px"
       v-if="!$route.meta.pagePrint"
+      class="hidden-sm-and-down"
     >
       <v-toolbar-items>
         <template
@@ -40,6 +41,7 @@
       color="blue-grey darken-3"
       dark
       v-if="!$route.meta.pagePrint"
+      class="hidden-sm-and-down"
     >
       <v-layout
         justify-center
@@ -135,4 +137,7 @@ export default {
   @media print
     .print-btn { display: none; }
     .print-hidden { display: none; }
+
+  @media (max-width: 959px)
+    main.v-content { padding: 0 !important; }
 </style>

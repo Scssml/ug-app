@@ -23,12 +23,14 @@ export default new Vuex.Store({
     authToken: '',
     authStatus: '',
     authUserGroup: {},
+    couriersGps: [],
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
     authStatus: state => state.authStatus,
     getAuthUser: state => state.authUser,
     getAuthUserGroup: state => state.authUserGroup,
+    getCouriersGps: state => state.couriersGps,
   },
   mutations: {
     authRequest: (state) => {
@@ -48,6 +50,9 @@ export default new Vuex.Store({
       state.authToken = '';
       state.authUser = 0;
       state.authUserGroup = {};
+    },
+    setCouriersGps: (state, couriersGpsList) => {
+      state.couriersGps = couriersGpsList;
     },
   },
   actions: {
@@ -222,6 +227,24 @@ export default new Vuex.Store({
           {
             data: item.props,
           },
+        ).then(() => {
+          resolve();
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
+          rejected();
+        });
+      });
+    },
+
+    courierDelivered({ dispatch }, item) {
+      const url = `http://192.168.4.161:3001/${item.type}/${item.id}`;
+      return new Promise((resolve, rejected) => {
+        axios.put(
+          url,
+          item.props,
         ).then(() => {
           resolve();
         }).catch((error) => {

@@ -293,12 +293,33 @@
             >
               <div style="position: relative; height: 100%; min-height: 600px; overflow: hidden;">
                 <yandex-map
-                  :coords="[53.05, 50.101783]"
+                  :coords="coordsMap"
                   zoom="10"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
                   :controls="['trafficControl']"
-                  :placemarks="placemarks"
                 >
+                  <template v-for="(courier, index) in couriersGpsList">
+                    <ymap-marker
+                      :key="`courier-${index}`"
+                      :marker-id="`courier-${courier.id}`"
+                      marker-type="placemark"
+                      :coords="[courier.gps.y, courier.gps.x]"
+                      :hint-content="courier.name"
+                      :icon="{color: 'green', glyph: 'circle'}"
+                    ></ymap-marker>
+                  </template>
+
+                  <template v-for="(item, index) in placemarks">
+                    <ymap-marker
+                      :key="`order-${index}`"
+                      :marker-id="`order-${item.id}`"
+                      marker-type="placemark"
+                      :coords="item.coords"
+                      :balloon="item.balloon"
+                      :icon="{color: 'blue'}"
+                      :cluster-name="item.clusterName"
+                    ></ymap-marker>
+                  </template>
                 </yandex-map>
               </div>
             </v-flex>
@@ -443,7 +464,7 @@ export default {
   data() {
     return {
       filter: {
-        orderStatus: [1, 2, 3, 4, 7],
+        orderStatus: [1, 2, 3, 7],
         deliveryTimeOfDay: '',
         dateStart: null,
         dateEnd: null,
@@ -507,6 +528,7 @@ export default {
         },
       ],
       orderSelect: {},
+      coordsMap: [53.05, 50.101783],
     };
   },
   watch: {
@@ -517,27 +539,26 @@ export default {
     },
   },
   computed: {
+    couriersGpsList() {
+      return this.$store.getters.getCouriersGps;
+    },
     placemarks() {
       const placemarks = [];
 
       this.ordersList.forEach((item) => {
         if (item.coordinates.length === 2) {
           placemarks.push({
+            id: item.id,
             coords: item.coordinates,
-            properties: {
-              // balloonContent: `${item.deliveryDate},
-              //   ${item.deliveryTime}
-              //   (${this.deliveryTimeOfDayList[+item.deliveryTimeOfDay]})
-              //   <br>${item.address}
-              // `,
-              balloonContentHeader: `${item.deliveryDate},
+            balloon: {
+              header: `${item.deliveryDate},
                 ${item.deliveryTime}
                 (${this.deliveryTimeOfDayList[+item.deliveryTimeOfDay]})
               `,
-              balloonContentBody: `${item.address}`,
+              body: `${item.address}`,
+              footer: '',
             },
-            options: {},
-            clusterName: '1',
+            clusterName: 'orders',
           });
         }
       });
@@ -795,6 +816,10 @@ export default {
     setFilterProp(code, value) {
       this.filter[code] = value;
       this.customFilter();
+    },
+    setCoordsMap(e) {
+      console.log(e);
+      //this.coordsMap = e.get('coords');
     },
   },
   mounted() {

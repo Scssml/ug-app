@@ -59,6 +59,8 @@
 </template>
 
 <script>
+import io from 'socket.io-client';
+
 export default {
   name: 'App',
   data() {
@@ -124,6 +126,14 @@ export default {
 
     }).catch(() => {
       this.$router.push('/login');
+    });
+
+    const socket = io('http://192.168.4.161:3003', {
+      transports: ['websocket'],
+    });
+
+    socket.on('DEVICE_UPDATE', (devices) => {
+      this.$store.commit('setCouriersGps', devices);
     });
   },
 };

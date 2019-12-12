@@ -473,12 +473,22 @@
           >
             <div style="position: relative; height: 100%; overflow: hidden;">
               <yandex-map
-                :coords="[53.05, 50.101783]"
+                :coords="coordsMap"
                 zoom="10"
                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
                 :controls="['trafficControl']"
-                :placemarks="placemarks"
               >
+                <template v-for="(item, index) in placemarks">
+                  <ymap-marker
+                    :key="`order-${index}`"
+                    :marker-id="`order-${item.id}`"
+                    marker-type="placemark"
+                    :coords="item.coords"
+                    :balloon="item.balloon"
+                    :icon="{color: 'blue'}"
+                    :cluster-name="item.clusterName"
+                  ></ymap-marker>
+                </template>
               </yandex-map>
             </div>
           </v-flex>
@@ -640,6 +650,7 @@ export default {
           id: 3,
         },
       ],
+      coordsMap: [53.05, 50.101783],
     };
   },
   computed: {
@@ -649,16 +660,17 @@ export default {
       this.ordersList.forEach((item) => {
         if (item.coordinates.length === 2) {
           placemarks.push({
+            id: item.id,
             coords: item.coordinates,
-            properties: {
-              balloonContent: `${item.deliveryDate},
+            balloon: {
+              header: `${item.deliveryDate},
                 ${item.deliveryTime}
                 (${this.deliveryTimeOfDayList.find(elem => elem.id === +item.deliveryTimeOfDay).name})
-                <br>${item.address}
               `,
+              body: `${item.address}`,
+              footer: '',
             },
-            options: {},
-            clusterName: '1',
+            clusterName: 'orders',
           });
         }
       });

@@ -16,6 +16,17 @@
         подъезд {{ order.entrance }},
         этаж {{ order.floor }}
       </p>
+
+      <v-alert
+        :value="deliveredSuccess"
+        type="success"
+        class="my-0"
+      >Статус заказа изменен</v-alert>
+      <v-alert
+        :value="deliveredError"
+        type="error"
+        class="my-0"
+      >Ошибка</v-alert>
       <v-form
         ref="form"
         lazy-validation
@@ -23,7 +34,6 @@
         <h3 class="mb-0 mt-4 text-xs-center">Комментарий</h3>
         <v-textarea
           label="Комментарий"
-          :rules="[v => !!v || 'Заполните поле']"
           auto-grow
           v-model="comment"
           row-height="24"
@@ -42,7 +52,7 @@
       <v-btn
         color="info"
         @click="submitForm"
-      >Сохранить</v-btn>
+      >Доставил</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -58,13 +68,28 @@ export default {
   data() {
     return {
       comment: '',
+      deliveredSuccess: false,
+      deliveredError: false,
     };
   },
   methods: {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        console.log('success');
+        this.deliveredSuccess = false;
+        this.deliveredError = false;
+
+        const itemParams = {
+          type: 'api/orders',
+          id: this.order.id,
+          props: {},
+        };
+
+        this.$store.dispatch('courierDelivered', itemParams).then(() => {
+          this.deliveredSuccess = true;
+        }).catch(() => {
+          this.deliveredError = true;
+        });
       }
     },
     cancel() {

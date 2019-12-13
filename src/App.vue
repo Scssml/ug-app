@@ -128,12 +128,27 @@ export default {
       this.$router.push('/login');
     });
 
-    const socket = io('http://192.168.4.161:3003', {
+    const socketCouriersGps = io('http://192.168.4.54:3003', {
       transports: ['websocket'],
     });
 
-    socket.on('DEVICE_UPDATE', (devices) => {
+    socketCouriersGps.on('DEVICE_UPDATE', (devices) => {
+      console.log(devices);
       this.$store.commit('setCouriersGps', devices);
+    });
+
+    const socketOrders = io('http://192.168.4.161:3000', {
+      transports: ['websocket'],
+    });
+
+    socketOrders.on('update_order', (order) => {
+      console.log(order);
+      // this.$store.commit('setCouriersGps', order);
+    });
+
+    socketOrders.on('new_order', (order) => {
+      console.log(order);
+      // this.$store.commit('setCouriersGps', order);
     });
   },
 };

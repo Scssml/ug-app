@@ -65,7 +65,21 @@
                   wrap
                 >
                   <v-flex
-                    xs4
+                    xs3
+                    class="px-2"
+                  >
+                    <v-select
+                      label="Курьер"
+                      :items="[{id: '', name: 'Все'}].concat(couriersList)"
+                      item-text="name"
+                      item-value="id"
+                      v-model="filter.courier"
+                      hide-details
+                      @change="customFilter()"
+                    ></v-select>
+                  </v-flex>
+                  <v-flex
+                    xs3
                     class="px-2"
                   >
                     <v-select
@@ -79,7 +93,7 @@
                     ></v-select>
                   </v-flex>
                   <v-flex
-                    xs4
+                    xs3
                     class="pl-2"
                   >
                     <v-menu
@@ -114,7 +128,7 @@
                     </v-menu>
                   </v-flex>
                   <v-flex
-                    xs4
+                    xs3
                     class="pl-2"
                   >
                     <v-menu
@@ -160,7 +174,7 @@
                   xs12
                   class="px-1"
                 >
-                  Доставок на сегодня: {{ deliveryNow }}
+                  Доставок: {{ ordersList.length }}
 
                   <v-btn
                     color="primary"
@@ -304,8 +318,7 @@
                       :marker-id="`courier-${courier.id}`"
                       marker-type="placemark"
                       :coords="[courier.gps.y, courier.gps.x]"
-                      :hint-content="courier.name"
-                      :icon="{color: 'green', glyph: 'circle'}"
+                      :icon="{color: 'green', content: courier.name}"
                     ></ymap-marker>
                   </template>
 
@@ -483,13 +496,13 @@ export default {
       dataEndPicker: false,
       ordersList: [],
       statusList: [],
-      clientsList: [],
-      typeClient: [],
+      // clientsList: [],
+      couriersList: [],
+      // typeClient: [],
       dialogForm: false,
       editSettings: false,
       showOrder: false,
       dataNowStr: '',
-      deliveryNow: 0,
       deliveryTimeOfDayList: {
         1: 'Утро',
         2: 'День',
@@ -700,33 +713,50 @@ export default {
         loadData.title = successData;
         loadData.loading = false;
 
-        this.getDeliveryNow();
+        // this.getDeliveryNow();
       }).catch(() => {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = errorData;
         loadData.error = true;
       });
     },
-    getDeliveryNow() {
-      const orderFilter = {
-        deliveryDate: [this.dateNowStr, this.dateNowStr],
-        deliveryType: 2,
-      };
-
+    getCouriersList() {
       const itemParams = {
-        type: 'orders',
-        sort: {
-          deliveryDate: 'desc',
+        type: 'couriers',
+        filter: {
+          isActive: true,
         },
-        filter: orderFilter,
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.deliveryNow = response.orders.length;
+        this.couriersList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
       }).catch(() => {
         console.log('error');
       });
     },
+    // getDeliveryNow() {
+    //   const orderFilter = {
+    //     deliveryDate: [this.dateNowStr, this.dateNowStr],
+    //     deliveryType: 2,
+    //   };
+
+    //   const itemParams = {
+    //     type: 'orders',
+    //     sort: {
+    //       deliveryDate: 'desc',
+    //     },
+    //     filter: orderFilter,
+    //   };
+
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.deliveryNow = response.orders.length;
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     getStatusList() {
       const itemParams = {
         type: 'order-status',
@@ -741,37 +771,37 @@ export default {
         console.log('error');
       });
     },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-        },
-      };
+    // getClientsList() {
+    //   const itemParams = {
+    //     type: 'clients',
+    //     filter: {
+    //       active: true,
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: 'client-type',
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.clientsList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getClientTypeList() {
+    //   const itemParams = {
+    //     type: 'client-type',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.typeClient = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.typeClient = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     closeDialog() {
       this.getOrdersList();
       this.dialogForm = false;
@@ -817,9 +847,8 @@ export default {
       this.filter[code] = value;
       this.customFilter();
     },
-    setCoordsMap(e) {
-      console.log(e);
-      //this.coordsMap = e.get('coords');
+    setCoordsMap() {
+      // this.coordsMap = e.get('coords');
     },
   },
   mounted() {
@@ -837,8 +866,9 @@ export default {
 
     this.getOrdersList();
     this.getStatusList();
-    this.getClientsList();
-    this.getClientTypeList();
+    this.getCouriersList();
+    // this.getClientsList();
+    // this.getClientTypeList();
 
     // this.getDeliveries();
   },

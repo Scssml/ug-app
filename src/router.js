@@ -9,11 +9,9 @@ const ifNotAuthenticated = (to, from, next) => {
   }
 
   const userGroup = store.getters.getAuthUserGroup;
-  if (userGroup) {
-    if (userGroup.code === 'admin' || userGroup.code === 'manager') {
-      next('/');
-      return;
-    }
+  if (userGroup.code === 'admin' || userGroup.code === 'manager') {
+    next('/');
+    return;
   }
   next('/deliveries/');
 };
@@ -29,12 +27,11 @@ const ifAuthenticated = (to, from, next) => {
 const ifManager = (to, from, next) => {
   if (store.getters.isAuthenticated) {
     const userGroup = store.getters.getAuthUserGroup;
-    if (userGroup) {
-      if (userGroup.code === 'admin' || userGroup.code === 'manager') {
-        next();
-        return;
-      }
-    } else {
+    if (userGroup.code === 'admin' || userGroup.code === 'manager') {
+      next();
+      return;
+    }
+    if (userGroup.code === 'courier') {
       next('/deliveries/');
       return;
     }

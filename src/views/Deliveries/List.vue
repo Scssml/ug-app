@@ -199,7 +199,7 @@
                     <th
                       v-for="header in props.headers"
                       class="px-1 text-xs-left"
-                      :key="header.text"
+                      :key="header.deliveryDate"
                       :class="[
                         'column sortable', pagination.descending ? 'desc' : 'asc',
                         header.value === pagination.sortBy ? 'active' : ''
@@ -344,7 +344,7 @@
       <div>
         <v-btn
           exact
-          @click="setFilterProp('courier', 4)"
+          @click="setFilterProp('courier', $store.getters.getAuthUser)"
           :color="(filter.courier !== '') ? 'info' : ''"
           style="min-width: 90px;"
         >
@@ -482,6 +482,7 @@ export default {
         dateStart: null,
         dateEnd: null,
         courier: '',
+        deliveryType: 2,
       },
       loadingData: [
         {
@@ -612,9 +613,6 @@ export default {
 
       return cols;
     },
-    printOrdersIds() {
-      return this.selectedOrders.map(item => item.id);
-    },
   },
   methods: {
     customFilter() {
@@ -722,9 +720,10 @@ export default {
     },
     getCouriersList() {
       const itemParams = {
-        type: 'couriers',
+        type: 'users',
         filter: {
           isActive: true,
+          group: 4,
         },
       };
 

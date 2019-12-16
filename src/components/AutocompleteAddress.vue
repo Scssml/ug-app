@@ -32,6 +32,11 @@ export default {
       bounds: null,
     };
   },
+  watch: {
+    value: function(val, oldVal) {
+      this.address = (val.length > 0) ? val : '';
+    },
+  },
   methods: {
     setPrefix(value) {
       // const address = value.replace('г. Самара, ', '');

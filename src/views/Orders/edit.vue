@@ -928,9 +928,10 @@ export default {
     },
     getCouriersList() {
       const itemParams = {
-        type: 'couriers',
+        type: 'users',
         filter: {
           isActive: true,
+          group: 4,
         },
       };
 

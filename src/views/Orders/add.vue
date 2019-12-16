@@ -597,10 +597,19 @@ export default {
         if (findClient.type !== undefined) {
           this.editedItem.clientType = findClient.type;
         }
+
+        this.editedItem.address = findClient.address;
+        this.editedItem.entrance = findClient.entrance;
+        this.editedItem.flat = findClient.flat;
+        this.editedItem.floor = findClient.floor;
       } else {
         this.editedItem.clientName = '';
         this.editedItem.clientPhone = '';
         this.editedItem.clientType = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setDataAddressee() {
@@ -610,17 +619,10 @@ export default {
       if (findClient !== undefined) {
         this.editedItem.addresseeName = findClient.name;
         this.editedItem.addresseePhone = findClient.phone;
-        this.editedItem.address = findClient.address;
-        this.editedItem.entrance = findClient.entrance;
-        this.editedItem.flat = findClient.flat;
-        this.editedItem.floor = findClient.floor;
+
       } else {
         this.editedItem.addresseeName = '';
         this.editedItem.addresseePhone = '';
-        this.editedItem.address = '';
-        this.editedItem.entrance = '';
-        this.editedItem.flat = '';
-        this.editedItem.floor = '';
       }
     },
     updateAddress(data) {
@@ -715,9 +717,10 @@ export default {
     },
     getCouriersList() {
       const itemParams = {
-        type: 'couriers',
+        type: 'users',
         filter: {
           isActive: true,
+          group: 4,
         },
       };
 
@@ -791,6 +794,10 @@ export default {
           phone: this.editedItem.clientPhone,
           isActive: true,
           type: this.editedItem.clientType,
+          address: this.editedItem.address,
+          entrance: this.editedItem.entrance,
+          flat: this.editedItem.flat,
+          floor: this.editedItem.floor,
         },
       };
 

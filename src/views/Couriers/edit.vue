@@ -23,6 +23,11 @@
           :rules="[v => !!v || 'Заполните поле']"
           v-model="editedItem.name"
         ></v-text-field>
+        <v-text-field
+          label="Логин"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model="editedItem.login"
+        ></v-text-field>
         <v-checkbox
           label="Активность"
           v-model="editedItem.isActive"
@@ -63,12 +68,13 @@ export default {
     getItem() {
       if (this.id) {
         const itemParams = {
-          type: 'couriers',
+          type: 'users',
           id: this.id,
         };
 
         this.$store.dispatch('getItem', itemParams).then((response) => {
           this.editedItem = response;
+          this.editedItem.group = +response.group.id;
         }).catch(() => {
           console.log('error');
         });
@@ -86,7 +92,7 @@ export default {
         delete propsItem.id;
 
         const itemParams = {
-          type: 'couriers',
+          type: 'users',
           id: this.id,
           props: propsItem,
         };

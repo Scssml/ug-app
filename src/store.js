@@ -56,11 +56,11 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    login({ state, commit, dispatch }, user) {
+    login({ state, commit }, user) {
       return new Promise((resolve, rejected) => {
         commit('authRequest');
         axios.post(
-          `${state.apiUrl}login`,
+          `${state.apiUrl}login/new`,
           user,
           {
             headers: {
@@ -68,26 +68,17 @@ export default new Vuex.Store({
             },
           },
         ).then((response) => {
-          const token = response.data;
+          const token = response.data.jwtToken;
+          const { id, group } = response.data.userInfo;
           localStorage.setItem('user-token', token);
           axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-          const itemParams = {
-            type: 'users',
-            filter: {
-              login: user.login,
-            },
-          };
+          localStorage.setItem('user-id', id);
+          localStorage.setItem('user-group', JSON.stringify(group));
 
-          dispatch('getItemsList', itemParams).then((users) => {
-            const { id, group } = users[0];
-            localStorage.setItem('user-id', id);
-            localStorage.setItem('user-group', JSON.stringify(group));
-            commit('authSuccess', { token, id, group });
-            resolve(response);
-          }).catch((error) => {
-            console.log(error);
-          });
+          commit('authSuccess', { token, id, group });
+
+          resolve(response);
         }).catch((error) => {
           commit('authError', error);
           localStorage.removeItem('user-token');
@@ -240,7 +231,7 @@ export default new Vuex.Store({
     },
 
     courierDelivered({ dispatch }, item) {
-      const url = `http://192.168.4.54:3001/${item.type}/${item.id}`;
+      const url = `http://192.168.4.161:3001/${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
         axios.put(
           url,

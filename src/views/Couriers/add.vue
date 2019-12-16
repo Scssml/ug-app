@@ -23,6 +23,17 @@
           :rules="[v => !!v || 'Заполните поле']"
           v-model="editedItem.name"
         ></v-text-field>
+        <v-text-field
+          label="Логин"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model="editedItem.login"
+        ></v-text-field>
+        <v-text-field
+          label="Пароль"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model="editedItem.password"
+          type="password"
+        ></v-text-field>
         <v-checkbox
           label="Активность"
           v-model="editedItem.isActive"
@@ -52,6 +63,10 @@ export default {
       editedItem: {
         name: '',
         isActive: true,
+        login: '',
+        group: 4,
+        password: '',
+        settings: {},
       },
       createdSuccess: false,
     };
@@ -69,7 +84,7 @@ export default {
         delete propsItem.id;
 
         const itemParams = {
-          type: 'couriers',
+          type: 'users',
           props: propsItem,
         };
 

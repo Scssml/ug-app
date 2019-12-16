@@ -133,7 +133,6 @@ export default {
     });
 
     socketCouriersGps.on('DEVICE_UPDATE', (devices) => {
-      console.log(devices);
       this.$store.commit('setCouriersGps', devices);
     });
 

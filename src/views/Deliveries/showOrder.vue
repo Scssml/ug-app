@@ -82,11 +82,16 @@ export default {
         const itemParams = {
           type: 'api/orders',
           id: this.order.id,
-          props: {},
+          props: {
+            comment: this.comment,
+          },
         };
 
         this.$store.dispatch('courierDelivered', itemParams).then(() => {
           this.deliveredSuccess = true;
+          setTimeout(() => {
+            this.$emit('cancel');
+          }, 1000);
         }).catch(() => {
           this.deliveredError = true;
         });

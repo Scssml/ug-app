@@ -151,7 +151,10 @@ export default {
   methods: {
     getCouriersList: function getCouriersList() {
       const itemParams = {
-        type: 'couriers',
+        type: 'users',
+        filter: {
+          group: 4,
+        },
       };
 
       const successData = 'Курьеры получены!';
@@ -160,11 +163,11 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.couriersList = response;
 
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        const loadData = this.loadingData.find(item => item.id === 'couriers');
         loadData.title = successData;
         loadData.loading = false;
       }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
+        const loadData = this.loadingData.find(item => item.id === 'couriers');
         loadData.title = errorData;
         loadData.error = true;
       });

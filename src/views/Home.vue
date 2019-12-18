@@ -388,7 +388,7 @@ export default {
     typePayList() {
       const checkClients = this.checkCardList.some((item) => {
         const card = this.cardsList[item.index];
-        return card.props.clientId === 7;
+        return card.props.clientId === 0;
       });
 
       return this.paymentTypesList.filter((item) => {

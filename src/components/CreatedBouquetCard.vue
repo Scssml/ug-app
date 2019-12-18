@@ -346,24 +346,24 @@
               label="К оплате"
               readonly
               :value="sumPay"
-              v-if="orderBouquet !== null"
+              v-if="sumFlowers > 0"
             ></v-text-field>
             <v-text-field
               label="К оплате"
               v-model.number="sumPayCustom"
-              v-if="orderBouquet === null"
+              v-if="sumFlowers === 0"
             ></v-text-field>
             <v-text-field
               label="Сумма"
               :rules="[v => (v >= sumPay || typePay === 5) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="orderBouquet !== null"
+              v-if="sumFlowers > 0"
             ></v-text-field>
             <v-text-field
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="orderBouquet !== null"
+              v-if="sumFlowers > 0"
             ></v-text-field>
             <v-select
               label="Способ оплаты"
@@ -448,7 +448,7 @@ export default {
       sumPayCustom: 0,
       createdSuccess: false,
       florist: 0,
-      client: 7,
+      client: 0,
       order: 0,
       decorPercent: 10,
       delivery: 0,
@@ -487,7 +487,7 @@ export default {
 
         if (item.id === 7) {
           show = false;
-        } else if (item.id === 5 && this.client === 7) {
+        } else if (item.id === 5 && this.client === 0) {
           show = false;
         }
 
@@ -535,8 +535,8 @@ export default {
       if (client) {
         if (this.clientSaleCustom !== '') {
           salePersent = this.clientSaleCustom;
-        } else if (client !== 7 && client.sale > 0) {
-          salePersent = client.sale;
+        } else if (client !== 0 && client.discountPercent > 0) {
+          salePersent = client.discountPercent;
         } else if ((this.sumFlowers + this.sumDecor) >= 3000) {
           salePersent = 5;
         } else {
@@ -626,7 +626,7 @@ export default {
         };
 
         // if (this.typePay === 5) {
-        if (this.orderBouquet === null) {
+        if (this.sumFlowers === 0) {
           props.payment.amount = this.sumPayCustom;
         }
 

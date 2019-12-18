@@ -105,7 +105,7 @@
             </td>
             <td>{{ props.item.birthDay }}</td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
-            <td class="text-xs-right">{{ props.item.sale }}</td>
+            <td class="text-xs-right">{{ props.item.discountPercent }}</td>
             <td class="text-xs-right">
               {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>

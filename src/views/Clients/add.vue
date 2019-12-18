@@ -94,7 +94,7 @@
         ></v-text-field>
         <v-text-field
           label="Скидка"
-          v-model.number="editedItem.sale"
+          v-model.number="editedItem.discountPercent"
           type="number"
         ></v-text-field>
         <v-checkbox
@@ -128,7 +128,7 @@ export default {
         name: '',
         birthDay: '',
         bill: 0,
-        sale: 0,
+        discountPercent: 0,
         phone: '',
         isActive: true,
         type: 0,

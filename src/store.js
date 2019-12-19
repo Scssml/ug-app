@@ -146,7 +146,23 @@ export default new Vuex.Store({
           }
         }
 
-        axios.get(url + filterQuery + sortQuery).then((response) => {
+        let takeQuery = '';
+        if (item.take !== undefined) {
+          takeQuery = `&take=${item.take}`;
+        }
+
+        let skipQuery = '';
+        if (item.skip !== undefined) {
+          skipQuery = `&skip=${item.skip}`;
+        }
+
+        let fullQuery = '';
+        fullQuery += filterQuery;
+        fullQuery += sortQuery;
+        fullQuery += takeQuery;
+        fullQuery += skipQuery;
+
+        axios.get(url + fullQuery).then((response) => {
           const elemList = response.data;
           resolve(elemList);
         }).catch((error) => {
@@ -161,7 +177,6 @@ export default new Vuex.Store({
     getItem({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}/${item.id}`;
-        console.log(item.data);
         axios.get(url, {
           params: item.params,
         }).then((response) => {

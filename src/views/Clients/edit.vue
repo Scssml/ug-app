@@ -68,9 +68,9 @@
             slot="activator"
             label="День рождения"
             v-model="editedItem.birthDay"
+            :rules="[v => !!v || 'Заполните поле']"
             prepend-icon="event"
             hide-details
-            :rules="[v => !!v || 'Заполните поле']"
             readonly
           ></v-text-field>
           <v-date-picker
@@ -162,6 +162,8 @@ export default {
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
+
+        propsItem.sale = propsItem.discountPercent;
 
         const itemParams = {
           type: 'clients',

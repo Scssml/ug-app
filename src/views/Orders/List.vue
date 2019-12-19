@@ -291,6 +291,7 @@
           select-all
           v-model="selectedOrders"
           item-key="id"
+          :loading="tableLoading"
         >
           <template slot="headers" slot-scope="props">
             <tr>
@@ -625,6 +626,26 @@
             </tr>
           </template>
         </v-data-table>
+        <div class="text-xs-right py-2">
+          <v-btn
+            small
+            color="info"
+            class="mx-3"
+            :disabled="page === 0"
+            @click="prevPage()"
+          >
+            <v-icon dark>keyboard_arrow_left</v-icon>
+          </v-btn>
+          <v-btn
+            small
+            color="info"
+            class="mx-3"
+            :disabled="ordersList.length < take"
+            @click="nextPage()"
+          >
+            <v-icon dark>keyboard_arrow_right</v-icon>
+          </v-btn>
+        </div>
       </v-card>
       <v-btn
         fab
@@ -713,6 +734,9 @@ export default {
           id: 3,
         },
       ],
+      take: 20,
+      page: 0,
+      tableLoading: false,
     };
   },
   watch: {
@@ -835,6 +859,16 @@ export default {
       // });
 
       // return itemsFind;
+      this.page = 0;
+
+      this.getOrdersList();
+    },
+    prevPage() {
+      this.page -= 1;
+      this.getOrdersList();
+    },
+    nextPage() {
+      this.page += 1;
       this.getOrdersList();
     },
     clientsFilter(item, queryText) {
@@ -846,6 +880,9 @@ export default {
         textTwo.indexOf(searchText) > -1;
     },
     getOrdersList() {
+      this.tableLoading = true;
+      this.ordersList = [];
+
       const orderFilter = {
         deliveryDate: [],
       };
@@ -871,6 +908,8 @@ export default {
           deliveryTimeOfDay: 'asc',
         },
         filter: orderFilter,
+        skip: this.page * this.take,
+        take: this.take,
       };
 
       const successData = 'Заказы получены!';
@@ -929,6 +968,8 @@ export default {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
         loadData.loading = false;
+
+        this.tableLoading = false;
 
         this.getDeliveryNow();
       }).catch(() => {
@@ -1078,11 +1119,13 @@ export default {
     setFilterDateNow() {
       this.filter.dateStart = this.dateNowStr;
       this.filter.dateEnd = this.dateNowStr;
+      this.page = 0;
       this.getOrdersList();
     },
     setFilterDateWeek() {
       this.filter.dateStart = this.getWeekStartDate();
       this.filter.dateEnd = this.getWeekEndDate();
+      this.page = 0;
       this.getOrdersList();
     },
     setFilterDateMonth() {
@@ -1094,6 +1137,7 @@ export default {
 
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
+      this.page = 0;
       this.getOrdersList();
     },
     toggleAll() {

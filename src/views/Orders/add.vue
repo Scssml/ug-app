@@ -484,6 +484,9 @@ import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
 import inside from 'point-in-geopolygon';
 import DeliveryMap from './deliveryMap.vue';
+import { getDistance } from 'geolib';
+
+const baseCoordinates = [53.186104, 50.160200];
 
 export default {
   components: {
@@ -619,7 +622,13 @@ export default {
     calculateAndSetDeliveryCost(geo) {
       for (let zone of this.deliveryZones) {
         if (inside.polygon(zone.coordinates, geo)) {
-          this.editedItem.deliveryCost = zone.price;
+          this.editedItem.deliveryCost = zone.priceForKm
+                  ? getDistance(
+                  { longitude: geo[0], latitude: geo[1] },
+                  { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
+                  1000
+          ) * zone.priceForKm / 1000
+                  : zone.price;
           break;
         }
       }

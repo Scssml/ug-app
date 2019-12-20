@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^0.19.0",
+    "geolib": "^3.2.0",
     "lodash": "^4.17.15",
     "npm": "^6.13.2",
     "point-in-geopolygon": "^1.0.1",

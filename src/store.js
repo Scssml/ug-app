@@ -24,6 +24,7 @@ export default new Vuex.Store({
     authStatus: '',
     authUserGroup: {},
     couriersGps: [],
+    deliveryZones: [],
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -31,6 +32,7 @@ export default new Vuex.Store({
     getAuthUser: state => state.authUser,
     getAuthUserGroup: state => state.authUserGroup,
     getCouriersGps: state => state.couriersGps,
+    getDeliveryZones: state => state.deliveryZones,
   },
   mutations: {
     authRequest: (state) => {
@@ -53,6 +55,9 @@ export default new Vuex.Store({
     },
     setCouriersGps: (state, couriersGpsList) => {
       state.couriersGps = couriersGpsList;
+    },
+    setDeliveryZones: (state, zones) => {
+      state.deliveryZones = zones;
     },
   },
   actions: {
@@ -236,6 +241,19 @@ export default new Vuex.Store({
           }
           rejected();
         });
+      });
+    },
+
+    getDeliveryZones({ state, commit }) {
+      return new Promise((res, rej) => {
+        const url = 'http://localhost:3000';
+
+        axios.get(url)
+          .then(({ data }) => {
+            commit('setDeliveryZones', data);
+            res(data);
+          })
+          .catch(err => rej(err));
       });
     },
 

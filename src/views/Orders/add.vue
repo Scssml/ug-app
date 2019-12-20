@@ -209,6 +209,14 @@
                   placeholder="0"
                   class="mb-4"
                 ></v-text-field>
+
+                <v-text-field
+                        label="Стоимость доствки"
+                        v-model="editedItem.deliveryCost"
+                        hide-details
+                        placeholder="0"
+                        class="mb-4"
+                />
               </v-flex>
 
               <v-flex
@@ -444,24 +452,14 @@
             xs5
             v-if="editedItem.deliveryType === 2"
           >
-            <yandex-map
-              :coords="coordsMap"
-              zoom="10"
-              style="height: 100%;"
-              :controls="['trafficControl']"
-            >
-              <template v-for="(item, index) in placemarks">
-                <ymap-marker
-                  :key="`order-${index}`"
-                  :marker-id="`order-${item.id}`"
-                  marker-type="placemark"
-                  :coords="item.coords"
-                  :balloon="item.balloon"
-                  :icon="{color: 'blue'}"
-                  :cluster-name="item.clusterName"
-                ></ymap-marker>
-              </template>
-            </yandex-map>
+            <div style="position: relative; height: 100%; overflow: hidden;">
+              <delivery-map
+                      :orders-list="ordersList"
+                      :delivery-time-of-day-list="this.deliveryTimeOfDayList"
+                      :edited-item="editedItem"
+                      :zones="deliveryZones"
+              />
+            </div>
           </v-flex>
         </v-layout>
       </v-card-text>
@@ -484,12 +482,15 @@
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
+import inside from 'point-in-geopolygon';
+import DeliveryMap from './deliveryMap.vue';
 
 export default {
   components: {
     yandexMap,
     ymapMarker,
     AutocompleteAddress,
+    DeliveryMap,
   },
   data() {
     return {
@@ -519,6 +520,7 @@ export default {
         clientType: 1,
         deliveryType: 1,
         incognito: false,
+        coordsMap: [53.05, 50.101783],
         coordinates: [],
         bouquets: [
           {
@@ -554,28 +556,8 @@ export default {
     };
   },
   computed: {
-    placemarks() {
-      const placemarks = [];
-
-      this.ordersList.forEach((item) => {
-        if (item.coordinates.length === 2) {
-          placemarks.push({
-            id: item.id,
-            coords: item.coordinates,
-            balloon: {
-              header: `${item.deliveryDate},
-                ${item.deliveryTime}
-                (${this.deliveryTimeOfDayList.find(elem => elem.id === +item.deliveryTimeOfDay).name})
-              `,
-              body: `${item.address}`,
-              footer: '',
-            },
-            clusterName: 'orders',
-          });
-        }
-      });
-
-      return placemarks;
+    deliveryZones() {
+      return this.$store.state.deliveryZones;
     },
   },
   methods: {
@@ -625,7 +607,20 @@ export default {
     },
     updateAddress(data) {
       this.editedItem.address = data.address;
-      this.editedItem.coordinates = data.geo;
+
+      if (data && data.geo.length === 2 && this.editedItem) {
+        this.editedItem.coordinates = data.geo;
+        this.editedItem.coordsMap = data.geo;
+        this.calculateAndSetDeliveryCost(data.geo);
+      }
+    },
+    calculateAndSetDeliveryCost(geo) {
+      for (let zone of this.deliveryZones) {
+        if (inside.polygon(zone.coordinates, geo)) {
+          this.editedItem.deliveryCost = zone.price;
+          break;
+        }
+      }
     },
     getUsersList() {
       const itemParams = {

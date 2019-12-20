@@ -220,6 +220,15 @@
                   :readonly="editedItemReadOnly"
                   type="text"
                 ></v-text-field>
+
+                <v-text-field
+                        label="Стоимость доставки"
+                        v-model="editedItem.deliveryCost"
+                        hide-details
+                        class="mb-4"
+                        :readonly="editedItemReadOnly"
+                        type="text"
+                />
               </v-flex>
 
               <v-flex
@@ -364,7 +373,7 @@
                   :value="editedItem.address"
                   :readonly="editedItemReadOnly"
                   @change="updateAddress($event)"
-                ></autocomplete-address>
+                />
 
                 <v-text-field
                   label="Квартира"
@@ -472,24 +481,12 @@
             v-if="editedItem.deliveryType === 2 && !loadOrder"
           >
             <div style="position: relative; height: 100%; overflow: hidden;">
-              <yandex-map
-                :coords="coordsMap"
-                zoom="10"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                :controls="['trafficControl']"
-              >
-                <template v-for="(item, index) in placemarks">
-                  <ymap-marker
-                    :key="`order-${index}`"
-                    :marker-id="`order-${item.id}`"
-                    marker-type="placemark"
-                    :coords="item.coords"
-                    :balloon="item.balloon"
-                    :icon="{color: 'blue'}"
-                    :cluster-name="item.clusterName"
-                  ></ymap-marker>
-                </template>
-              </yandex-map>
+              <delivery-map
+                      :orders-list="ordersList"
+                      :delivery-time-of-day-list="this.deliveryTimeOfDayList"
+                      :edited-item="editedItem"
+                      :zones="deliveryZones"
+              />
             </div>
           </v-flex>
           <v-flex
@@ -575,6 +572,8 @@
 
 <script>
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
+import inside from 'point-in-geopolygon';
+import DeliveryMap from './deliveryMap.vue';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
 
 export default {
@@ -582,6 +581,7 @@ export default {
     yandexMap,
     ymapMarker,
     AutocompleteAddress,
+    DeliveryMap,
   },
   props: {
     id: {
@@ -605,7 +605,9 @@ export default {
     return {
       clientAddressee: false,
       dataPicker: false,
-      editedItem: {},
+      editedItem: {
+        coordsMap: [53.05, 50.101783],
+      },
       createdSuccess: false,
       userInfo: {},
       tsList: [],
@@ -650,32 +652,11 @@ export default {
           id: 3,
         },
       ],
-      coordsMap: [53.05, 50.101783],
     };
   },
   computed: {
-    placemarks() {
-      const placemarks = [];
-
-      this.ordersList.forEach((item) => {
-        if (item.coordinates.length === 2) {
-          placemarks.push({
-            id: item.id,
-            coords: item.coordinates,
-            balloon: {
-              header: `${item.deliveryDate},
-                ${item.deliveryTime}
-                (${this.deliveryTimeOfDayList.find(elem => elem.id === +item.deliveryTimeOfDay).name})
-              `,
-              body: `${item.address}`,
-              footer: '',
-            },
-            clusterName: 'orders',
-          });
-        }
-      });
-
-      return placemarks;
+    deliveryZones() {
+      return this.$store.state.deliveryZones;
     },
   },
   methods: {
@@ -725,7 +706,20 @@ export default {
     },
     updateAddress(data) {
       this.editedItem.address = data.address;
-      this.editedItem.coordinates = data.geo;
+
+      if (data && data.geo.length === 2 && this.editedItem) {
+        this.editedItem.coordinates = data.geo;
+        this.editedItem.coordinates = data.geo;
+        this.calculateAndSetDeliveryCost(data.geo);
+      }
+    },
+    calculateAndSetDeliveryCost(geo) {
+      for (let zone of this.deliveryZones) {
+        if (inside.polygon(zone.coordinates, geo)) {
+          this.editedItem.deliveryCost = zone.price;
+          break;
+        }
+      }
     },
     getItem() {
       if (this.id) {

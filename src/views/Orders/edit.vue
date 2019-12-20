@@ -777,6 +777,7 @@ export default {
           }
 
           this.editedItem = props;
+          this.editedItem.coordsMap = [53.05, 50.101783];
           this.getOrdersList();
           this.getUsersList();
 

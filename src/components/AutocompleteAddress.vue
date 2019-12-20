@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import _throttle from 'lodash/throttle';
+
 export default {
   name: 'AutocompleteAddress',
   props: {
@@ -50,32 +52,13 @@ export default {
         geo: [],
       });
     },
-  },
-  created() {
-    this.address = (this.value.length > 0) ? this.value : '';
-  },
-  mounted() {
-    this.bounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(50.00615400000004, 50.39000009999995),
-      new google.maps.LatLng(53.090497, 53.43131899999999),
-    );
-
-    const ref = this.$refs.autocomplete.$refs.input;
-    this.autocomplete = new google.maps.places.Autocomplete(
-      ref,
-      {
-        bounds: this.bounds,
-        types: ['address'],
-        // types: ['geocode'],
-        componentRestrictions: {
-          country: 'ru',
-        },
-      },
-    );
-
-    this.autocomplete.addListener('place_changed', () => {
+    handlePlaceChange() {
       const place = this.autocomplete.getPlace();
       const address = place.address_components;
+      if (!place.geometry) {
+        return;
+      }
+
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
 
@@ -122,7 +105,31 @@ export default {
           geo: locationInfo.geo,
         });
       }
-    });
+    },
+  },
+  created() {
+    this.address = (this.value.length > 0) ? this.value : '';
+  },
+  mounted() {
+    this.bounds = new google.maps.LatLngBounds(
+      new google.maps.LatLng(50.00615400000004, 50.39000009999995),
+      new google.maps.LatLng(53.090497, 53.43131899999999),
+    );
+
+    const ref = this.$refs.autocomplete.$refs.input;
+    this.autocomplete = new google.maps.places.Autocomplete(
+      ref,
+      {
+        bounds: this.bounds,
+        types: ['address'],
+        // types: ['geocode'],
+        componentRestrictions: {
+          country: 'ru',
+        },
+      },
+    );
+
+    this.autocomplete.addListener('place_changed', _throttle(this.handlePlaceChange, 1000));
   },
 };
 </script>

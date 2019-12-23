@@ -228,6 +228,7 @@
                         class="mb-4"
                         :readonly="editedItemReadOnly"
                         type="text"
+                        v-if="editedItem.deliveryType !== 1"
                 />
               </v-flex>
 

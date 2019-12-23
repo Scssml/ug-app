@@ -216,6 +216,7 @@
                         hide-details
                         placeholder="0"
                         class="mb-4"
+                        v-if="editedItem.deliveryType !== 1"
                 />
               </v-flex>
 

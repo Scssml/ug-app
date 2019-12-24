@@ -73,13 +73,15 @@ export default {
         this.$store.dispatch('getItem', itemParams).then((response) => {
           const props = response;
 
-          let orderSourceTypeId = [];
+          // let orderSourceTypeId = [];
 
-          if (Array.isArray(this.orderSourceType)) {
-            orderSourceTypeId = this.orderSourceType.map(item => item.id);
-          }
+          // if (Array.isArray(this.orderSourceType)) {
+          //   orderSourceTypeId = this.orderSourceType.map(item => item.id);
+          // }
 
-          props.orderSourceType = orderSourceTypeId;
+          // props.orderSourceType = orderSourceTypeId;
+
+          props.orderSourceType = (props.orderSourceType) ? props.orderSourceType : [];
 
           props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;

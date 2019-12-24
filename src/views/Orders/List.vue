@@ -374,6 +374,9 @@
                         <template v-else-if="prop.field === 'incognito'">
                           {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
                         </template>
+                        <template v-else-if="prop.field === 'alreadyPaid'">
+                          {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
+                        </template>
                         <template v-else-if="prop.field === 'description'">
                           <div
                             @click="changeDescription(props.item.id)"
@@ -406,8 +409,17 @@
                         <template v-else-if="prop.field === 'courier'">
                           {{ props.item[prop.field].name }}
                         </template>
+                        <template v-else-if="prop.field === 'responsible'">
+                          {{ props.item[prop.field].name }}
+                          <br>{{ props.item[prop.field].phone }}
+                        </template>
                         <template v-else-if="prop.field === 'clientType'">
                           {{ props.item[prop.field].name }}
+                        </template>
+                        <template v-else-if="prop.field === 'orderCost'">
+                          <div :class="(props.item.alreadyPaid) ? 'red' : ''">
+                            {{ props.item[prop.field] }}
+                          </div>
                         </template>
                         <template v-else>
                           {{ props.item[prop.field] }}
@@ -745,8 +757,17 @@ export default {
         this.closeDialog();
       }
     },
+    updateOrderList(newValue) {
+      if (newValue) {
+        this.$store.commit('setUpdateOrderList', false);
+        this.getOrdersList(false);
+      }
+    },
   },
   computed: {
+    updateOrderList() {
+      return this.$store.getters.getUpdateOrderList;
+    },
     loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
@@ -879,9 +900,11 @@ export default {
       return textOne.indexOf(searchText) > -1 ||
         textTwo.indexOf(searchText) > -1;
     },
-    getOrdersList() {
-      this.tableLoading = true;
-      this.ordersList = [];
+    getOrdersList(loading = true) {
+      if (loading) {
+        this.tableLoading = true;
+        this.ordersList = [];
+      }
 
       const orderFilter = {
         deliveryDate: [],

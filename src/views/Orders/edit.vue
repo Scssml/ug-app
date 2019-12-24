@@ -212,6 +212,55 @@
                   :readonly="editedItemReadOnly"
                 ></v-text-field>
 
+                <v-autocomplete
+                  label="Ответственный"
+                  :items="responsibleList"
+                  :filter="clientsFilter"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="editedItem.responsible"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  :readonly="editedItemReadOnly"
+                  clearable
+                  @change="setDataResponsible()"
+                  v-if="editedItem.clientType === 2"
+                ></v-autocomplete>
+
+                <v-select
+                  label="Тип клиента"
+                  :items="typeClient"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="responsible.type"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-select>
+
+                <v-text-field
+                  label="Имя"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  v-model="responsible.name"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-text-field>
+
+                <v-text-field
+                  label="Телефон"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  v-model="responsible.phone"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-text-field>
+
                 <v-text-field
                   label="Сумма"
                   v-model="editedItem.orderCost"
@@ -222,14 +271,32 @@
                 ></v-text-field>
 
                 <v-text-field
-                        label="Стоимость доставки"
-                        v-model="editedItem.deliveryCost"
-                        hide-details
-                        class="mb-4"
-                        :readonly="editedItemReadOnly"
-                        type="text"
-                        v-if="editedItem.deliveryType !== 1"
+                  label="Стоимость доставки"
+                  v-model="editedItem.deliveryCost"
+                  hide-details
+                  class="mb-4"
+                  :readonly="editedItemReadOnly"
+                  type="text"
+                  v-if="editedItem.deliveryType !== 1"
                 />
+
+                <v-text-field
+                  label="Предоплата"
+                  v-model.number="editedItem.prePayment"
+                  hide-details
+                  class="mb-4"
+                  :readonly="editedItemReadOnly"
+                  type="text"
+                />
+
+                <v-checkbox
+                  label="Оплачен"
+                  v-model="editedItem.alreadyPaid"
+                  color="primary"
+                  hide-details
+                  class="mb-4"
+                  :readonly="editedItemReadOnly"
+                ></v-checkbox>
               </v-flex>
 
               <v-flex
@@ -329,7 +396,7 @@
 
                 <v-checkbox
                   label="Заказчик-получатель"
-                  v-model="clientAddressee"
+                  v-model="editedItem.isCustomerRecipient"
                   color="primary"
                   hide-details
                   class="mb-4"
@@ -349,7 +416,7 @@
                   :readonly="editedItemReadOnly"
                   clearable
                   @change="setDataAddressee()"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-autocomplete>
 
                 <v-text-field
@@ -358,7 +425,7 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-text-field>
 
                 <v-text-field
@@ -367,7 +434,7 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-text-field>
 
                 <autocomplete-address
@@ -607,7 +674,7 @@ export default {
   },
   data() {
     return {
-      clientAddressee: false,
+      // clientAddressee: false,
       dataPicker: false,
       editedItem: {
         coordsMap: [53.05, 50.101783],
@@ -656,11 +723,15 @@ export default {
           id: 3,
         },
       ],
+      responsible: undefined,
     };
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
+    },
+    responsibleList() {
+      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
     },
   },
   methods: {
@@ -708,6 +779,12 @@ export default {
         this.editedItem.floor = '';
       }
     },
+    setDataResponsible() {
+      const clientId = this.editedItem.responsible;
+      const findClient = this.clientsList.find(item => item.id === clientId);
+
+      this.responsible = findClient;
+    },
     updateAddress(data) {
       this.editedItem.address = data.address;
 
@@ -745,16 +822,18 @@ export default {
 
           // props.orderSourceType = [props.orderSourceType];
 
-          let orderSourceTypeId = [];
+          // let orderSourceTypeId = [];
 
-          if (Array.isArray(this.orderSourceType)) {
-            orderSourceTypeId = this.orderSourceType.map(item => item.id);
-          }
+          // if (Array.isArray(this.orderSourceType)) {
+          //   orderSourceTypeId = this.orderSourceType.map(item => item.id);
+          // }
 
-          props.orderSourceType = orderSourceTypeId;
+          // props.orderSourceType = orderSourceTypeId;
 
           // props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0];
           // props.orderSourceType = [(props.orderSourceType) ? +props.orderSourceType.id : 0];
+
+          props.orderSourceType = (props.orderSourceType) ? props.orderSourceType : [];
 
           props.addressee = (props.addressee) ? +props.addressee.id : null;
           props.client = (props.client) ? +props.client.id : 0;
@@ -762,6 +841,8 @@ export default {
           props.clientType = (props.clientType) ? +props.clientType.id : 0;
           props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
           props.bouquets = (props.bouquets) ? props.bouquets : [];
+
+          props.responsible = (props.responsible) ? +props.responsible.id : null;
 
           if (this.copy) {
             props.orderStatus = 1;
@@ -788,6 +869,9 @@ export default {
 
           this.editedItem = props;
           this.editedItem.coordsMap = [53.05, 50.101783];
+
+          this.setDataResponsible();
+
           this.getOrdersList();
           this.getUsersList();
 

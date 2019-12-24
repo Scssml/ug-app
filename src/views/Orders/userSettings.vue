@@ -251,6 +251,10 @@ export default {
           name: 'Тип клиента',
         },
         {
+          code: 'responsible',
+          name: 'Ответственный',
+        },
+        {
           code: 'courier',
           name: 'Курьер',
         },
@@ -293,6 +297,18 @@ export default {
         {
           code: 'orderCost',
           name: 'Сумма заказа',
+        },
+        {
+          code: 'deliveryCost',
+          name: 'Стоимость доствки',
+        },
+        {
+          code: 'prePayment',
+          name: 'Предоплата',
+        },
+        {
+          code: 'alreadyPaid',
+          name: 'Оплачен',
         },
         {
           code: 'addresseeName',

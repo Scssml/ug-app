@@ -111,7 +111,7 @@
               </v-flex>
               <v-flex
                 xs3
-                v-if="dataEdit.type === 'Приход' || dataEdit.type ===  'Брак'"
+                v-if="dataEdit.type === 1 || dataEdit.type ===  4"
               >
                 <v-text-field
                   label="Компания"
@@ -342,6 +342,7 @@ export default {
         this.goodsList = response.map((item) => {
           const good = item;
           good.count = 0;
+          good.oldPrice = good.price;
           return good;
         });
 
@@ -382,6 +383,7 @@ export default {
           const good = {
             estimate: item.count,
             newPrice: item.price,
+            oldPrice: item.oldPrice,
             stockQuantity: item.stockBalance,
             good: item.id,
           };

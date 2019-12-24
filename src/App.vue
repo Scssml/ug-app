@@ -140,14 +140,12 @@ export default {
       transports: ['websocket'],
     });
 
-    socketOrders.on('update_order', (order) => {
-      console.log(order);
-      // this.$store.commit('setCouriersGps', order);
+    socketOrders.on('update_order', () => {
+      this.$store.commit('setUpdateOrderList', true);
     });
 
-    socketOrders.on('new_order', (order) => {
-      console.log(order);
-      // this.$store.commit('setCouriersGps', order);
+    socketOrders.on('new_order', () => {
+      this.$store.commit('setUpdateOrderList', true);
     });
   },
 };

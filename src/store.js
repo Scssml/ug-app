@@ -25,6 +25,7 @@ export default new Vuex.Store({
     authUserGroup: {},
     couriersGps: [],
     deliveryZones: [],
+    updateOrderList: false,
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -33,6 +34,7 @@ export default new Vuex.Store({
     getAuthUserGroup: state => state.authUserGroup,
     getCouriersGps: state => state.couriersGps,
     getDeliveryZones: state => state.deliveryZones,
+    getUpdateOrderList: state => state.updateOrderList,
   },
   mutations: {
     authRequest: (state) => {
@@ -58,6 +60,9 @@ export default new Vuex.Store({
     },
     setDeliveryZones: (state, zones) => {
       state.deliveryZones = zones;
+    },
+    setUpdateOrderList: (state, value) => {
+      state.updateOrderList = value;
     },
   },
   actions: {

@@ -202,6 +202,54 @@
                   class="mb-4"
                 ></v-text-field>
 
+                <v-autocomplete
+                  label="Ответственный"
+                  :items="responsibleList"
+                  :filter="clientsFilter"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="editedItem.responsible"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  clearable
+                  @change="setDataResponsible()"
+                  v-if="editedItem.clientType === 2"
+                ></v-autocomplete>
+
+                <v-select
+                  label="Тип клиента"
+                  :items="typeClient"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="responsible.type"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-select>
+
+                <v-text-field
+                  label="Имя"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  v-model="responsible.name"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-text-field>
+
+                <v-text-field
+                  label="Телефон"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  v-model="responsible.phone"
+                  hide-details
+                  class="mb-4"
+                  readonly
+                  v-if="!!responsible"
+                ></v-text-field>
+
                 <v-text-field
                   label="Сумма"
                   v-model="editedItem.orderCost"
@@ -211,13 +259,29 @@
                 ></v-text-field>
 
                 <v-text-field
-                        label="Стоимость доствки"
-                        v-model="editedItem.deliveryCost"
-                        hide-details
-                        placeholder="0"
-                        class="mb-4"
-                        v-if="editedItem.deliveryType !== 1"
+                  label="Стоимость доствки"
+                  v-model="editedItem.deliveryCost"
+                  hide-details
+                  placeholder="0"
+                  class="mb-4"
+                  v-if="editedItem.deliveryType !== 1"
                 />
+
+                <v-text-field
+                  label="Предоплата"
+                  v-model.number="editedItem.prePayment"
+                  hide-details
+                  class="mb-4"
+                  type="text"
+                />
+
+                <v-checkbox
+                  label="Оплачен"
+                  v-model="editedItem.alreadyPaid"
+                  color="primary"
+                  hide-details
+                  class="mb-4"
+                ></v-checkbox>
               </v-flex>
 
               <v-flex
@@ -312,7 +376,7 @@
 
                 <v-checkbox
                   label="Заказчик-получатель"
-                  v-model="clientAddressee"
+                  v-model="editedItem.isCustomerRecipient"
                   color="primary"
                   hide-details
                   class="mb-4"
@@ -330,7 +394,7 @@
                   no-data-text="Не надено"
                   clearable
                   @change="setDataAddressee()"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-autocomplete>
 
                 <v-text-field
@@ -338,7 +402,7 @@
                   v-model="editedItem.addresseeName"
                   hide-details
                   class="mb-4"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-text-field>
 
                 <v-text-field
@@ -346,7 +410,7 @@
                   v-model="editedItem.addresseePhone"
                   hide-details
                   class="mb-4"
-                  v-if="!clientAddressee"
+                  v-if="!editedItem.isCustomerRecipient"
                 ></v-text-field>
 
                 <autocomplete-address
@@ -498,7 +562,7 @@ export default {
   },
   data() {
     return {
-      clientAddressee: false,
+      // clientAddressee: false,
       dataPicker: false,
       editedItem: {
         client: 0,
@@ -532,6 +596,7 @@ export default {
             name: null,
           },
         ],
+        responsible: null,
       },
       createdSuccess: false,
       userInfo: {},
@@ -557,11 +622,15 @@ export default {
         },
       ],
       coordsMap: [53.05, 50.101783],
+      responsible: undefined,
     };
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
+    },
+    responsibleList() {
+      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
     },
   },
   methods: {
@@ -610,6 +679,12 @@ export default {
         this.editedItem.addresseeName = '';
         this.editedItem.addresseePhone = '';
       }
+    },
+    setDataResponsible() {
+      const clientId = this.editedItem.responsible;
+      const findClient = this.clientsList.find(item => item.id === clientId);
+
+      this.responsible = findClient;
     },
     updateAddress(data) {
       this.editedItem.address = data.address;

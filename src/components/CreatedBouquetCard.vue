@@ -529,7 +529,7 @@ export default {
     },
     clientSale: function clientSale() {
       const client = this.clientsList.find(item => item.id === this.client);
-      console.log(client);
+
       let salePersent = 0;
 
       if (client) {

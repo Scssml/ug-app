@@ -37,6 +37,19 @@
           label="Телефон"
           v-model="editedItem.phone"
         ></v-text-field>
+        <v-autocomplete
+          label="Организация"
+          :items="clientsList"
+          :filter="clientsFilter"
+          item-text="name"
+          item-value="id"
+          v-model.number="editedItem.referenceId"
+          hide-details
+          class="mb-4"
+          no-data-text="Не надено"
+          clearable
+          v-if="editedItem.type === 2"
+        ></v-autocomplete>
         <v-text-field
           label="Адрес"
           v-model="editedItem.address"
@@ -133,6 +146,7 @@ export default {
       editedItem: {},
       typeClient: [],
       createdSuccess: false,
+      clientsList: [],
     };
   },
   methods: {
@@ -147,6 +161,7 @@ export default {
           this.editedItem = response;
           this.editedItem.bill = +this.editedItem.bill;
           this.editedItem.sale = +this.editedItem.sale;
+          this.editedItem.referenceId = +this.editedItem.referenceId;
         }).catch(() => {
           console.log('error');
         });
@@ -164,6 +179,8 @@ export default {
         delete propsItem.id;
 
         propsItem.sale = propsItem.discountPercent;
+
+        propsItem.referenceId = (propsItem.type === 2) ? propsItem.referenceId : null;
 
         const itemParams = {
           type: 'clients',
@@ -193,10 +210,37 @@ export default {
         console.log('error');
       });
     },
+    getClientsList() {
+      const itemParams = {
+        type: 'clients',
+        filter: {
+          active: true,
+          type: 2,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
+    },
   },
   mounted() {
     this.getItem();
     this.getClientTypeList();
+    this.getClientsList();
   },
 };
 </script>

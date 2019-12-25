@@ -638,26 +638,47 @@
             </tr>
           </template>
         </v-data-table>
-        <div class="text-xs-right py-2">
-          <v-btn
-            small
-            color="info"
-            class="mx-3"
-            :disabled="page === 0"
-            @click="prevPage()"
+        <v-layout
+          row
+          wrap
+          justify-space-around
+          class="py-2"
+        >
+          <v-flex
+            xs2
+            class="px-3"
           >
-            <v-icon dark>keyboard_arrow_left</v-icon>
-          </v-btn>
-          <v-btn
-            small
-            color="info"
-            class="mx-3"
-            :disabled="ordersList.length < take"
-            @click="nextPage()"
+            <v-text-field
+              label="Количество на странице"
+              v-model.number="take"
+              hide-details
+              @change="changeShowElem()"
+            ></v-text-field>
+          </v-flex>
+          <v-flex
+            xs10
+            class="text-xs-right px-3"
           >
-            <v-icon dark>keyboard_arrow_right</v-icon>
-          </v-btn>
-        </div>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="page === 0"
+              @click="prevPage()"
+            >
+              <v-icon dark>keyboard_arrow_left</v-icon>
+            </v-btn>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="ordersList.length < take"
+              @click="nextPage()"
+            >
+              <v-icon dark>keyboard_arrow_right</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
       </v-card>
       <v-btn
         fab
@@ -882,6 +903,12 @@ export default {
       // return itemsFind;
       this.page = 0;
 
+      this.getOrdersList();
+    },
+    changeShowElem() {
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
+      this.page = 0;
       this.getOrdersList();
     },
     prevPage() {
@@ -1191,6 +1218,8 @@ export default {
 
     this.filter.dateStart = dateStart;
     this.filter.dateEnd = dateEnd;
+
+    this.take = this.$store.getters.getCountElemPage;
 
     this.getOrdersList();
     this.getStatusList();

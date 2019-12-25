@@ -37,7 +37,7 @@
             row
             wrap
           >
-            <v-flex
+            <!-- <v-flex
               xs4
               class="px-3"
             >
@@ -48,7 +48,7 @@
                 single-line
                 hide-details
               ></v-text-field>
-            </v-flex>
+            </v-flex> -->
             <v-flex
               xs2
               class="px-3"
@@ -103,7 +103,14 @@
             <td>
               {{ props.item.typeName }}
             </td>
-            <td>{{ props.item.birthDay }}</td>
+            <td>
+              <template v-for="(item, index) in props.item.responsible">
+                <p :key="index">
+                  {{ item.name }}
+                  <br>{{ item.phone }}
+                </p>
+              </template>
+            </td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.discountPercent }}</td>
             <td class="text-xs-right">
@@ -177,9 +184,9 @@ export default {
           value: 'type',
         },
         {
-          text: 'День рождения',
+          text: 'Ответственный',
           align: 'left',
-          value: 'birthDay',
+          value: 'responsible',
         },
         {
           text: 'Счет',
@@ -239,11 +246,16 @@ export default {
       const errorData = 'Ошибка получения клиентов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          const itemTypeClient = this.typeClient.find(elem => elem.id === item.type);
-          item.typeName = (itemTypeClient) ? itemTypeClient.name : '-';
+        this.clientsList = response.map((item, index, clients) => {
+          const elem = Object.assign({}, item);
+          const itemTypeClient = this.typeClient.find(client => client.id === elem.type);
+          elem.typeName = (itemTypeClient) ? itemTypeClient.name : '-';
 
-          return item;
+          elem.responsible = [];
+          if (elem.id !== 0) {
+            elem.responsible = clients.filter(client => +client.referenceId === elem.id);
+          }
+          return elem;
         });
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);

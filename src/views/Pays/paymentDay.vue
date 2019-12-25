@@ -84,14 +84,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ allSumPay }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="allSumPay"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout
@@ -107,14 +108,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ allSumPayCash }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="allSumPayCash"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout
@@ -130,16 +132,139 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ allSumPayNoCash }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="allSumPayNoCash"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
+
+    <v-layout
+      row
+      wrap
+      align-center
+    >
+      <v-flex
+        xs7
+      >
+        <b>За счет компании:</b>
+      </v-flex>
+      <v-flex
+        xs5
+      >
+        {{ allSumPayPresent }}
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          readonly
+          :value="allSumPayPresent"
+          class="scs-small"
+        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+    <v-layout
+      row
+      wrap
+      align-center
+    >
+      <v-flex
+        xs7
+      >
+        <b>На баланс:</b>
+      </v-flex>
+      <v-flex
+        xs5
+      >
+        {{ allSumPayBalance }}
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          readonly
+          :value="allSumPayBalance"
+          class="scs-small"
+        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+    <v-layout
+      row
+      wrap
+      align-center
+    >
+      <v-flex
+        xs7
+      >
+        <b>Терминал:</b>
+      </v-flex>
+      <v-flex
+        xs5
+      >
+        {{ allSumPayTerminal }}
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          readonly
+          :value="allSumPayTerminal"
+          class="scs-small"
+        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+    <v-layout
+      row
+      wrap
+      align-center
+    >
+      <v-flex
+        xs7
+      >
+        <b>Карта:</b>
+      </v-flex>
+      <v-flex
+        xs5
+      >
+        {{ allSumPayCard }}
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          readonly
+          :value="allSumPayCard"
+          class="scs-small"
+        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+    <v-layout
+      row
+      wrap
+      align-center
+    >
+      <v-flex
+        xs7
+      >
+        <b>Яндекс:</b>
+      </v-flex>
+      <v-flex
+        xs5
+      >
+        {{ allSumPayYandex }}
+        <!-- <v-text-field
+          solo
+          flat
+          hide-details
+          readonly
+          :value="allSumPayYandex"
+          class="scs-small"
+        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+
     <v-layout
       row
       wrap
@@ -153,14 +278,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ allSumReturn }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="allSumReturn"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout
@@ -176,14 +302,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ cashPrevDay }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="cashPrevDay"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout
@@ -199,14 +326,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ allSumEncashment }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="allSumEncashment"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout
@@ -222,14 +350,15 @@
       <v-flex
         xs5
       >
-        <v-text-field
+        {{ cashNow }}
+        <!-- <v-text-field
           solo
           flat
           hide-details
           readonly
           :value="cashNow"
           class="scs-small"
-        ></v-text-field>
+        ></v-text-field> -->
       </v-flex>
     </v-layout>
 
@@ -410,6 +539,56 @@ export default {
       const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
         if (item.paymentType.id !== 1 && item.paymentType.id !== 7 && item.paymentType.id !== 8) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayPresent() {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 6) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayBalance() {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 5) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayTerminal() {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 4) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayCard() {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 3) {
+          amountPay = item.amount;
+        }
+        return sum + amountPay;
+      }, 0);
+      return allSum;
+    },
+    allSumPayYandex() {
+      const allSum = this.paymentsNow.reduce((sum, item) => {
+        let amountPay = 0;
+        if (item.paymentType.id === 2) {
           amountPay = item.amount;
         }
         return sum + amountPay;

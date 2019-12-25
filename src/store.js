@@ -26,6 +26,7 @@ export default new Vuex.Store({
     couriersGps: [],
     deliveryZones: [],
     updateOrderList: false,
+    countElemPage: 20,
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -35,6 +36,7 @@ export default new Vuex.Store({
     getCouriersGps: state => state.couriersGps,
     getDeliveryZones: state => state.deliveryZones,
     getUpdateOrderList: state => state.updateOrderList,
+    getCountElemPage: state => state.countElemPage,
   },
   mutations: {
     authRequest: (state) => {
@@ -64,6 +66,9 @@ export default new Vuex.Store({
     setUpdateOrderList: (state, value) => {
       state.updateOrderList = value;
     },
+    setCountElemPage: (state, value) => {
+      state.countElemPage = value;
+    },
   },
   actions: {
     login({ state, commit }, user) {
@@ -85,6 +90,11 @@ export default new Vuex.Store({
 
           localStorage.setItem('user-id', id);
           localStorage.setItem('user-group', JSON.stringify(group));
+
+          const countElemPage = localStorage.getItem('countElemPage');
+          if (countElemPage !== null) {
+            commit('setCountElemPage', countElemPage);
+          }
 
           commit('authSuccess', { token, id, group });
 
@@ -111,6 +121,12 @@ export default new Vuex.Store({
         const token = localStorage.getItem('user-token');
         const id = +localStorage.getItem('user-id');
         const group = JSON.parse(localStorage.getItem('user-group'));
+
+        const countElemPage = localStorage.getItem('countElemPage');
+        if (countElemPage !== null) {
+          commit('setCountElemPage', countElemPage);
+        }
+
         if (token !== null) {
           axios.defaults.headers.common.Authorization = `Bearer ${token}`;
           commit('authSuccess', { token, id, group });

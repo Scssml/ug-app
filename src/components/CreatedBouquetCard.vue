@@ -343,9 +343,21 @@
             class="px-4"
           >
             <v-text-field
+              label="Сумма заказа"
+              readonly
+              :value="sumOrder"
+              v-if="sumFlowers > 0"
+            ></v-text-field>
+            <v-text-field
               label="К оплате"
               readonly
               :value="sumPay"
+              v-if="sumFlowers > 0"
+            ></v-text-field>
+            <v-text-field
+              label="Предоплата"
+              readonly
+              :value="prePayment"
               v-if="sumFlowers > 0"
             ></v-text-field>
             <v-text-field
@@ -468,6 +480,17 @@ export default {
     };
   },
   computed: {
+    prePayment() {
+      let prePayment = 0;
+
+      if (this.order > 0) {
+        const order = this.clientOrdersList.find(item => item.id === this.order);
+
+        prePayment = +order.prePayment;
+      }
+
+      return prePayment;
+    },
     orderBouquets() {
       const orderSelected = this.clientOrdersList.find(item => item.id === this.order);
       let orderList = [];
@@ -511,12 +534,21 @@ export default {
       const sum = Math.ceil((this.sumFlowers + this.sumDecor) * (this.clientSale / 100));
       return this.priceRound(sum);
     },
+    sumOrder: function sumPay() {
+      let sum = this.sumFlowers;
+      sum += this.sumDecor;
+      sum += +this.delivery;
+      sum += +this.sumDecorAdditional;
+      sum -= this.sumSale;
+      return this.priceRound(sum);
+    },
     sumPay: function sumPay() {
       let sum = this.sumFlowers;
       sum += this.sumDecor;
       sum += +this.delivery;
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
+      sum -= this.prePayment;
       return this.priceRound(sum);
     },
     sumChange: function sumChange() {

@@ -82,10 +82,12 @@
                 readonly
               ></v-text-field>
             </v-flex>
-            <v-flex>
+            <v-flex
+              v-if="purchase.company"
+            >
               <v-text-field
                 label="Компания"
-                v-model="purchase.company"
+                v-model="purchase.company.name"
                 hide-details
                 class="pr-4"
                 readonly
@@ -127,6 +129,7 @@
             <td>{{ props.item.good.name }}</td>
             <td>{{ props.item.stockQuantity }}</td>
             <td>{{ props.item.estimate }}</td>
+            <td>{{ props.item.oldPrice }}</td>
             <td>{{ props.item.newPrice }}</td>
           </template>
         </v-data-table>
@@ -165,6 +168,11 @@ export default {
           text: 'Пришло',
           align: 'left',
           value: 'estimate',
+        },
+        {
+          text: 'Старая цена',
+          align: 'left',
+          value: 'oldPrice',
         },
         {
           text: 'Цена',

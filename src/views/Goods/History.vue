@@ -57,7 +57,12 @@
             <td>{{ props.item.purchase }}</td>
             <td>{{ props.item.arrival }}</td>
             <td>{{ markup(props.item) }}%</td>
-            <td>{{ props.item.company }}</td>
+            <td>{{ props.item.revaluation }}</td>
+            <td>
+              <template v-if="props.item.company">
+                {{ props.item.company.name }}
+              </template>
+            </td>
             <td>{{ props.item.createdBy.name }}</td>
 
             <td class="text-xs-right" style="width: 7%;">
@@ -118,6 +123,11 @@ export default {
           text: 'Наценка',
           align: 'left',
           value: 'markup',
+        },
+        {
+          text: 'Переоценка',
+          align: 'left',
+          value: 'revaluation',
         },
         {
           text: 'Компания',

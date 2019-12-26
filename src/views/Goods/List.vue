@@ -111,15 +111,27 @@
               </v-flex>
               <v-flex
                 xs3
-                v-if="dataEdit.type === 1 || dataEdit.type ===  4"
               >
-                <v-text-field
+                <!-- <v-text-field
                   label="Компания"
                   v-model="dataEdit.company"
                   hide-details
                   class="pr-4"
                   :rules="[v => !!v || 'Заполните поле']"
-                ></v-text-field>
+                ></v-text-field> -->
+                <v-autocomplete
+                  label="Компания"
+                  :items="clientsList"
+                  :filter="clientsFilter"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  item-text="name"
+                  item-value="id"
+                  v-model.number="dataEdit.company"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  clearable
+                ></v-autocomplete>
               </v-flex>
               <v-flex
                 xs2
@@ -290,6 +302,7 @@ export default {
       goodsList: [],
       createdSuccess: false,
       dialogForm: false,
+      clientsList: [],
     };
   },
   computed: {
@@ -369,6 +382,32 @@ export default {
         console.log('error');
       });
     },
+    getClientsList() {
+      const itemParams = {
+        type: 'clients',
+        filter: {
+          active: true,
+          type: 2,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
+    },
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -436,6 +475,7 @@ export default {
   mounted() {
     this.getGoodsList();
     this.getPurchaseTypesList();
+    this.getClientsList();
   },
 };
 </script>

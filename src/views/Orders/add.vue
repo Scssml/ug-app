@@ -523,6 +523,7 @@
                       :delivery-time-of-day-list="this.deliveryTimeOfDayList"
                       :edited-item="editedItem"
                       :zones="deliveryZones"
+                      :placemarks="placemarks"
               />
             </div>
           </v-flex>
@@ -632,6 +633,14 @@ export default {
     responsibleList() {
       return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
     },
+    placemarks() {
+      return this.ordersList
+        .filter(item => item.coordinates.length === 2)
+        .map(order => ({
+          id: order.id,
+          coordinates: order.coordinates,
+        }));
+    },
   },
   methods: {
     clientsFilter(item, queryText) {
@@ -674,7 +683,6 @@ export default {
       if (findClient !== undefined) {
         this.editedItem.addresseeName = findClient.name;
         this.editedItem.addresseePhone = findClient.phone;
-
       } else {
         this.editedItem.addresseeName = '';
         this.editedItem.addresseePhone = '';
@@ -696,15 +704,15 @@ export default {
       }
     },
     calculateAndSetDeliveryCost(geo) {
-      for (let zone of this.deliveryZones) {
+      for (const zone of this.deliveryZones) {
         if (inside.polygon(zone.coordinates, geo)) {
           this.editedItem.deliveryCost = zone.priceForKm
-                  ? getDistance(
-                  { longitude: geo[0], latitude: geo[1] },
-                  { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
-                  1000
-          ) * zone.priceForKm / 1000
-                  : zone.price;
+            ? getDistance(
+              { longitude: geo[0], latitude: geo[1] },
+              { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
+              1000,
+            ) * zone.priceForKm / 1000
+            : zone.price;
           break;
         }
       }

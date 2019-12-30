@@ -7,11 +7,8 @@
     v-on:map-was-initialized="afterMapsLoaded"
     ref="yMaps"
   >
-    <template v-if="editedItem.coordinates.length">
-      <ymap-marker
-              marker-id="editedItemId"
-              :coords="editedItem.coordinates"
-      />
+    <template v-for="(item, index) in points" v-if="points.length">
+      <ymap-marker :key="index" marker-id="editedItemId" :coords="item.coordinates" />
     </template>
   </yandex-map>
 </template>
@@ -40,6 +37,9 @@ export default {
     zones: {
       type: Array,
     },
+    placemarks: {
+      type: Array,
+    },
   },
   data() {
     return {
@@ -57,6 +57,11 @@ export default {
         this.drawZones(this.zones, this.$refs.yMaps, window.ymaps);
       });
     }
+  },
+  computed: {
+    points() {
+      return [...this.placemarks, this.editedItem];
+    },
   },
   methods: {
     getDeliveryZones() {

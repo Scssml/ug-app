@@ -128,7 +128,8 @@ export default {
       this.$router.push('/login');
     });
 
-    const socketCouriersGps = io('http://192.168.4.54:3003', {
+    const socketCouriersGps = io(window.location.origin, {
+      path: '/zont-socket',
       transports: ['websocket'],
     });
 
@@ -136,7 +137,8 @@ export default {
       this.$store.commit('setCouriersGps', devices);
     });
 
-    const socketOrders = io('http://192.168.4.161:3000', {
+    const socketOrders = io(window.location.origin, {
+      path: '/main-socket',
       transports: ['websocket'],
     });
 

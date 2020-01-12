@@ -285,7 +285,7 @@ export default new Vuex.Store({
     },
 
     courierDelivered({ dispatch }, item) {
-      const url = `http://192.168.4.161:3001/${item.type}/${item.id}`;
+      const url = `/delivery/${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
         axios.put(
           url,

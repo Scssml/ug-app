@@ -75,7 +75,7 @@ export default new Vuex.Store({
       return new Promise((resolve, rejected) => {
         commit('authRequest');
         axios.post(
-          `${state.apiUrl}login/new`,
+          `${state.apiUrl}login`,
           user,
           {
             headers: {

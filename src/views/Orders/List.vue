@@ -326,7 +326,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <tr
-              :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+              :class="[props.item.alreadyPaid ? 'orange' : props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
               <td
                 style="width: 30px; max-width: 30px; min-width: 30px;"

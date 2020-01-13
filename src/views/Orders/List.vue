@@ -954,7 +954,7 @@ export default {
       const itemParams = {
         type: 'orders',
         sort: {
-          deliveryDate: 'desc',
+          deliveryDate: 'asc',
           deliveryTimeOfDay: 'asc',
         },
         filter: orderFilter,

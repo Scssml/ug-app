@@ -386,22 +386,7 @@ export default {
   },
   computed: {
     typePayList() {
-      const checkClients = this.checkCardList.some((item) => {
-        const card = this.cardsList[item.index];
-        return card.props.clientId === 0;
-      });
-
-      return this.paymentTypesList.filter((item) => {
-        let show = true;
-
-        if (item.id === 7) {
-          show = false;
-        } else if (item.id === 5 && checkClients) {
-          show = false;
-        }
-
-        return show;
-      });
+      return this.paymentTypesList.filter((item) => item.id !== 7);
     },
     sumChange: function sumChange() {
       const sum = this.sumClient - this.checkSum;

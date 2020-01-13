@@ -504,23 +504,9 @@ export default {
 
       return orderList;
     },
-    typePayList() {
-      return this.paymentTypesList.filter((item) => {
-        let show = true;
-
-        if (item.id === 7) {
-          show = false;
-        } else if (item.id === 5 && this.client === 0) {
-          show = false;
-        }
-
-        return show;
-      });
+    typePayList: function() {
+      return this.paymentTypesList.filter((item) => item.id !== 7);
     },
-    // clientOrdersList: function clientOrdersList() {
-    //   const ordersList = this.ordersList.filter(item => item.client.id === this.client);
-    //   return ordersList;
-    // },
     sumDecor: function decorSum() {
       let sum = 0;
       if (this.sumDecorCustom !== '') {

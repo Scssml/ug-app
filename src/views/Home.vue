@@ -468,7 +468,6 @@ export default {
         const item = this.cardsList[index];
         item.success = true;
         this.$set(this.cardsList, index, item);
-        this.addCard();
 
         // if (props.payment.paymentTypeId === 5) {
         if (item.goods.length === 0) {

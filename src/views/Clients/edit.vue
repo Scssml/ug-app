@@ -220,10 +220,11 @@ export default {
       };
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
+        const clientsList = response.map((item) => {
           item.id = +item.id;
           return item;
         });
+        this.clientsList = clientsList.filter(item => item.id !== 0);
       }).catch(() => {
         console.log('error');
       });

@@ -573,7 +573,7 @@ export default {
         delivery: false,
         deliveryDate: '',
         deliveryTime: '',
-        deliveryTimeOfDay: 1,
+        deliveryTimeOfDay: null,
         createdBy: 0,
         orderSourceType: [],
         description: '',

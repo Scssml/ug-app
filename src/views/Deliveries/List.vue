@@ -551,8 +551,17 @@ export default {
         this.closeDialog();
       }
     },
+    updateOrderList(newValue) {
+      if (newValue) {
+        this.$store.commit('setUpdateOrderList', false);
+        this.getOrdersList();
+      }
+    },
   },
   computed: {
+    updateOrderList() {
+      return this.$store.getters.getUpdateOrderList;
+    },
     couriersGpsList() {
       return this.$store.getters.getCouriersGps;
     },

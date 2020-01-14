@@ -99,11 +99,13 @@
           label="Счет"
           v-model.number="editedItem.bill"
           type="number"
+          v-if="isCurrentUserAdmin"
         ></v-text-field>
         <v-text-field
           label="Лимит"
           v-model.number="editedItem.credit"
           type="number"
+          v-if="isCurrentUserAdmin"
         ></v-text-field>
         <v-text-field
           label="Скидка"
@@ -147,6 +149,7 @@ export default {
       typeClient: [],
       createdSuccess: false,
       clientsList: [],
+      currentUserGroup: null
     };
   },
   methods: {
@@ -237,6 +240,11 @@ export default {
       return textOne.indexOf(searchText) > -1 ||
         textTwo.indexOf(searchText) > -1;
     },
+  },
+  computed: {
+    isCurrentUserAdmin() {
+      return this.$store.getters.getAuthUserGroup.code === "admin";
+    }
   },
   mounted() {
     this.getItem();

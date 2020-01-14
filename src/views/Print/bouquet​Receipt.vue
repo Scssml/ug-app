@@ -13,13 +13,13 @@
           <div style="width: calc(320px / 2); text-align: end">Флорист</div>
           <div style="width: calc(320px / 2)">
             <div style="text-align: center">{{ orderData.florist }}</div>
-            <div style="text-align: center; color: red">{{ orderData.price }}</div>
-            <div style="text-align: center; color: green">{{ orderData.price }}</div>
+            <div style="text-align: center; color: red">{{ orderData.paid }}</div>
+            <div style="text-align: center; color: green">{{ orderData.deliveryAmount }}</div>
           </div>
         </li>
         <li style="display: flex; font-size: 12px; font-weight: 600">
           <div style="width: calc(320px / 2); text-align: end">всего к оплате (доставка)</div>
-          <div style="width: calc(320px / 2); text-align: center">{{ orderData.totalPayment }}</div>
+          <div style="width: calc(320px / 2); text-align: center"></div>
         </li>
         <li style="display: flex; font-size: 12px; font-weight: 600">
           <div style="width: calc(320px / 2); text-align: end">Получатель</div>

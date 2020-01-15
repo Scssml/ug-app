@@ -275,6 +275,17 @@
                   type="text"
                 />
 
+                <v-select
+                  label="Канал поступления предоплаты"
+                  :items="paymentTypesList"
+                  class="mb-4"
+                  v-model="editedItem.prePaymentSource"
+                  item-value="id"
+                  item-text="name"
+                  :rules="[v => !!editedItem.prePayment && !!v || 'Заполните поле']"
+                  @change="handlePrePaymentSource"
+                />
+
                 <v-checkbox
                   label="Оплачен"
                   v-model="editedItem.alreadyPaid"
@@ -565,6 +576,7 @@ export default {
     return {
       // clientAddressee: false,
       dataPicker: false,
+      paymentTypesList: [],
       editedItem: {
         client: 0,
         clientName: '',
@@ -598,6 +610,7 @@ export default {
           },
         ],
         responsible: null,
+        prePaymentSource: -1,
       },
       createdSuccess: false,
       userInfo: {},
@@ -643,6 +656,9 @@ export default {
     },
   },
   methods: {
+    handlePrePaymentSource(id) {
+      this.editedItem.prePaymentSource = id;
+    },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
       const textTwo = item.phone.replace(/[^0-9]/gim, '');
@@ -716,6 +732,21 @@ export default {
           break;
         }
       }
+    },
+    getPaymentTypesList() {
+      const itemParams = {
+        type: 'paymentTypes',
+        filter: {
+          isActive: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        console.log(response);
+        this.paymentTypesList = response;
+      }).catch(() => {
+        console.log('error');
+      });
     },
     getUsersList() {
       const itemParams = {
@@ -912,6 +943,7 @@ export default {
     this.getClientsList();
     this.getClientTypeList();
     this.getCouriersList();
+    this.getPaymentTypesList();
   },
 };
 </script>

@@ -116,12 +116,18 @@
             <td class="text-xs-right">
               {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 110px;">
+            <td class="text-xs-right" style="width: 140px;">
               <v-icon
                 class="mr-2"
                 @click="showOrders(props.item.id)"
               >
                 assignment
+              </v-icon>
+              <v-icon
+                class="mr-2"
+                @click="showBouquests(props.item.id)"
+              >
+                local_florist
               </v-icon>
               <v-icon
                 @click="editItem(props.item.id)"
@@ -293,6 +299,9 @@ export default {
     },
     showOrders(id) {
       this.$router.push({ path: `/orders/?client=${id}` });
+    },
+    showBouquests(id) {
+      this.$router.push({ path: `/bouquets/?client=${id}` });
     },
   },
   mounted() {

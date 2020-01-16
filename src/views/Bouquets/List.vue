@@ -33,15 +33,40 @@
     <template v-if="!loadingDialog">
       <v-card>
         <v-card-title>
-          <v-text-field
-            v-model="search"
-            prepend-icon="search"
-            label="Поиск"
-            single-line
-            hide-details
-          ></v-text-field>
-          <v-spacer></v-spacer>
+          <v-flex>
+            <v-layout row wrap>
+              <v-text-field
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                single-line
+                hide-details
+              ></v-text-field>
 
+              <v-flex xs2 class="px-2">
+                <v-select
+                  label="Менеджер"
+                  :items="allManagers"
+                  v-model="filterManagerStatus"
+                  item-value="id"
+                  item-text="name"
+                  @change="filterByManager"
+                ></v-select>
+              </v-flex>
+
+              <v-flex xs2 class="px-2">
+                <v-select
+                  label="Клиент"
+                  :items="allClients"
+                  v-model="filterClientStatus"
+                  item-value="id"
+                  item-text="name"
+                  @change="filterByClient"
+                ></v-select>
+              </v-flex>
+            </v-layout>
+          </v-flex>
+          <v-spacer></v-spacer>
           <v-dialog
             v-model="dialogForm"
             persistent
@@ -63,7 +88,7 @@
 
         <v-data-table
           :headers="headersTable"
-          :items="bouquetsList"
+          :items="filteredBouquestsList"
           hide-actions
           no-data-text="Букетов не найдено"
           no-results-text="Букетов не найдено"
@@ -129,6 +154,8 @@ export default {
   },
   data() {
     return {
+      filterManagerStatus: -1,
+      filterClientStatus: -1,
       loadingData: [
         {
           title: 'Получение букетов',
@@ -185,8 +212,46 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
+    allManagers() {
+      return [
+        { id: -1, name: 'Все' },
+        ...this.bouquetsList
+          .filter(p => p.user)
+          .map(p => ({ id: p.user.id, name: p.user.name })),
+      ];
+    },
+    allClients() {
+      return [
+        { id: -1, name: 'Все' },
+        ...this.bouquetsList
+          .filter(p => p.client)
+          .map(p => ({ id: p.client.id, name: p.client.name })),
+      ];
+    },
+    filteredBouquestsList() {
+      let bouquetsList = this.bouquetsList;
+      if (this.filterManagerStatus !== -1) {
+        bouquetsList = bouquetsList.filter(
+          p => p.user && p.user.id === this.filterManagerStatus
+        );
+      }
+
+      if (this.filterClientStatus !== -1) {
+        bouquetsList = bouquetsList.filter(
+          p => p.client && p.client.id === this.filterClientStatus
+        );
+      }
+
+      return bouquetsList;
+    },
   },
   methods: {
+    filterByManager(filter) {
+      this.filterManagerStatus = filter;
+    },
+    filterByClient(filter) {
+      this.filterClientStatus = filter;
+    },
     printDoc(id) {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
@@ -235,6 +300,10 @@ export default {
   },
   mounted() {
     this.getBouquetsList();
+
+    if (this.$route.query.client !== undefined) {
+      this.filterClientStatus = +this.$route.query.client;
+    }
   },
 };
 </script>

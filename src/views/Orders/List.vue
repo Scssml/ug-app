@@ -144,6 +144,23 @@
                 @change="customFilter()"
               ></v-autocomplete>
             </v-flex>
+
+            <v-flex
+              xs2
+              class="px-2"
+              v-if="$store.getters.getAuthUserGroup.code === 'admin'"
+            >
+              <v-select
+                label="Менеджер"
+                :items="[{id: '', name: 'Все'}].concat(usersList)"
+                item-text="name"
+                item-value="id"
+                v-model="filter.createdBy"
+                hide-details
+                @change="customFilter()"
+              ></v-select>
+            </v-flex>
+
             <v-flex
               xs2
               class="px-2"
@@ -716,6 +733,7 @@ export default {
         deliveryTimeOfDay: '',
         dateStart: null,
         dateEnd: null,
+        createdBy: '',
       },
       loadingData: [
         {
@@ -733,6 +751,7 @@ export default {
       ordersList: [],
       statusList: [],
       clientsList: [],
+      usersList: [],
       typeClient: [],
       editedId: 0,
       copyElem: false,
@@ -1093,6 +1112,21 @@ export default {
         console.log('error');
       });
     },
+    getUsersList() {
+      const itemParams = {
+        type: 'users',
+        filter: {
+          active: true,
+          group: [1, 2],
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersList = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
     closeDialog() {
       this.getOrdersList();
       this.dialogForm = false;
@@ -1216,18 +1250,20 @@ export default {
     date.setDate(date.getDate() + 7);
     const dateEnd = date.toISOString().split('T')[0];
 
-    this.filter.dateStart = dateStart;
-    this.filter.dateEnd = dateEnd;
-
     this.take = this.$store.getters.getCountElemPage;
+
+    if (this.$route.query.client !== undefined) {
+      this.filter.client = +this.$route.query.client;
+    } else {
+      this.filter.dateStart = dateStart;
+      this.filter.dateEnd = dateEnd;
+    }
 
     this.getOrdersList();
     this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();
-    if (this.$route.query.client !== undefined) {
-      this.filter.client = +this.$route.query.client;
-    }
+    this.getUsersList();
   },
 };
 </script>

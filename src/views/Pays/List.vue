@@ -29,11 +29,11 @@
           <v-flex>
             <v-layout row wrap>
               <v-text-field
-                      v-model="search"
-                      prepend-icon="search"
-                      label="Поиск"
-                      single-line
-                      hide-details
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                single-line
+                hide-details
               ></v-text-field>
               <v-flex xs2 class="px-2">
                 <v-select
@@ -75,6 +75,7 @@
             <td>
               {{ props.item.client.name }}
               <br />{{ props.item.client.phone }}
+              <br>Баланс: {{ props.item.client.bill }}
             </td>
             <td>{{ props.item.amount }}</td>
             <td>{{ props.item.paymentType.name }}</td>
@@ -196,7 +197,7 @@ export default {
 
       this.$store
         .dispatch("getItemsList", itemParams)
-        .then(response => {
+        .then((response) => {
           this.paymentsList = response;
 
           const loadData = this.loadingData.find(

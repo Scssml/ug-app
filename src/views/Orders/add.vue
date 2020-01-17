@@ -491,7 +491,6 @@
           <v-flex xs5 v-if="editedItem.deliveryType === 2">
             <div style="position: relative; height: 100%; overflow: hidden;">
               <delivery-map
-                :orders-list="ordersList"
                 :delivery-time-of-day-list="this.deliveryTimeOfDayList"
                 :edited-item="editedItem"
                 :zones="deliveryZones"
@@ -533,6 +532,7 @@ export default {
       dataPicker: false,
       paymentTypesList: [],
       editedItem: {
+        id: -1,
         isCustomerRecipient: false,
         client: 0,
         clientName: "",
@@ -896,6 +896,10 @@ export default {
           status: [1, 2, 3]
         }
       };
+
+      Object.keys(itemParams.filter).forEach(
+              key => itemParams.filter[key] == null && delete itemParams.filter[key]
+      );
 
       this.$store
         .dispatch("getItemsList", itemParams)

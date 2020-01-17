@@ -505,7 +505,13 @@ export default {
       return orderList;
     },
     typePayList: function() {
-      return this.paymentTypesList.filter((item) => item.id !== 7);
+      return this.paymentTypesList.filter((item) => {
+        if (this.client === 0) {
+          return item.id !== 5;
+        }
+
+        return item.id !== 7;
+      });
     },
     sumDecor: function decorSum() {
       let sum = 0;

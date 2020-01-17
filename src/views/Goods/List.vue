@@ -116,8 +116,66 @@
             single-line
             hide-details
           ></v-text-field>
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataStartPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="200px"
+            class="ml-4"
+          >
+            <v-text-field
+              v-model="filter.startDate"
+              slot="activator"
+              label="C"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.startDate"
+              @input="dataStartPicker = false"
+              no-title
+              scrollable
+              locale="ru-ru"
+              first-day-of-week="1"
+              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+            ></v-date-picker>
+          </v-menu>
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataEndPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="200px"
+            class="ml-4"
+          >
+            <v-text-field
+              v-model="filter.endDate"
+              slot="activator"
+              label="По"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.endDate"
+              @input="dataEndPicker = false"
+              no-title
+              scrollable
+              locale="ru-ru"
+              first-day-of-week="1"
+              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+            ></v-date-picker>
+          </v-menu>
           <v-spacer></v-spacer>
-          <v-btn color="info" to="/goods/history/">История</v-btn>
+          <v-btn color="info" :to="historyLinkPage">История</v-btn>
         </v-card-title>
         <v-data-table
           :headers="headersTable"
@@ -129,10 +187,7 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <list-item
-              :props="props"
-              @exel-calc="exelCalc"
-            />
+            <list-item :props="props" @exel-calc="exelCalc" />
           </template>
         </v-data-table>
         <v-btn fab color="info" class="mx-4" @click="dialogForm = true">
@@ -155,6 +210,12 @@ export default {
   },
   data() {
     return {
+      dataStartPicker: null,
+      dataEndPicker: null,
+      filter: {
+        startDate: null,
+        endDate: null
+      },
       loadingData: [
         {
           title: "Получение товаров",
@@ -211,6 +272,17 @@ export default {
     };
   },
   computed: {
+    historyLinkPage() {
+      const originalLink = `/goods/history`;
+      const query = this.encodeQueryData({
+        from: this.filter.startDate,
+        to: this.filter.endDate,
+        search: this.search,
+        type: this.dataEdit.type
+      });
+
+      return `${originalLink}?${query}`;
+    },
     loadingDialog() {
       const loadData = this.loadingData.filter(
         item => !item.error && !item.loading
@@ -238,6 +310,19 @@ export default {
     }
   },
   methods: {
+    encodeQueryData(data) {
+      const queryParams = [];
+
+      for (let d in data) {
+        if (data[d]) {
+          queryParams.push(
+            encodeURIComponent(d) + "=" + encodeURIComponent(data[d])
+          );
+        }
+      }
+
+      return queryParams.join("&");
+    },
     exelCalc(val) {
       /* eslint no-eval: 0 */
 

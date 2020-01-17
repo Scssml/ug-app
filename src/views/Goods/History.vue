@@ -1,25 +1,18 @@
 <template>
-  <v-container
-    fluid
-    class="pa-0"
-  >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
+  <v-container fluid class="pa-0">
+    <v-dialog :value="loadingDialog" persistent max-width="320px">
       <v-list>
         <v-list-tile
           v-for="(item, index) in loadingData"
           :key="index"
           avatar
-          :color="(item.error) ? 'red' : item.color"
+          :color="item.error ? 'red' : item.color"
         >
           <v-list-tile-avatar>
             <v-progress-circular
               :value="100"
               :size="30"
-              :color="(item.error) ? 'red' : item.color"
+              :color="item.error ? 'red' : item.color"
               :indeterminate="item.loading"
             ></v-progress-circular>
           </v-list-tile-avatar>
@@ -41,6 +34,17 @@
             hide-details
           ></v-text-field>
           <v-spacer></v-spacer>
+          <v-flex v-if="searchName">
+              Товар для поиска:
+              <v-text-field
+                      v-model="searchName"
+                      label="Товар для поиска"
+                      single-line
+                      hide-details
+                      readonly
+                      class="input-group--dirty"
+              ></v-text-field>
+          </v-flex>
         </v-card-title>
 
         <v-data-table
@@ -68,10 +72,12 @@
             <td class="text-xs-right" style="width: 7%;">
               <v-icon
                 class="mr-2"
-                @click.prevent="$router.push({
-                  name: 'historyView',
-                  params: { id: props.item.id }
-                })"
+                @click.prevent="
+                  $router.push({
+                    name: 'historyView',
+                    params: { id: props.item.id }
+                  })
+                "
               >
                 visibility
               </v-icon>
@@ -85,133 +91,153 @@
 
 <script>
 export default {
-  name: 'History',
+  name: "History",
   data() {
     return {
+      searchName: null,
       loadingData: [
         {
-          title: 'Получение поставок',
+          title: "Получение поставок",
           error: false,
           loading: true,
-          color: 'indigo',
-          id: 'purchase',
-        },
+          color: "indigo",
+          id: "purchase"
+        }
       ],
-      search: '',
+      search: "",
       headersTable: [
         {
-          text: 'Дата',
-          align: 'left',
-          value: 'date',
+          text: "Дата",
+          align: "left",
+          value: "date"
         },
         {
-          text: 'Тип изменения',
-          align: 'left',
-          value: 'type',
+          text: "Тип изменения",
+          align: "left",
+          value: "type"
         },
         {
-          text: 'Закупка',
-          align: 'left',
-          value: 'purchase',
+          text: "Закупка",
+          align: "left",
+          value: "purchase"
         },
         {
-          text: 'Приход',
-          align: 'left',
-          value: 'arrival',
+          text: "Приход",
+          align: "left",
+          value: "arrival"
         },
         {
-          text: 'Наценка',
-          align: 'left',
-          value: 'markup',
+          text: "Наценка",
+          align: "left",
+          value: "markup"
         },
         {
-          text: 'Переоценка',
-          align: 'left',
-          value: 'revaluation',
+          text: "Переоценка",
+          align: "left",
+          value: "revaluation"
         },
         {
-          text: 'Компания',
-          align: 'left',
-          value: 'company',
+          text: "Компания",
+          align: "left",
+          value: "company"
         },
         {
-          text: 'Менеджер',
-          align: 'left',
-          value: 'createdBy.name',
+          text: "Менеджер",
+          align: "left",
+          value: "createdBy.name"
         },
         {
-          text: '',
-          align: 'right',
+          text: "",
+          align: "right",
           sortable: false,
-          value: 'action',
-        },
+          value: "action"
+        }
       ],
       usersList: [],
-      purchaseList: [],
+      purchaseList: []
     };
   },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
-    },
+      const loadData = this.loadingData.filter(
+        item => !item.error && !item.loading
+      );
+      return loadData.length === this.loadingData.length ? 0 : 1;
+    }
   },
   methods: {
     markup(item) {
       let markupVal = 0;
       if (item.arrival !== 0) {
-        markupVal = 100 - ((item.purchase * 100) / item.arrival);
+        markupVal = 100 - (item.purchase * 100) / item.arrival;
       }
 
       return +markupVal.toFixed(2);
     },
-    getPurchaseList: function getPurchaseList() {
+    getPurchaseList: function getPurchaseList({ from, to, search, ...query }) {
       const itemParams = {
-        type: 'purchase',
+        type: "purchase",
+        filter: {
+          ...query,
+          search
+        }
       };
 
-      const successData = 'Закупки получены!';
-      const errorData = 'Ошибка получения закупок!';
+      if (from || to) {
+        itemParams["filter"] = {
+          ...itemParams["filter"],
+          purchaseDate: [from, to]
+        };
+      }
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.purchaseList = response.map((item) => {
-          const purchase = item;
-          // const dateCreated = purchase.date.split('T')[0];
-          // purchase.date = dateCreated;
-          return purchase;
+      this.searchName = search;
+
+      const successData = "Закупки получены!";
+      const errorData = "Ошибка получения закупок!";
+
+      this.$store
+        .dispatch("getItemsList", itemParams)
+        .then(response => {
+          this.purchaseList = response.map(item => {
+            const purchase = item;
+            // const dateCreated = purchase.date.split('T')[0];
+            // purchase.date = dateCreated;
+            return purchase;
+          });
+
+          const loadData = this.loadingData.find(
+            item => item.id === itemParams.type
+          );
+          loadData.title = successData;
+          loadData.loading = false;
+        })
+        .catch(() => {
+          const loadData = this.loadingData.find(
+            item => item.id === itemParams.type
+          );
+          loadData.title = errorData;
+          loadData.error = true;
         });
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
+    }
   },
   mounted() {
-    this.getPurchaseList();
-  },
+    this.getPurchaseList(this.$router.history.current.query);
+  }
 };
 </script>
 
 <style lang="scss" scoped>
-  .v-table {
+.v-table {
+  tr:nth-child(even) {
+    td {
+      background: #f9f9f9;
+    }
 
-    tr:nth-child(even) {
-
+    &:hover {
       td {
-        background: #f9f9f9;
-      }
-
-      &:hover {
-
-        td {
-          background: #eee;
-        }
+        background: #eee;
       }
     }
   }
+}
 </style>

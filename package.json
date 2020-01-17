@@ -19,7 +19,8 @@
     "vue-router": "^3.0.1",
     "vue-yandex-maps": "^0.10.2",
     "vuetify": "^1.5.14",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.0.0-beta.49",

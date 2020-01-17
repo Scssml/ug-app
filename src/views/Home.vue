@@ -386,7 +386,13 @@ export default {
   },
   computed: {
     typePayList() {
-      return this.paymentTypesList.filter((item) => item.id !== 7);
+      return this.paymentTypesList.filter((item) => {
+        if (this.client) {
+          return item.id !== 5;
+        }
+
+        return item.id !== 7;
+      });
     },
     sumChange: function sumChange() {
       const sum = this.sumClient - this.checkSum;

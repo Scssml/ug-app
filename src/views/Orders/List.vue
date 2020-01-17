@@ -374,6 +374,7 @@
                         props.item[prop.field]
                         || prop.field === 'incognito'
                         || prop.field === 'description'
+                        || prop.field === 'alreadyPaid'
                       ">
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
@@ -392,7 +393,10 @@
                           {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
                         </template>
                         <template v-else-if="prop.field === 'alreadyPaid'">
-                          {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
+                          <change-already-paid
+                            :order="props.item"
+                          ></change-already-paid>
+                          <!-- {{ (props.item[prop.field]) ? 'Да' : 'Нет' }} -->
                         </template>
                         <template v-else-if="prop.field === 'description'">
                           <div
@@ -714,6 +718,7 @@ import OrderEdit from './edit.vue';
 import OrderAdd from './add.vue';
 import ChangeStatus from './changeStatus.vue';
 import changeDescription from './changeDescription.vue';
+import changeAlreadyPaid from './changeAlreadyPaid.vue';
 import userSettings from './userSettings.vue';
 
 export default {
@@ -723,6 +728,7 @@ export default {
     OrderAdd,
     ChangeStatus,
     changeDescription,
+    changeAlreadyPaid,
     userSettings,
   },
   data() {

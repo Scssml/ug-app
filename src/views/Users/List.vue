@@ -56,6 +56,16 @@
                 :id="editedId"
                 @cancel="closeDialog()"
               ></user-edit>
+              <user-delete
+                v-else-if="deleteId"
+                :id="deleteId"
+                @cancel="closeDialog()"
+              ></user-delete>
+              <user-change-pwd
+                v-else-if="changePwdId"
+                :id="changePwdId"
+                @cancel="closeDialog()"
+              ></user-change-pwd>
               <user-add
                 v-else
                 @cancel="closeDialog()"
@@ -80,12 +90,26 @@
             <td class="text-xs-right">
               {{ (props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 7%;">
+            <td class="text-xs-right" style="width: 140px">
               <v-icon
-                class="mr-2"
                 @click="editItem(props.item.id)"
               >
                 edit
+              </v-icon>
+
+              <v-icon
+                class="ml-2"
+                v-if="$store.getters.getAuthUserGroup.code === 'admin'"
+                @click="changePwd(props.item.id)"
+              >
+                https
+              </v-icon>
+              <v-icon
+                class="ml-2"
+                v-if="$store.getters.getAuthUserGroup.code === 'admin'"
+                @click="deleteItem(props.item.id)"
+              >
+                delete
               </v-icon>
             </td>
           </template>
@@ -98,12 +122,16 @@
 <script>
 import UserEdit from './edit.vue';
 import UserAdd from './add.vue';
+import UserDelete from './delete.vue';
+import UserChangePwd from './changePwd.vue';
 
 export default {
   name: 'Users',
   components: {
     UserEdit,
     UserAdd,
+    UserDelete,
+    UserChangePwd,
   },
   data() {
     return {
@@ -153,6 +181,8 @@ export default {
       dialogForm: false,
       usersList: [],
       editedId: 0,
+      deleteId: 0,
+      changePwdId: 0,
     };
   },
   computed: {
@@ -186,9 +216,19 @@ export default {
       this.getUsersList();
       this.dialogForm = false;
       this.editedId = 0;
+      this.deleteId = 0;
+      this.changePwdId = 0;
     },
     editItem(id) {
       this.editedId = +id;
+      this.dialogForm = true;
+    },
+    deleteItem(id) {
+      this.deleteId = +id;
+      this.dialogForm = true;
+    },
+    changePwd(id) {
+      this.changePwdId = +id;
       this.dialogForm = true;
     },
   },

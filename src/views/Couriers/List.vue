@@ -56,6 +56,11 @@
                 :id="editedId"
                 @cancel="closeDialog()"
               ></courier-edit>
+              <courier-delete
+                v-else-if="deleteId"
+                :id="deleteId"
+                @cancel="closeDialog()"
+              ></courier-delete>
               <courier-add
                 v-else
                 @cancel="closeDialog()"
@@ -84,6 +89,14 @@
               >
                 edit
               </v-icon>
+
+              <v-icon
+                class="ml-2"
+                v-if="$store.getters.getAuthUserGroup.code === 'admin'"
+                @click="deleteItem(props.item.id)"
+              >
+                delete
+              </v-icon>
             </td>
           </template>
         </v-data-table>
@@ -95,12 +108,14 @@
 <script>
 import CourierEdit from './edit.vue';
 import CourierAdd from './add.vue';
+import CourierDelete from './delete.vue';
 
 export default {
   name: 'Couriers',
   components: {
     CourierEdit,
     CourierAdd,
+    CourierDelete,
   },
   data() {
     return {
@@ -140,6 +155,7 @@ export default {
       dialogForm: false,
       editedId: 0,
       couriersList: [],
+      deleteId: 0,
     };
   },
   computed: {
@@ -176,9 +192,14 @@ export default {
       this.getCouriersList();
       this.dialogForm = false;
       this.editedId = 0;
+      this.deleteId = 0;
     },
     editItem(id) {
       this.editedId = +id;
+      this.dialogForm = true;
+    },
+    deleteItem(id) {
+      this.deleteId = +id;
       this.dialogForm = true;
     },
   },

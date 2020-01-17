@@ -271,6 +271,24 @@ export default new Vuex.Store({
       });
     },
 
+    changePwd({ state, dispatch }, item) {
+      const url = `${state.apiUrl}${item.type}/${item.id}/pwd`;
+      return new Promise((resolve, rejected) => {
+        axios.put(
+          url,
+          item.props,
+        ).then(() => {
+          resolve();
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
+          rejected();
+        });
+      });
+    },
+
     getDeliveryZones({ state, commit }) {
       return new Promise((res, rej) => {
         const url = `${state.apiUrl}delivery-zones`;

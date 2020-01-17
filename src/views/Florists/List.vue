@@ -56,6 +56,11 @@
                 :id="editedId"
                 @cancel="closeDialog()"
               ></florist-edit>
+              <florist-delete
+                v-else-if="deleteId"
+                :id="deleteId"
+                @cancel="closeDialog()"
+              ></florist-delete>
               <florist-add
                 v-else
                 @cancel="closeDialog()"
@@ -86,6 +91,14 @@
               >
                 edit
               </v-icon>
+
+              <v-icon
+                class="ml-2"
+                v-if="$store.getters.getAuthUserGroup.code === 'admin'"
+                @click="deleteItem(props.item.id)"
+              >
+                delete
+              </v-icon>
             </td>
           </template>
         </v-data-table>
@@ -97,12 +110,14 @@
 <script>
 import FloristEdit from './edit.vue';
 import FloristAdd from './add.vue';
+import FloristDelete from './delete.vue';
 
 export default {
   name: 'Florists',
   components: {
     FloristEdit,
     FloristAdd,
+    FloristDelete,
   },
   data() {
     return {
@@ -152,6 +167,7 @@ export default {
       dialogForm: false,
       editedId: 0,
       floristsList: [],
+      deleteId: 0,
     };
   },
   computed: {
@@ -185,9 +201,14 @@ export default {
       this.getFloristsList();
       this.dialogForm = false;
       this.editedId = 0;
+      this.deleteId = 0;
     },
     editItem(id) {
       this.editedId = +id;
+      this.dialogForm = true;
+    },
+    deleteItem(id) {
+      this.deleteId = +id;
       this.dialogForm = true;
     },
   },

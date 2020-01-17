@@ -79,6 +79,11 @@
                 :id="editedId"
                 @cancel="closeDialog()"
               ></client-edit>
+              <client-delete
+                v-else-if="deleteId"
+                :id="deleteId"
+                @cancel="closeDialog()"
+              ></client-delete>
               <client-add
                 v-else
                 @cancel="closeDialog()"
@@ -116,7 +121,7 @@
             <td class="text-xs-right">
               {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 140px;">
+            <td class="text-xs-right" style="width: 170px;">
               <v-icon
                 class="mr-2"
                 @click="showOrders(props.item.id)"
@@ -134,6 +139,13 @@
               >
                 edit
               </v-icon>
+              <v-icon
+                @click="deleteItem(props.item.id)"
+                class="ml-2"
+                v-if="props.item.id > 0 && $store.getters.getAuthUserGroup.code === 'admin'"
+              >
+                delete
+              </v-icon>
             </td>
           </template>
         </v-data-table>
@@ -145,12 +157,14 @@
 <script>
 import ClientEdit from './edit.vue';
 import ClientAdd from './add.vue';
+import ClientDelete from './delete.vue';
 
 export default {
   name: 'Clients',
   components: {
     ClientEdit,
     ClientAdd,
+    ClientDelete,
   },
   data() {
     return {
@@ -219,6 +233,7 @@ export default {
       dialogForm: false,
       editedId: 0,
       clientsList: [],
+      deleteId: 0,
     };
   },
   computed: {
@@ -292,9 +307,14 @@ export default {
       this.getClientsList();
       this.dialogForm = false;
       this.editedId = 0;
+      this.deleteId = 0;
     },
     editItem(id) {
       this.editedId = +id;
+      this.dialogForm = true;
+    },
+    deleteItem(id) {
+      this.deleteId = +id;
       this.dialogForm = true;
     },
     showOrders(id) {

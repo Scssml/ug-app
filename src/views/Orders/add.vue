@@ -533,6 +533,7 @@ export default {
       dataPicker: false,
       paymentTypesList: [],
       editedItem: {
+        isCustomerRecipient: false,
         client: 0,
         clientName: "",
         clientPhone: "",

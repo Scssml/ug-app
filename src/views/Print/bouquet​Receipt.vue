@@ -21,13 +21,13 @@
         </li>
         <li style="display: flex; font-size: 16px; font-weight: 600">
           <div style="width: calc(320px / 2); text-align: end">№</div>
-          <div style="width: calc(320px / 2); text-align: center; color: yellow">
+          <div style="width: calc(320px / 2); text-align: center;">
             {{ orderData.number }}
           </div>
         </li>
         <li style="display: flex; font-size: 16px; font-weight: 600">
           <div style="width: calc(320px / 2); text-align: end">% ставка на оформление</div>
-          <div style="width: calc(320px / 2); text-align: center; color: yellow">
+          <div style="width: calc(320px / 2); text-align: center;">
             {{ orderData.bidForRegistration }}
           </div>
         </li>
@@ -51,13 +51,13 @@
         </li>
         <li style="display: flex; font-size: 16px; font-weight: 600">
           <div style="width: calc(320px / 2); text-align: end">% ставка на скидку</div>
-          <div style="width: calc(320px / 2); text-align: center; color: green">
+          <div style="width: calc(320px / 2); text-align: center;">
             {{ orderData.discountRate }}
           </div>
         </li>
         <li style="display: flex; font-size: 12px;">
           <div style="width: calc(320px / 2); text-align: end"> Сумма скидки</div>
-          <div style="width: calc(320px / 2); text-align: center; color: green">
+          <div style="width: calc(320px / 2); text-align: center;">
             {{ orderData.discountAmount }}
           </div>
         </li>

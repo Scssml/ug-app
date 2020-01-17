@@ -647,6 +647,7 @@ import inside from 'point-in-geopolygon';
 import { getDistance } from 'geolib';
 import DeliveryMap from './deliveryMap.vue';
 import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
+import geocoder from 'geocoder';
 
 const baseCoordinates = [53.186104, 50.160200];
 
@@ -780,10 +781,21 @@ export default {
         if (findClient.type !== undefined) {
           this.editedItem.clientType = findClient.type;
         }
+
+        this.editedItem.address = findClient.address;
+        this.editedItem.entrance = findClient.entrance;
+        this.editedItem.flat = findClient.flat;
+        this.editedItem.floor = findClient.floor;
+
+        findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.clientName = '';
-        this.editedItem.clientPhone = '';
-        this.editedItem.clientType = '';
+        this.editedItem.clientName = "";
+        this.editedItem.clientPhone = "";
+        this.editedItem.clientType = "";
+        this.editedItem.address = "";
+        this.editedItem.entrance = "";
+        this.editedItem.flat = "";
+        this.editedItem.floor = "";
       }
     },
     setDataAddressee() {
@@ -797,6 +809,8 @@ export default {
         this.editedItem.entrance = findClient.entrance;
         this.editedItem.flat = findClient.flat;
         this.editedItem.floor = findClient.floor;
+
+        findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
         this.editedItem.addresseeName = '';
         this.editedItem.addresseePhone = '';
@@ -834,6 +848,40 @@ export default {
           break;
         }
       }
+    },
+    getPaymentTypesList() {
+      const itemParams = {
+        type: 'paymentTypes',
+        filter: {
+          isActive: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        console.log(response);
+        this.paymentTypesList = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    setPointByClientAddress(address) {
+      geocoder.geocode(
+              address,
+              (
+                      _,
+                      {
+                        results: [
+                          { geometry: { location: { lat, lng } = {} } = {} } = {}
+                        ] = []
+                      } = {}
+              ) => {
+                this.updateAddress({
+                  geo: [lat, lng],
+                  address
+                });
+              },
+              { language: "ru", key: window.GOOGLE_API_KEY }
+      );
     },
     getItem() {
       if (this.id) {

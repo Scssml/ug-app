@@ -26,25 +26,91 @@
     <template v-if="!loadingDialog">
       <v-card>
         <v-card-title>
-          <v-text-field
-            v-model="search"
-            prepend-icon="search"
-            label="Поиск"
-            single-line
+          <v-select
+            label="Товар"
+            :items="goods"
+            :rules="[v => !!v || 'Заполните поле']"
+            item-text="name"
+            item-value="id"
+            v-model.number="filter.goodId"
             hide-details
-          ></v-text-field>
+            clearable
+            class="pr-4"
+            @change="setGoodName"
+          ></v-select>
           <v-spacer></v-spacer>
-          <v-flex v-if="searchName">
-              Товар для поиска:
-              <v-text-field
-                      v-model="searchName"
-                      label="Товар для поиска"
-                      single-line
-                      hide-details
-                      readonly
-                      class="input-group--dirty"
-              ></v-text-field>
-          </v-flex>
+          <v-select
+            label="Тип изменения"
+            :items="typeEdit"
+            :rules="[v => !!v || 'Заполните поле']"
+            item-text="name"
+            item-value="id"
+            v-model.number="filter.type"
+            hide-details
+            clearable
+            class="pr-4"
+            @change="getPurchaseList"
+          ></v-select>
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataStartPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="200px"
+            class="ml-4"
+          >
+            <v-text-field
+              v-model="filter.from"
+              slot="activator"
+              label="C"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.from"
+              @input="dataStartPicker = false"
+              no-title
+              scrollable
+              locale="ru-ru"
+              first-day-of-week="1"
+              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+              @change="getPurchaseList"
+            ></v-date-picker>
+          </v-menu>
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataEndPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="200px"
+            class="ml-4"
+          >
+            <v-text-field
+              v-model="filter.to"
+              slot="activator"
+              label="По"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.to"
+              @input="dataEndPicker = false"
+              no-title
+              scrollable
+              locale="ru-ru"
+              first-day-of-week="1"
+              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+              @change="getPurchaseList"
+            ></v-date-picker>
+          </v-menu>
         </v-card-title>
 
         <v-data-table
@@ -94,7 +160,17 @@ export default {
   name: "History",
   data() {
     return {
-      searchName: null,
+      typeEdit: [],
+      goods: [],
+      dataStartPicker: null,
+      dataEndPicker: null,
+      filter: {
+        startDate: null,
+        endDate: null,
+        type: null,
+        search: null,
+        goodId: null
+      },
       loadingData: [
         {
           title: "Получение поставок",
@@ -174,23 +250,69 @@ export default {
 
       return +markupVal.toFixed(2);
     },
-    getPurchaseList: function getPurchaseList({ from, to, search, ...query }) {
+    setGoodName(goodId) {
+      if (!goodId) {
+        return (this.filter.search = null);
+      }
+
+      const good = this.goods.find(g => g.id === +goodId);
+
+      this.filter.search = good.name;
+      this.getPurchaseList();
+    },
+    getGoods() {
+      const itemParams = {
+        type: "goods",
+        sort: {
+          sortIndex: "asc"
+        }
+      };
+
+      this.$store.dispatch("getItemsList", itemParams).then(resp => {
+        this.goods = resp.map(item => {
+          item.id = +item.id;
+          return item;
+        });
+      });
+    },
+    getPurchaseTypesList() {
+      const itemParams = {
+        type: "purchase-types"
+      };
+
+      this.$store
+        .dispatch("getItemsList", itemParams)
+        .then(response => {
+          this.typeEdit = response.map(item => {
+            item.id = +item.id;
+            return item;
+          });
+        })
+        .catch(() => {
+          console.log("error");
+        });
+    },
+    getPurchaseList() {
+      const { from, to, search, type } = this.filter;
+
       const itemParams = {
         type: "purchase",
         filter: {
-          ...query,
+          type,
           search
         }
       };
 
-      if (from || to) {
+      if (from && to) {
         itemParams["filter"] = {
           ...itemParams["filter"],
           purchaseDate: [from, to]
         };
       }
 
-      this.searchName = search;
+      Object.keys(itemParams.filter).forEach(
+        key => itemParams.filter[key] == null && delete itemParams.filter[key]
+      );
 
       const successData = "Закупки получены!";
       const errorData = "Ошибка получения закупок!";
@@ -221,7 +343,9 @@ export default {
     }
   },
   mounted() {
-    this.getPurchaseList(this.$router.history.current.query);
+    this.getPurchaseList();
+    this.getPurchaseTypesList();
+    this.getGoods();
   }
 };
 </script>

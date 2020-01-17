@@ -116,64 +116,6 @@
             single-line
             hide-details
           ></v-text-field>
-          <v-menu
-            :close-on-content-click="false"
-            v-model="dataStartPicker"
-            :nudge-right="40"
-            lazy
-            transition="scale-transition"
-            offset-y
-            full-width
-            min-width="200px"
-            class="ml-4"
-          >
-            <v-text-field
-              v-model="filter.startDate"
-              slot="activator"
-              label="C"
-              prepend-icon="event"
-              hide-details
-              readonly
-            ></v-text-field>
-            <v-date-picker
-              v-model="filter.startDate"
-              @input="dataStartPicker = false"
-              no-title
-              scrollable
-              locale="ru-ru"
-              first-day-of-week="1"
-              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
-            ></v-date-picker>
-          </v-menu>
-          <v-menu
-            :close-on-content-click="false"
-            v-model="dataEndPicker"
-            :nudge-right="40"
-            lazy
-            transition="scale-transition"
-            offset-y
-            full-width
-            min-width="200px"
-            class="ml-4"
-          >
-            <v-text-field
-              v-model="filter.endDate"
-              slot="activator"
-              label="По"
-              prepend-icon="event"
-              hide-details
-              readonly
-            ></v-text-field>
-            <v-date-picker
-              v-model="filter.endDate"
-              @input="dataEndPicker = false"
-              no-title
-              scrollable
-              locale="ru-ru"
-              first-day-of-week="1"
-              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
-            ></v-date-picker>
-          </v-menu>
           <v-spacer></v-spacer>
           <v-btn color="info" :to="historyLinkPage">История</v-btn>
         </v-card-title>
@@ -210,12 +152,6 @@ export default {
   },
   data() {
     return {
-      dataStartPicker: null,
-      dataEndPicker: null,
-      filter: {
-        startDate: null,
-        endDate: null
-      },
       loadingData: [
         {
           title: "Получение товаров",
@@ -273,15 +209,7 @@ export default {
   },
   computed: {
     historyLinkPage() {
-      const originalLink = `/goods/history`;
-      const query = this.encodeQueryData({
-        from: this.filter.startDate,
-        to: this.filter.endDate,
-        search: this.search,
-        type: this.dataEdit.type
-      });
-
-      return `${originalLink}?${query}`;
+      return '/goods/history';
     },
     loadingDialog() {
       const loadData = this.loadingData.filter(

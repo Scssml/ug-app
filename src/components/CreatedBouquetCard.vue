@@ -462,7 +462,7 @@ export default {
       florist: 0,
       client: 0,
       order: 0,
-      decorPercent: 10,
+      decorPercent: 20,
       delivery: 0,
       comment: '',
       sumDecorAdditional: 0,
@@ -596,7 +596,7 @@ export default {
       this.florist = 0;
       this.client = 0;
       this.order = 0;
-      this.decorPercent = 10;
+      this.decorPercent = 20;
       this.delivery = 0;
       this.salePersent = 0;
 

@@ -418,6 +418,12 @@
 </template>
 
 <script>
+  const datesAreOnSameDay = (first, second) => {
+    return first.getFullYear() === second.getFullYear() &&
+            first.getMonth() === second.getMonth() &&
+            first.getDate() === second.getDate();
+  };
+
 export default {
   props: {
     // bouquetsList: {
@@ -431,7 +437,7 @@ export default {
   },
   data() {
     return {
-      dateNow: '',
+      dateNow: new Date(),
       dateYesterday: '',
       createdSuccess: false,
       dialog: false,
@@ -440,7 +446,11 @@ export default {
   },
   computed: {
     paymentsNow() {
-      return this.paymentsList.filter(item => item.creationDate === this.dateNow);
+      return this.paymentsList.filter(item => {
+        const paymentDate = new Date(Date.parse(item.creationDate));
+
+        return datesAreOnSameDay(paymentDate, this.dateNow);
+      });
     },
     paymentsPrevDay() {
       return this.paymentsList.filter(item => item.creationDate === this.dateYesterday);
@@ -678,8 +688,6 @@ export default {
   },
   mounted() {
     const dateNow = new Date();
-    const dateNowStr = dateNow.toISOString().split('T')[0];
-    this.dateNow = dateNowStr;
     dateNow.setDate(dateNow.getDate() - 1);
     const dateYesterdayStr = dateNow.toISOString().split('T')[0];
     this.dateYesterday = dateYesterdayStr;

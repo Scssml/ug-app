@@ -343,7 +343,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <tr
-              :class="[props.item.alreadyPaid ? 'orange' : props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+              :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
             >
               <td
                 style="width: 30px; max-width: 30px; min-width: 30px;"
@@ -434,7 +434,12 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'orderCost'">
-                          <div :class="(props.item.alreadyPaid) ? 'red' : ''">
+                          <div :class="(props.item.alreadyPaid) ? 'green' : ''">
+                            {{ props.item[prop.field] }}
+                          </div>
+                        </template>
+                        <template v-else-if="prop.field === 'prePayment'">
+                          <div :class="(!props.item.alreadyPaid && props.item.prePayment > 0) ? 'orange' : ''">
                             {{ props.item[prop.field] }}
                           </div>
                         </template>

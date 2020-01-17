@@ -173,6 +173,7 @@
                   no-data-text="Не надено"
                   clearable
                   @change="setDataClient()"
+                  :search-input.sync="clientName"
                 ></v-autocomplete>
 
                 <v-select
@@ -406,6 +407,7 @@
                   clearable
                   @change="setDataAddressee()"
                   v-if="!editedItem.isCustomerRecipient"
+                  :search-input.sync="addresseeName"
                 ></v-autocomplete>
 
                 <v-text-field
@@ -637,7 +639,23 @@ export default {
       ],
       coordsMap: [53.05, 50.101783],
       responsible: undefined,
+      clientName: '',
+      addresseeName: '',
     };
+  },
+  watch: {
+    clientName(val) {
+      const clientId = this.editedItem.client;
+      if ((clientId === undefined) && (val && val !== 0)) {
+        this.editedItem.clientPhone = val;
+      }
+    },
+    addresseeName(val) {
+      const addresseeId = this.editedItem.addressee;
+      if ((addresseeId === undefined) && (val && val !== 0)) {
+        this.editedItem.addresseePhone = val;
+      }
+    },
   },
   computed: {
     deliveryZones() {

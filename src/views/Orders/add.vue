@@ -658,6 +658,8 @@ export default {
         this.editedItem.entrance = findClient.entrance;
         this.editedItem.flat = findClient.flat;
         this.editedItem.floor = findClient.floor;
+
+        findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
         this.editedItem.clientName = "";
         this.editedItem.clientPhone = "";
@@ -680,24 +682,7 @@ export default {
         this.editedItem.flat = findClient.flat;
         this.editedItem.floor = findClient.floor;
 
-        findClient.address &&
-          geocoder.geocode(
-            findClient.address,
-            (
-              _,
-              {
-                results: [
-                  { geometry: { location: { lat, lng } = {} } = {} } = {}
-                ] = []
-              } = {}
-            ) => {
-              this.updateAddress({
-                address: findClient.address,
-                geo: [lat, lng]
-              });
-            },
-            { language: "ru", key: window.GOOGLE_API_KEY }
-          );
+        findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
         this.editedItem.addresseeName = "";
         this.editedItem.addresseePhone = "";
@@ -706,6 +691,25 @@ export default {
         this.editedItem.flat = "";
         this.editedItem.floor = "";
       }
+    },
+    setPointByClientAddress(address) {
+      geocoder.geocode(
+        address,
+        (
+          _,
+          {
+            results: [
+              { geometry: { location: { lat, lng } = {} } = {} } = {}
+            ] = []
+          } = {}
+        ) => {
+          this.updateAddress({
+            geo: [lat, lng],
+            address
+          });
+        },
+        { language: "ru", key: window.GOOGLE_API_KEY }
+      );
     },
     setDataResponsible() {
       const clientId = this.editedItem.responsible;

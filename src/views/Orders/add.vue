@@ -283,7 +283,7 @@
                   v-model="editedItem.prePaymentSource"
                   item-value="id"
                   item-text="name"
-                  :rules="[v => !!editedItem.prePayment && !!v || 'Заполните поле']"
+                  :rules="[v => (!!editedItem.prePayment || editedItem.alreadyPaid) && !!v ? 'Заполните поле': null]"
                   @change="handlePrePaymentSource"
                 />
 
@@ -613,6 +613,7 @@ export default {
         ],
         responsible: null,
         prePaymentSource: -1,
+        prePayment: 0,
       },
       createdSuccess: false,
       userInfo: {},

@@ -261,9 +261,9 @@
                   item-text="name"
                   :rules="[
                     v =>
-                      (!!editedItem.prePayment || editedItem.alreadyPaid) && !!v
+                      (!!editedItem.prePayment || editedItem.alreadyPaid) && !v
                         ? 'Заполните поле'
-                        : null
+                        : false
                   ]"
                   @change="handlePrePaymentSource"
                 />
@@ -567,7 +567,7 @@ export default {
           }
         ],
         responsible: null,
-        prePaymentSource: -1,
+        prePaymentSource: null,
         prePayment: 0
       },
       createdSuccess: false,
@@ -898,7 +898,7 @@ export default {
       };
 
       Object.keys(itemParams.filter).forEach(
-              key => itemParams.filter[key] == null && delete itemParams.filter[key]
+        key => itemParams.filter[key] == null && delete itemParams.filter[key]
       );
 
       this.$store

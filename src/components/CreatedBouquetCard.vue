@@ -93,17 +93,30 @@
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <div class="px-0" style="height: 30px;">
-      <v-text-field
-        label="Оформление, %"
-        solo
-        flat
-        hide-details
-        v-model.number="decorPercent"
-        class="scs-small"
-        @change="updateProps()"
-      ></v-text-field>
-    </div>
+    <v-layout row wrap>
+      <v-flex xs6>
+        <v-text-field
+                label="Оформление, %"
+                solo
+                flat
+                hide-details
+                v-model.number="decorPercent"
+                class="scs-small"
+                @change="updateProps()"
+        ></v-text-field>
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+                label="Предопалата"
+                solo
+                flat
+                hide-details
+                v-model.number="prePayment"
+                class="scs-small"
+                readonly
+        ></v-text-field>
+      </v-flex>
+    </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
       <span class="px-3">{{ sumFlowers }}</span>

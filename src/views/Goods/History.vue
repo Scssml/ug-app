@@ -252,7 +252,9 @@ export default {
     },
     setGoodName(goodId) {
       if (!goodId) {
-        return (this.filter.search = null);
+        this.filter.search = null;
+
+        return this.getPurchaseList();
       }
 
       const good = this.goods.find(g => g.id === +goodId);

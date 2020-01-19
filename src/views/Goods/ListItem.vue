@@ -40,6 +40,7 @@
         hide-details
         type="number"
         v-model="props.item.price"
+        @change="handleItemChange('price')($event)"
         class="scs-small"
       ></v-text-field>
     </td>
@@ -51,7 +52,7 @@
         hide-details
         type="text"
         :value="props.item.count"
-        @change="props.item.count = exelCalc($event)"
+        @change="handleItemChange('count')($event)"
         class="scs-small"
       ></v-text-field>
     </td>
@@ -74,6 +75,11 @@ export default {
           sortIndex: +e.target.value
         })
         .then(() => {});
+    },
+    handleItemChange(prop) {
+      return value => {
+        this.$emit("onChange", { id: this.props.item.id, value, prop });
+      };
     }
   }
 };

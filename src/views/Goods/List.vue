@@ -129,7 +129,7 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <list-item :props="props" @exel-calc="exelCalc" />
+            <list-item :props="props" @onChange="handleRowItemChange" />
           </template>
         </v-data-table>
         <v-btn fab color="info" class="mx-4" @click="dialogForm = true">
@@ -141,10 +141,10 @@
 </template>
 
 <script>
-import GoodAdd from "./add.vue";
-import ListItem from "./ListItem";
+  import GoodAdd from './add.vue';
+  import ListItem from './ListItem';
 
-export default {
+  export default {
   name: "Goods",
   components: {
     GoodAdd,
@@ -221,12 +221,10 @@ export default {
       return "Остатки изменены";
     },
     arrival() {
-      const arrival = this.goodsList.reduce((sum, item) => {
+      return this.goodsList.reduce((sum, item) => {
         const goodArrival = +item.count * +item.price;
         return goodArrival + sum;
       }, 0);
-
-      return arrival;
     },
     markup() {
       let markupVal = 0;
@@ -240,6 +238,11 @@ export default {
   methods: {
     handleHistoryButtonClick() {
       this.$store.commit('clearPurchaseFilter');
+    },
+    handleRowItemChange({ id, prop, value }) {
+      const good = this.goodsList.find(g => g.id === id);
+
+      good[prop] = value;
     },
     exelCalc(val) {
       /* eslint no-eval: 0 */

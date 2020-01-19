@@ -68,7 +68,7 @@
             no-data-text="Нет заказов"
             v-model.number="order"
             class="scs-small"
-            @change="updateProps()"
+            @change="handleOrderChange"
           ></v-select>
         </div>
       </v-flex>
@@ -496,7 +496,7 @@ export default {
     prePayment() {
       let prePayment = 0;
 
-      if (this.order > 0) {
+      if (this.order > 0 && this.clientOrdersList.length) {
         const order = this.clientOrdersList.find(item => item.id === this.order);
 
         prePayment = +order.prePayment;
@@ -585,6 +585,13 @@ export default {
     },
   },
   methods: {
+    handleOrderChange(id) {
+      const order = this.clientOrdersList.find(item => item.id === id);
+
+      this.delivery = order.deliveryCost;
+
+      this.updateProps();
+    },
     getOrdersClient(changeOrder = true) {
       if (changeOrder) this.order = 0;
 

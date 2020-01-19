@@ -27,6 +27,13 @@ export default new Vuex.Store({
     deliveryZones: [],
     updateOrderList: false,
     countElemPage: 20,
+    purchaseFilter: {
+      startDate: null,
+      endDate: null,
+      type: null,
+      search: null,
+      goodId: null,
+    }
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -69,6 +76,18 @@ export default new Vuex.Store({
     setCountElemPage: (state, value) => {
       state.countElemPage = value;
     },
+    setPurchaseFilter: (state, { filterProp, value }) => {
+      state.purchaseFilter[filterProp] = value;
+    },
+    clearPurchaseFilter: (state) => {
+      state.purchaseFilter = {
+        startDate: null,
+        endDate: null,
+        type: null,
+        search: null,
+        goodId: null,
+      }
+    }
   },
   actions: {
     login({ state, commit }, user) {

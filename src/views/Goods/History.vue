@@ -32,11 +32,11 @@
             :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
-            v-model.number="filter.goodId"
+            v-model.number="purchaseFilter.goodId"
             hide-details
             clearable
             class="pr-4"
-            @change="setGoodName"
+            @change="setPurchaseFilter('goodId')($event)"
           ></v-select>
           <v-spacer></v-spacer>
           <v-select
@@ -45,11 +45,11 @@
             :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
-            v-model.number="filter.type"
+            v-model.number="purchaseFilter.type"
             hide-details
             clearable
             class="pr-4"
-            @change="getPurchaseList"
+            @change="setPurchaseFilter('type')($event)"
           ></v-select>
           <v-menu
             :close-on-content-click="false"
@@ -63,7 +63,7 @@
             class="ml-4"
           >
             <v-text-field
-              v-model="filter.from"
+              v-model="purchaseFilter.startDate"
               slot="activator"
               label="C"
               prepend-icon="event"
@@ -71,14 +71,13 @@
               readonly
             ></v-text-field>
             <v-date-picker
-              v-model="filter.from"
+              v-model="purchaseFilter.startDate"
               @input="dataStartPicker = false"
               no-title
               scrollable
               locale="ru-ru"
               first-day-of-week="1"
-              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
-              @change="getPurchaseList"
+              @change="setPurchaseFilter('startDate')($event)"
             ></v-date-picker>
           </v-menu>
           <v-menu
@@ -93,7 +92,7 @@
             class="ml-4"
           >
             <v-text-field
-              v-model="filter.to"
+              v-model="purchaseFilter.endDate"
               slot="activator"
               label="По"
               prepend-icon="event"
@@ -101,14 +100,13 @@
               readonly
             ></v-text-field>
             <v-date-picker
-              v-model="filter.to"
+              v-model="purchaseFilter.endDate"
               @input="dataEndPicker = false"
               no-title
               scrollable
               locale="ru-ru"
               first-day-of-week="1"
-              :max="!!filter.dateEnd ? filter.dateEnd : undefined"
-              @change="getPurchaseList"
+              @change="setPurchaseFilter('endDate')($event)"
             ></v-date-picker>
           </v-menu>
         </v-card-title>
@@ -156,6 +154,8 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "History",
   data() {
@@ -239,7 +239,8 @@ export default {
         item => !item.error && !item.loading
       );
       return loadData.length === this.loadingData.length ? 0 : 1;
-    }
+    },
+    ...mapState(["purchaseFilter"])
   },
   methods: {
     markup(item) {
@@ -250,18 +251,6 @@ export default {
 
       return +markupVal.toFixed(2);
     },
-    setGoodName(goodId) {
-      if (!goodId) {
-        this.filter.search = null;
-
-        return this.getPurchaseList();
-      }
-
-      const good = this.goods.find(g => g.id === +goodId);
-
-      this.filter.search = good.name;
-      this.getPurchaseList();
-    },
     getGoods() {
       const itemParams = {
         type: "goods",
@@ -270,7 +259,7 @@ export default {
         }
       };
 
-      this.$store.dispatch("getItemsList", itemParams).then(resp => {
+      return this.$store.dispatch("getItemsList", itemParams).then(resp => {
         this.goods = resp.map(item => {
           item.id = +item.id;
           return item;
@@ -282,7 +271,7 @@ export default {
         type: "purchase-types"
       };
 
-      this.$store
+      return this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
           this.typeEdit = response.map(item => {
@@ -294,8 +283,25 @@ export default {
           console.log("error");
         });
     },
+    setPurchaseFilter(filterProp) {
+      return value => {
+        this.$store.commit("setPurchaseFilter", {
+          filterProp,
+          value
+        });
+
+        this.getPurchaseList();
+      };
+    },
     getPurchaseList() {
-      const { from, to, search, type } = this.filter;
+      const { startDate, endDate, goodId, type } = this.purchaseFilter;
+      let search = null;
+
+      if (goodId) {
+        const good = this.goods.find(g => g.id === +goodId);
+
+        search = good.name;
+      }
 
       const itemParams = {
         type: "purchase",
@@ -305,10 +311,10 @@ export default {
         }
       };
 
-      if (from && to) {
+      if (startDate && endDate) {
         itemParams["filter"] = {
           ...itemParams["filter"],
-          purchaseDate: [from, to]
+          purchaseDate: [startDate, endDate]
         };
       }
 
@@ -345,9 +351,9 @@ export default {
     }
   },
   mounted() {
-    this.getPurchaseList();
-    this.getPurchaseTypesList();
-    this.getGoods();
+    Promise.all([this.getGoods(), this.getPurchaseTypesList()]).then(() => {
+      this.getPurchaseList();
+    });
   }
 };
 </script>

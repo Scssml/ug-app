@@ -117,7 +117,7 @@
             hide-details
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-btn color="info" :to="historyLinkPage">История</v-btn>
+          <v-btn color="info" :to="historyLinkPage" @click="handleHistoryButtonClick">История</v-btn>
         </v-card-title>
         <v-data-table
           :headers="headersTable"
@@ -238,18 +238,8 @@ export default {
     }
   },
   methods: {
-    encodeQueryData(data) {
-      const queryParams = [];
-
-      for (let d in data) {
-        if (data[d]) {
-          queryParams.push(
-            encodeURIComponent(d) + "=" + encodeURIComponent(data[d])
-          );
-        }
-      }
-
-      return queryParams.join("&");
+    handleHistoryButtonClick() {
+      this.$store.commit('clearPurchaseFilter');
     },
     exelCalc(val) {
       /* eslint no-eval: 0 */

@@ -33,6 +33,11 @@
     <template v-if="!loadingDialog">
       <v-card>
         <v-card-title>
+          <v-layout row wrap>
+            <v-flex>
+              <v-btn color="info" to="/goods/history">Назад</v-btn>
+            </v-flex>
+          </v-layout>
           <v-layout
             row
             wrap

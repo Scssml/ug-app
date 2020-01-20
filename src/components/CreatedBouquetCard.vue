@@ -588,7 +588,7 @@ export default {
     handleOrderChange(id) {
       const order = this.clientOrdersList.find(item => item.id === id);
 
-      this.delivery = order.deliveryCost;
+      this.delivery = !order.isHaveReadyBouquets ? order.deliveryCost : 0;
 
       this.updateProps();
     },

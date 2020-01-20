@@ -553,7 +553,6 @@ export default {
       sum += +this.delivery;
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
-      sum -= this.prePayment;
       return this.priceRound(sum);
     },
     sumChange: function sumChange() {

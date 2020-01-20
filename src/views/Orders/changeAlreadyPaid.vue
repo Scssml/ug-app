@@ -33,13 +33,11 @@ export default {
 
       const methods = 'updateItem';
 
-      this.$store.dispatch(methods, itemParams).then(() => {
-        console.log(123);
-      });
+      this.$store.dispatch(methods, itemParams);
     },
   },
   mounted() {
-    const props = this.order;
+    const props = Object.assign({}, this.order);
     props.orderSourceType = (props.orderSourceType) ? props.orderSourceType : [];
     props.addressee = (props.addressee) ? +props.addressee.id : null;
     props.client = (props.client) ? +props.client.id : 0;

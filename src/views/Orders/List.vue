@@ -1270,11 +1270,11 @@ export default {
       this.filter.dateEnd = dateEnd;
     }
 
-    this.getOrdersList();
     this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();
     this.getUsersList();
+    this.getOrdersList();
   },
 };
 </script>

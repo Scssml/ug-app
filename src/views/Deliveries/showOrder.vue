@@ -30,6 +30,7 @@
       <v-form
         ref="form"
         lazy-validation
+        v-if="order.orderStatus.id === 3"
       >
         <h3 class="mb-0 mt-4 text-xs-center">Комментарий</h3>
         <v-textarea
@@ -52,7 +53,13 @@
       <v-btn
         color="info"
         @click="submitForm"
+        v-if="order.orderStatus.id === 3"
       >Доставил</v-btn>
+      <v-btn
+        color="info"
+        @click="takeDelivery"
+        v-else
+      >Взять на доставку</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -70,9 +77,36 @@ export default {
       comment: '',
       deliveredSuccess: false,
       deliveredError: false,
+      editedItem: {},
     };
   },
   methods: {
+    takeDelivery() {
+      this.deliveredSuccess = false;
+      this.deliveredError = false;
+
+      const propsItem = Object.assign({}, this.editedItem);
+      delete propsItem.id;
+
+      propsItem.orderStatus = 3;
+      propsItem.courier = this.$store.getters.getAuthUser;
+
+      const itemParams = {
+        type: 'orders',
+        id: this.editedItem.id,
+        props: propsItem,
+      };
+
+      const methods = 'updateItem';
+      this.$store.dispatch(methods, itemParams).then(() => {
+        this.deliveredSuccess = true;
+        setTimeout(() => {
+          this.$emit('cancel');
+        }, 1000);
+      }).catch(() => {
+        this.deliveredError = true;
+      });
+    },
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -101,6 +135,23 @@ export default {
       this.comment = '';
       this.$emit('cancel');
     },
+  },
+  mounted() {
+    const props = Object.assign({}, this.order);
+    props.orderSourceType = (props.orderSourceType) ? props.orderSourceType : [];
+    props.addressee = (props.addressee) ? +props.addressee.id : null;
+    props.client = (props.client) ? +props.client.id : 0;
+    props.courier = (props.courier) ? +props.courier.id : null;
+    props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
+    props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
+    props.clientType = (props.clientType) ? +props.clientType.id : 0;
+    props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
+    props.orderCost = (props.orderCost) ? String(props.orderCost) : '';
+    props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
+
+    delete props.topLine;
+
+    this.editedItem = props;
   },
 };
 </script>

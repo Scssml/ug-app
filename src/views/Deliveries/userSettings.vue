@@ -423,4 +423,7 @@ export default {
     background: #fff;
     box-shadow: 0 0 5px;
   }
+  .v-btn--small {
+    min-width: 50px;
+  }
 </style>

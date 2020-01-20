@@ -800,6 +800,7 @@ export default {
       take: 20,
       page: 0,
       tableLoading: false,
+      tsList: [],
     };
   },
   watch: {
@@ -1027,6 +1028,13 @@ export default {
             });
           }
 
+          if (elem.orderSourceType) {
+            elem.orderSourceType = elem.orderSourceType.map((tsId) => {
+              const findElem = this.tsList.find(tsElem => tsElem.id === tsId);
+              return findElem;
+            });
+          }
+
           elem.deliveryTimeOfDay = +elem.deliveryTimeOfDay;
 
           return elem;
@@ -1137,6 +1145,23 @@ export default {
       }).catch(() => {
         console.log('error');
       });
+    },
+    getTsList() {
+      const itemParams = {
+        type: 'order-source',
+      };
+
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.tsList = response.map((item) => {
+            item.id = +item.id;
+            return item;
+          });
+        })
+        .catch(() => {
+          console.log('error');
+        });
     },
     closeDialog() {
       this.getOrdersList();
@@ -1270,6 +1295,7 @@ export default {
       this.filter.dateEnd = dateEnd;
     }
 
+    this.getTsList();
     this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();

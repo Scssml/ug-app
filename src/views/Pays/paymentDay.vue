@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="statPayBlock"
-  >
+  <div class="statPayBlock">
     <!-- <v-layout
       row
       wrap
@@ -71,19 +69,11 @@
         ></v-text-field>
       </v-flex>
     </v-layout> -->
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сумма оплат:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPay }}
         <!-- <v-text-field
           solo
@@ -95,19 +85,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сумма наличка:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayCash }}
         <!-- <v-text-field
           solo
@@ -119,19 +101,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сумма безнал:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayNoCash }}
         <!-- <v-text-field
           solo
@@ -144,19 +118,11 @@
       </v-flex>
     </v-layout>
 
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>За счет компании:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayPresent }}
         <!-- <v-text-field
           solo
@@ -168,19 +134,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>На баланс:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayBalance }}
         <!-- <v-text-field
           solo
@@ -192,19 +150,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Терминал:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayTerminal }}
         <!-- <v-text-field
           solo
@@ -216,19 +166,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Карта:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayCard }}
         <!-- <v-text-field
           solo
@@ -240,19 +182,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Яндекс:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumPayYandex }}
         <!-- <v-text-field
           solo
@@ -265,19 +199,11 @@
       </v-flex>
     </v-layout>
 
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сумма возвратов:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumReturn }}
         <!-- <v-text-field
           solo
@@ -289,19 +215,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Остаток в кассе:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ cashPrevDay }}
         <!-- <v-text-field
           solo
@@ -313,19 +231,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Инкасация:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ allSumEncashment }}
         <!-- <v-text-field
           solo
@@ -337,19 +247,11 @@
         ></v-text-field> -->
       </v-flex>
     </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сейчас в кассе:</b>
       </v-flex>
-      <v-flex
-        xs5
-      >
+      <v-flex xs5>
         {{ cashNow }}
         <!-- <v-text-field
           solo
@@ -362,54 +264,29 @@
       </v-flex>
     </v-layout>
 
-    <v-btn
-      color="info"
-      @click="dialog = true"
-    >Сдать инкассацию</v-btn>
+    <v-btn color="info" @click="dialog = true">Сдать инкассацию</v-btn>
 
-    <v-dialog
-      v-model="dialog"
-      persistent
-      max-width="420px"
-    >
+    <v-dialog v-model="dialog" persistent max-width="420px">
       <v-card>
-        <v-alert
-          :value="createdSuccess"
-          type="success"
-          class="my-0"
-        >
+        <v-alert :value="createdSuccess" type="success" class="my-0">
           Инкассация сдана
         </v-alert>
-        <v-form
-          ref="form"
-          lazy-validation
-        >
-          <v-card-title
-            class="px-4"
-          >
+        <v-form ref="form" lazy-validation>
+          <v-card-title class="px-4">
             <span class="headline">Сдача инкассации</span>
           </v-card-title>
           <v-divider></v-divider>
-          <v-card-text
-            class="px-4"
-          >
+          <v-card-text class="px-4">
             <v-text-field
               label="Сумма"
-              :rules="[v => (v <= cashNow) || 'Недостаточно денег в кассе']"
+              :rules="[v => v <= cashNow || 'Недостаточно денег в кассе']"
               v-model.number="sumEncashment"
             ></v-text-field>
           </v-card-text>
-          <v-card-actions
-            class="px-4 pb-4"
-          >
-            <v-btn
-              @click.native="dialog = false"
-            >Отмена</v-btn>
+          <v-card-actions class="px-4 pb-4">
+            <v-btn @click.native="dialog = false">Отмена</v-btn>
             <v-spacer></v-spacer>
-            <v-btn
-              color="info"
-              @click="submit()"
-            >Оплатить</v-btn>
+            <v-btn color="info" @click="submit()">Оплатить</v-btn>
           </v-card-actions>
         </v-form>
       </v-card>
@@ -418,11 +295,13 @@
 </template>
 
 <script>
-  const datesAreOnSameDay = (first, second) => {
-    return first.getFullYear() === second.getFullYear() &&
-            first.getMonth() === second.getMonth() &&
-            first.getDate() === second.getDate();
-  };
+const datesAreOnSameDay = (first, second) => {
+  return (
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
+  );
+};
 
 export default {
   props: {
@@ -432,28 +311,38 @@ export default {
     // },
     paymentsList: {
       type: Array,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
       dateNow: new Date(),
-      dateYesterday: '',
+      dateYesterday: "",
       createdSuccess: false,
       dialog: false,
-      sumEncashment: 0,
+      sumEncashment: 0
     };
   },
   computed: {
     paymentsNow() {
-      return this.paymentsList.filter(item => {
-        const paymentDate = new Date(Date.parse(item.creationDate));
+      return this.paymentsList
+        .map(i => ({
+          ...i,
+          paymentType:
+            i.paymentType.id === 7 && i.paymentTypeBeforeReturn
+              ? i.paymentTypeBeforeReturn
+              : i.paymentType
+        }))
+        .filter(item => {
+          const paymentDate = new Date(Date.parse(item.creationDate));
 
-        return datesAreOnSameDay(paymentDate, this.dateNow);
-      });
+          return datesAreOnSameDay(paymentDate, this.dateNow);
+        });
     },
     paymentsPrevDay() {
-      return this.paymentsList.filter(item => item.creationDate === this.dateYesterday);
+      return this.paymentsList.filter(
+        item => item.creationDate === this.dateYesterday
+      );
     },
     // allSumSale() {
     //   const allSum = this.bouquetsList.reduce((sum, item) => {
@@ -548,7 +437,11 @@ export default {
     allSumPayNoCash() {
       const allSum = this.paymentsNow.reduce((sum, item) => {
         let amountPay = 0;
-        if (item.paymentType.id !== 1 && item.paymentType.id !== 7 && item.paymentType.id !== 8) {
+        if (
+          item.paymentType.id !== 1 &&
+          item.paymentType.id !== 7 &&
+          item.paymentType.id !== 8
+        ) {
           amountPay = item.amount;
         }
         return sum + amountPay;
@@ -655,28 +548,28 @@ export default {
       let allSum = this.cashPrevDay + this.allSumPayCash;
       allSum -= this.allSumEncashment;
       return allSum;
-    },
+    }
   },
   methods: {
     submit() {
       const validate = this.$refs.form.validate();
       if (validate) {
         const itemParams = {
-          type: 'payments',
+          type: "payments",
           props: {
             paymentType: {
               id: 8,
-              name: 'Инкассация',
+              name: "Инкассация",
               isActive: true,
-              code: 'collection',
+              code: "collection"
             },
-            amount: this.sumEncashment,
-          },
+            amount: this.sumEncashment
+          }
         };
 
-        this.$store.dispatch('addItem', itemParams).then(() => {
+        this.$store.dispatch("addItem", itemParams).then(() => {
           this.createdSuccess = true;
-          this.$emit('input');
+          this.$emit("input");
 
           setTimeout(() => {
             this.dialog = false;
@@ -684,26 +577,26 @@ export default {
           }, 1000);
         });
       }
-    },
+    }
   },
   mounted() {
     const dateNow = new Date();
     dateNow.setDate(dateNow.getDate() - 1);
-    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
+    const dateYesterdayStr = dateNow.toISOString().split("T")[0];
     this.dateYesterday = dateYesterdayStr;
-  },
+  }
 };
 </script>
 
 <style lang="scss">
-  .statPayBlock {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    background: #fff;
-    width: 260px;
-    padding: 9px 10px;
-    border: 1px solid #ccc;
-  }
+.statPayBlock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  width: 260px;
+  padding: 9px 10px;
+  border: 1px solid #ccc;
+}
 </style>

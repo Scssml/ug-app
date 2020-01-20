@@ -100,7 +100,7 @@
               {{ props.item.client.name }}
               <br>{{ props.item.client.phone }}
             </td>
-            <td>{{ props.item.florist }}</td>
+            <td>{{ props.item.florist ? props.item.florist.name : '' }}</td>
             <td>{{ props.item.user.name }}</td>
             <td>
               {{ props.item.payments[props.item.payments.length - 1].amount }}р

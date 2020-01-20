@@ -101,7 +101,7 @@
                 ></v-autocomplete>
               </v-flex>
               <v-flex xs2>
-                <v-btn color="info" @click="submitForm">Сохранить</v-btn>
+                <v-btn color="info" :disabled="isSaveButtonDisabled" @click="submitForm">Сохранить</v-btn>
               </v-flex>
             </v-layout>
           </v-card-title>
@@ -117,7 +117,12 @@
             hide-details
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-btn color="info" :to="historyLinkPage" @click="handleHistoryButtonClick">История</v-btn>
+          <v-btn
+            color="info"
+            :to="historyLinkPage"
+            @click="handleHistoryButtonClick"
+            >История</v-btn
+          >
         </v-card-title>
         <v-data-table
           :headers="headersTable"
@@ -141,10 +146,10 @@
 </template>
 
 <script>
-  import GoodAdd from './add.vue';
-  import ListItem from './ListItem';
+import GoodAdd from "./add.vue";
+import ListItem from "./ListItem";
 
-  export default {
+export default {
   name: "Goods",
   components: {
     GoodAdd,
@@ -208,8 +213,13 @@
     };
   },
   computed: {
+    isSaveButtonDisabled() {
+      return !this.goodsList.some(
+        g => +g.oldPrice !== +g.price || +g.oldCount !== +g.count
+      );
+    },
     historyLinkPage() {
-      return '/goods/history';
+      return "/goods/history";
     },
     loadingDialog() {
       const loadData = this.loadingData.filter(
@@ -237,7 +247,7 @@
   },
   methods: {
     handleHistoryButtonClick() {
-      this.$store.commit('clearPurchaseFilter');
+      this.$store.commit("clearPurchaseFilter");
     },
     handleRowItemChange({ id, prop, value }) {
       const good = this.goodsList.find(g => g.id === id);
@@ -271,6 +281,7 @@
             const good = item;
             good.count = 0;
             good.oldPrice = good.price;
+            good.oldCount = good.count;
             return good;
           });
 

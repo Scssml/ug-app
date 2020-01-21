@@ -499,7 +499,7 @@ export default {
       if (this.order > 0 && this.clientOrdersList.length) {
         const order = this.clientOrdersList.find(item => item.id === this.order);
 
-        prePayment = +order.prePayment;
+        prePayment = order ? +order.prePayment : 0;
       }
 
       return prePayment;

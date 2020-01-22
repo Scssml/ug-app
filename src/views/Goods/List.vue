@@ -62,7 +62,7 @@
               </v-flex>
               <v-flex xs2>
                 <v-text-field
-                  label="Приход"
+                  label="Сумма"
                   :value="arrival"
                   hide-details
                   class="pr-4"

@@ -731,7 +731,7 @@ export default {
         this.order = this.propsDefault.orderId;
         this.decorPercent = this.propsDefault.decorPercent;
         this.delivery = this.propsDefault.deliveryCost;
-        this.clientSaleCustom = this.propsDefault.salePercent;
+        this.salePersent = this.propsDefault.salePercent;
         this.comment = this.propsDefault.comment;
         this.orderBouquet = this.propsDefault.orderBouquet;
       }

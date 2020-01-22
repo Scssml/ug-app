@@ -213,7 +213,10 @@ export default {
       const errorData = 'Ошибка получения закупок!';
 
       this.$store.dispatch('getItem', itemParams).then((response) => {
-        this.purchase = response;
+        this.purchase = {
+          ...response,
+          purchasedGoods: !response.purchasedGoods ? [] : response.purchasedGoods
+        };
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;

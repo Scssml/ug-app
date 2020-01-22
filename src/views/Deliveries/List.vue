@@ -454,6 +454,7 @@
               {{ props.item.deliveryTime }}
               <br>{{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }}
             </td>
+            <td class="px-1"></td>
           </tr>
         </template>
       </v-data-table>
@@ -539,6 +540,10 @@ export default {
         {
           text: 'Время',
           value: 'deliveryTime',
+        },
+        {
+          text: 'Место',
+          value: 'place',
         },
       ],
       orderSelect: {},

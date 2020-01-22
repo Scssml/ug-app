@@ -54,7 +54,22 @@
                 ></v-select>
               </v-flex>
 
-              <v-flex xs2 class="px-2">
+              <v-flex xs3 class="px-2">
+                <v-autocomplete
+                  label="Клиент"
+                  :items="allClients"
+                  :filter="clientsFilter"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filterClientStatus"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  @change="filterByClient"
+                ></v-autocomplete>
+              </v-flex>
+
+              <!-- <v-flex xs2 class="px-2">
                 <v-select
                   label="Клиент"
                   :items="allClients"
@@ -63,7 +78,7 @@
                   item-text="name"
                   @change="filterByClient"
                 ></v-select>
-              </v-flex>
+              </v-flex> -->
             </v-layout>
           </v-flex>
           <v-spacer></v-spacer>
@@ -222,10 +237,10 @@ export default {
     },
     allClients() {
       return [
-        { id: -1, name: 'Все' },
+        { id: -1, name: 'Все', phone: '' },
         ...this.bouquetsList
           .filter(p => p.client)
-          .map(p => ({ id: p.client.id, name: p.client.name })),
+          .map(p => ({ id: p.client.id, name: p.client.name, phone: p.client.phone })),
       ];
     },
     filteredBouquestsList() {
@@ -256,6 +271,14 @@ export default {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
       window.open(url, '_blank');
+    },
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
     },
     getBouquetsList() {
       const itemParams = {

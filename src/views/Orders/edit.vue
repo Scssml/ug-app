@@ -483,7 +483,7 @@
               align-center
             >
               <v-flex
-                xs9
+                xs7
                 class="pr-3"
               >
                 <!-- <v-text-field
@@ -517,6 +517,17 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
+                ></v-text-field>
+              </v-flex>
+              <v-flex
+                xs2
+                class="pr-3"
+              >
+                <v-text-field
+                  label="Место"
+                  hide-details
+                  class="mb-4"
+                  readonly
                 ></v-text-field>
               </v-flex>
               <v-flex

@@ -35,7 +35,7 @@
             ></v-text-field>
             <v-text-field
               label="Флорист"
-              :value="editedItem.florist"
+              :value="editedItem.florist.name"
                readonly
             ></v-text-field>
             <v-text-field
@@ -64,6 +64,11 @@
               :value="editedItem.comment"
               row-height="15"
               readonly
+            ></v-textarea>
+            <v-textarea
+              label="Место букета"
+              auto-grow
+              row-height="10"
             ></v-textarea>
             <v-text-field
               label="Заказ"

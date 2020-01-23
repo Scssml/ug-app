@@ -101,7 +101,12 @@
                 ></v-autocomplete>
               </v-flex>
               <v-flex xs2>
-                <v-btn color="info" :disabled="isSaveButtonDisabled" @click="submitForm">Сохранить</v-btn>
+                <v-btn
+                  color="info"
+                  :disabled="isSaveButtonDisabled"
+                  @click="submitForm"
+                  >Сохранить</v-btn
+                >
               </v-flex>
             </v-layout>
           </v-card-title>
@@ -148,6 +153,7 @@
 <script>
 import GoodAdd from "./add.vue";
 import ListItem from "./ListItem";
+import { PaymentTypes } from "./constants";
 
 export default {
   name: "Goods",
@@ -231,10 +237,14 @@ export default {
       return "Остатки изменены";
     },
     arrival() {
-      return this.goodsList.reduce((sum, item) => {
-        const goodArrival = +item.count * +item.price;
-        return goodArrival + sum;
-      }, 0);
+      switch (+this.dataEdit.type) {
+        case PaymentTypes.Revaluation: {
+          return this.calculateRevaluation(this.goodsList);
+        }
+        default: {
+          return this.calculateOtherOperations(this.goodsList);
+        }
+      }
     },
     markup() {
       let markupVal = 0;
@@ -246,6 +256,15 @@ export default {
     }
   },
   methods: {
+    calculateRevaluation(goodsList) {
+      return goodsList.reduce(
+        (sum, item) => sum + (item.price - item.oldPrice) * item.stockBalance,
+        0
+      );
+    },
+    calculateOtherOperations(goodsList) {
+      return goodsList.reduce((sum, item) => sum + item.price * item.count, 0);
+    },
     handleHistoryButtonClick() {
       this.$store.commit("clearPurchaseFilter");
     },

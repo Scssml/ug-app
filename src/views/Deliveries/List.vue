@@ -366,6 +366,79 @@
           Выход
         </v-btn>
       </div>
+      <v-layout
+        row
+        wrap
+      >
+        <v-flex
+          xs6
+        >
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataStartPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="290px"
+            class="mb-1"
+          >
+            <v-text-field
+              slot="activator"
+              label="Дата доставки (с)"
+              v-model="filter.dateStart"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.dateStart"
+              @input="dataStartPicker = false"
+              no-title
+              scrollable
+              locale="ru-ru"
+              first-day-of-week="1"
+              :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+              @change="customFilter()"
+            ></v-date-picker>
+          </v-menu>
+        </v-flex>
+        <v-flex
+          xs6
+        >
+          <v-menu
+            :close-on-content-click="false"
+            v-model="dataEndPicker"
+            :nudge-right="40"
+            lazy
+            transition="scale-transition"
+            offset-y
+            full-width
+            min-width="290px"
+            class="mb-1"
+          >
+            <v-text-field
+              slot="activator"
+              label="Дата доставки (по)"
+              v-model="filter.dateEnd"
+              prepend-icon="event"
+              hide-details
+              readonly
+            ></v-text-field>
+            <v-date-picker
+              v-model="filter.dateEnd"
+              @input="dataEndPicker = false"
+              no-title
+              locale="ru-ru"
+              scrollable
+              first-day-of-week="1"
+              :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+              @change="customFilter()"
+            ></v-date-picker>
+          </v-menu>
+        </v-flex>
+      </v-layout>
       <div>
         <v-btn
           exact

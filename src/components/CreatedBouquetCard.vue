@@ -212,8 +212,8 @@
             solo
             flat
             hide-details
-            type="number"
             v-model.number="sumDecorAdditional"
+            de
             class="scs-small"
             @input="updateProps()"
           ></v-text-field>

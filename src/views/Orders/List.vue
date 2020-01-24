@@ -563,7 +563,7 @@
                     left
                     slot="activator"
                     title="Печать"
-                    :color="(props.item.isAlreadyPrinted) ? 'teal darken-3' : ''"
+                    :color="(props.item.isAlreadyPrinted) ? 'teal darken-3' : '123'"
                   >
                     insert_drive_file
                   </v-icon>

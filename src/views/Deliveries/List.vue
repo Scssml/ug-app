@@ -224,6 +224,7 @@
                 <template slot="items" slot-scope="props">
                   <tr
                     :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+                    @click.prevent="zoomOrderMap(props.item.coordinates)"
                   >
                     <template v-for="(col, colIndex) in colsTable">
                       <td
@@ -313,7 +314,7 @@
               <div style="position: relative; height: 100%; min-height: 600px; overflow: hidden;">
                 <yandex-map
                   :coords="coordsMap"
-                  zoom="10"
+                  :zoom="zoomMap"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
                   :controls="['trafficControl']"
                 >
@@ -518,30 +519,33 @@
           <tr
             :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
           >
-            <td class="px-1">
+            <td
+              class="px-1"
+              @click.prevent="viewOrder(props.item.id)"
+            >
               {{ props.item.id }}
             </td>
             <td
               class="px-1"
+              @click.prevent="viewOrder(props.item.id)"
             >
               {{ props.item.address }},
               кв. {{ props.item.flat }},
               подъезд {{ props.item.entrance }},
               этаж {{ props.item.floor }},
             </td>
-            <td class="px-1">
+            <td
+              class="px-1"
+              @click.prevent="viewOrder(props.item.id)"
+            >
               {{ props.item.deliveryTime }}
               <br>{{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }}
             </td>
-            <td class="px-1"></td>
+            <td
+              class="px-1"
+              @click.prevent="viewOrder(props.item.id)"
+            ></td>
             <td class="px-1 text-xs-center" style="width: 40px;">
-              <v-icon
-                left
-                @click.prevent="viewOrder(props.item.id)"
-                class="mr-0"
-              >
-                visibility
-              </v-icon>
               <v-icon
                 left
                 @click.prevent="viewMap(props.item.id)"
@@ -649,6 +653,7 @@ export default {
       ],
       orderSelect: {},
       coordsMap: [53.05, 50.101783],
+      zoomMap: 10,
       widthWindow: 0,
       showOrderMap: false,
     };
@@ -944,6 +949,14 @@ export default {
       this.orderSelect = this.ordersList.find(item => item.id === id);
       this.showMap = true;
       this.dialogForm = true;
+    },
+    zoomOrderMap(coordinates) {
+      if (coordinates.length === 2) {
+        this.zoomMap = 15;
+        setTimeout(() => {
+          this.coordsMap = coordinates;
+        }, 300);
+      }
     },
     changeSort(column) {
       if (this.pagination.sortBy === column) {

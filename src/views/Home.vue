@@ -143,12 +143,14 @@
               <div class="py-1 px-1 text-xs-center" style="height: 30px;">Остаток</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
-                <div
-                  class="py-1 px-1 text-xs-center"
-                  style="height: 30px;"
-                  :key="index"
-                >{{ item.stockBalance }}</div>
-                <v-divider :key="'divider-' + index"></v-divider>
+                <template v-if="showGoodsList.indexOf(item.id) !== -1">
+                  <div
+                    class="py-1 px-1 text-xs-center"
+                    style="height: 30px;"
+                    :key="index"
+                  >{{ item.stockBalance }}</div>
+                  <v-divider :key="'divider-' + index"></v-divider>
+                </template>
               </template>
             </v-card>
           </v-flex>
@@ -175,12 +177,14 @@
               <div class="py-1 px-1 text-xs-center" style="height: 30px;">Наименование</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
-                <div
-                  class="py-1 px-1 text-xs-center"
-                  style="height: 30px;"
-                  :key="index"
-                >{{ item.name }}</div>
-                <v-divider :key="'divider-' + index"></v-divider>
+                <template v-if="showGoodsList.indexOf(item.id) !== -1">
+                  <div
+                    class="py-1 px-1 text-xs-center"
+                    style="height: 30px;"
+                    :key="index"
+                  >{{ item.name }}</div>
+                  <v-divider :key="'divider-' + index"></v-divider>
+                </template>
               </template>
             </v-card>
           </v-flex>
@@ -191,12 +195,14 @@
               <div class="py-1 px-1 text-xs-center" style="height: 30px;">Цена</div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
-                <div
-                  class="py-1 px-1 text-xs-center"
-                  style="height: 30px;"
-                  :key="index"
-                >{{ item.price }}</div>
-                <v-divider :key="'divider-' + index"></v-divider>
+                <template v-if="showGoodsList.indexOf(item.id) !== -1">
+                  <div
+                    class="py-1 px-1 text-xs-center"
+                    style="height: 30px;"
+                    :key="index"
+                  >{{ item.price }}</div>
+                  <v-divider :key="'divider-' + index"></v-divider>
+                </template>
               </template>
             </v-card>
           </v-flex>
@@ -407,6 +413,14 @@ export default {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
+    },
+    showGoodsList() {
+      const showGoodsList = this.$store.getters.getShowGoodsList;
+      let goodsList = this.goodsList.map(item => item.id);
+      if (showGoodsList.length > 0) {
+        goodsList = showGoodsList;
+      }
+      return goodsList;
     },
   },
   methods: {
@@ -712,6 +726,8 @@ export default {
     },
   },
   mounted() {
+    this.$store.commit('setShowGoodsList', []);
+
     const dateNow = new Date();
     const dateNowStr = dateNow.toISOString().split('T')[0];
     this.dateNow = `${dateNowStr} 23:59:59`;

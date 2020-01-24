@@ -33,7 +33,8 @@ export default new Vuex.Store({
       type: null,
       search: null,
       goodId: null,
-    }
+    },
+    showGoodsList: [],
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -44,6 +45,7 @@ export default new Vuex.Store({
     getDeliveryZones: state => state.deliveryZones,
     getUpdateOrderList: state => state.updateOrderList,
     getCountElemPage: state => state.countElemPage,
+    getShowGoodsList: state => state.showGoodsList,
   },
   mutations: {
     authRequest: (state) => {
@@ -75,6 +77,9 @@ export default new Vuex.Store({
     },
     setCountElemPage: (state, value) => {
       state.countElemPage = value;
+    },
+    setShowGoodsList: (state, value) => {
+      state.showGoodsList = value;
     },
     setPurchaseFilter: (state, { filterProp, value }) => {
       state.purchaseFilter[filterProp] = value;

@@ -280,6 +280,18 @@
             <v-btn
               color="primary"
               dark
+              @click.prevent="setFilter14February()"
+            >14 февраля</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
+              @click.prevent="setFilter8March()"
+            >8 марта</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
               @click.prevent="setFilterDateNow()"
             >За сегодня</v-btn>
 
@@ -1260,6 +1272,20 @@ export default {
 
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
+      this.page = 0;
+      this.getOrdersList();
+    },
+    setFilter14February() {
+      const date = new Date();
+      this.filter.dateStart = `${date.getFullYear()}-02-14`;
+      this.filter.dateEnd = `${date.getFullYear()}-02-14`;
+      this.page = 0;
+      this.getOrdersList();
+    },
+    setFilter8March() {
+      const date = new Date();
+      this.filter.dateStart = `${date.getFullYear()}-03-08`;
+      this.filter.dateEnd = `${date.getFullYear()}-03-08`;
       this.page = 0;
       this.getOrdersList();
     },

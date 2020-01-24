@@ -934,6 +934,9 @@ export default {
       // return itemsFind;
       this.page = 0;
 
+      if (this.$route.query.client === undefined) {
+        this.$store.commit('setOrderFilter', this.filter);
+      }
       this.getOrdersList();
     },
     changeShowElem() {
@@ -1277,6 +1280,8 @@ export default {
     },
   },
   mounted() {
+    const userFilter = this.$store.getters.getOrderFilter;
+
     const date = new Date();
     const dateNowStr = date.toISOString().split('T')[0];
     this.dateNowStr = dateNowStr;
@@ -1290,6 +1295,8 @@ export default {
 
     if (this.$route.query.client !== undefined) {
       this.filter.client = +this.$route.query.client;
+    } else if (Object.keys(userFilter).length !== 0) {
+      this.filter = userFilter;
     } else {
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;

@@ -595,32 +595,31 @@ export default {
       ],
       coordsMap: [53.05, 50.101783],
       responsible: undefined,
-      clientName: "",
-      addresseeName: ""
+      clientName: '',
+      addresseeName: '',
     };
   },
   watch: {
     clientName(val) {
       const clientId = this.editedItem.client;
-      if (clientId === undefined && val && val !== 0) {
+      // if (clientId === undefined || (!Number.isNaN(+val) && val)) {
+      if (clientId === undefined && val) {
         this.editedItem.clientPhone = val;
       }
     },
     addresseeName(val) {
       const addresseeId = this.editedItem.addressee;
-      if (addresseeId === undefined && val && val !== 0) {
+      if (addresseeId === undefined && val) {
         this.editedItem.addresseePhone = val;
       }
-    }
+    },
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
     },
     responsibleList() {
-      return this.clientsList.filter(
-        item => +item.referenceId === +this.editedItem.client
-      );
+      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
     },
     placemarks() {
       return this.ordersList

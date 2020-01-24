@@ -746,13 +746,13 @@ export default {
   watch: {
     clientName(val) {
       const clientId = this.editedItem.client;
-      if ((clientId === undefined) && (val && val !== 0)) {
+      if (clientId === undefined && val) {
         this.editedItem.clientPhone = val;
       }
     },
     addresseeName(val) {
       const addresseeId = this.editedItem.addressee;
-      if ((addresseeId === undefined) && (val && val !== 0)) {
+      if (addresseeId === undefined && val) {
         this.editedItem.addresseePhone = val;
       }
     },

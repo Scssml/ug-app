@@ -49,9 +49,14 @@
               :order="orderSelect"
               @cancel="closeDialog()"
             ></order-show>
+            <map-show
+              v-if="showMap"
+              :order="orderSelect"
+              @cancel="closeDialog()"
+            ></map-show>
           </template>
         </v-dialog>
-        <v-card>
+        <v-card v-if="this.widthWindow >= 960">
           <v-layout
             row
             wrap
@@ -340,7 +345,7 @@
         </v-card>
       </template>
     </div>
-    <div class="hidden-md-and-up">
+    <div class="hidden-md-and-up" v-if="this.widthWindow < 960">
       <div>
         <v-btn
           exact
@@ -512,12 +517,13 @@
         <template slot="items" slot-scope="props">
           <tr
             :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
-            @click.prevent="viewOrder(props.item.id)"
           >
             <td class="px-1">
               {{ props.item.id }}
             </td>
-            <td class="px-1">
+            <td
+              class="px-1"
+            >
               {{ props.item.address }},
               кв. {{ props.item.flat }},
               подъезд {{ props.item.entrance }},
@@ -528,6 +534,22 @@
               <br>{{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }}
             </td>
             <td class="px-1"></td>
+            <td class="px-1 text-xs-center" style="width: 40px;">
+              <v-icon
+                left
+                @click.prevent="viewOrder(props.item.id)"
+                class="mr-0"
+              >
+                visibility
+              </v-icon>
+              <v-icon
+                left
+                @click.prevent="viewMap(props.item.id)"
+                class="mr-0"
+              >
+                my_location
+              </v-icon>
+            </td>
           </tr>
         </template>
       </v-data-table>
@@ -539,6 +561,7 @@
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import userSettings from './userSettings.vue';
 import orderShow from './showOrder.vue';
+import mapShow from './showMap.vue';
 
 export default {
   name: 'Deliveries',
@@ -547,6 +570,7 @@ export default {
     ymapMarker,
     userSettings,
     orderShow,
+    mapShow,
   },
   data() {
     return {
@@ -618,9 +642,15 @@ export default {
           text: 'Место',
           value: 'place',
         },
+        {
+          text: '',
+          value: 'action',
+        },
       ],
       orderSelect: {},
       coordsMap: [53.05, 50.101783],
+      widthWindow: 0,
+      showOrderMap: false,
     };
   },
   watch: {
@@ -702,6 +732,9 @@ export default {
     },
   },
   methods: {
+    updateWidthWindow() {
+      this.widthWindow = window.innerWidth;
+    },
     customFilter() {
       this.getOrdersList();
     },
@@ -894,8 +927,8 @@ export default {
       setTimeout(() => {
         this.editSettings = false;
         this.showOrder = false;
+        this.showMap = false;
         this.orderSelect = {};
-        console.log(123);
       }, 300);
     },
     changeSettings() {
@@ -905,6 +938,11 @@ export default {
     viewOrder(id) {
       this.orderSelect = this.ordersList.find(item => item.id === id);
       this.showOrder = true;
+      this.dialogForm = true;
+    },
+    viewMap(id) {
+      this.orderSelect = this.ordersList.find(item => item.id === id);
+      this.showMap = true;
       this.dialogForm = true;
     },
     changeSort(column) {
@@ -938,6 +976,9 @@ export default {
     },
   },
   mounted() {
+    window.addEventListener('resize', this.updateWidthWindow);
+    this.widthWindow = window.innerWidth;
+
     const date = new Date();
     const dateNowStr = date.toISOString().split('T')[0];
     this.dateNowStr = dateNowStr;

@@ -52,61 +52,63 @@
             </tr>
           </tbody>
         </table> -->
-
-        <table
-          style="width: 50%; padding: 10px; border: 1px solid black; margin-bottom: 40px;"
-          :key="index"
-        >
-          <tbody>
-            <tr>
-              <td style="width: 73px;">
-                <b>Дата</b>
-              </td>
-              <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">
-                {{ orderData.orderDate }}
-              </td>
-              <td style="width: 204px; text-align: right;">
-                <b>{{ orderData.orderDeliveryType }}</b>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="3" style="width: 100%; text-align: center;">
-                <span><b>№ Заказа: </b></span>
-                <u style="font-size: 70px;">{{ orderData.orderId }}</u>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="1" style="width: 10%">
-                <strong style="font-size: 20px;">Заказчик: </strong>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="5" style="width: 182px; text-align: left;">
-                <u style="font-size: 55px;">{{ orderData.clientName }}</u>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="5" style="width: 73px; padding-top: 10px;">
-                <p style="text-align: justify;">
-                  <strong>Комментарий:</strong>
-                  <span contenteditable="true" style="margin-left: 5px;">
-                    {{ orderData.orderDetails }}
-                  </span>
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="5" style="width: 73px;">
-                <strong>Букет:</strong>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="5" style="width: 73px;">
-                {{ elem.name }} (кол-во: {{ elem.count }})
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <template v-for="n in elem.count">
+          <table
+            style="width: 50%; padding: 10px; border: 1px solid black; margin-bottom: 40px;"
+            :key="`${index}-${n}`"
+          >
+            <tbody>
+              <tr>
+                <td style="width: 73px;">
+                  <b>Дата</b>
+                </td>
+                <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">
+                  {{ orderData.orderDate }}
+                </td>
+                <td style="width: 204px; text-align: right;">
+                  <b>{{ orderData.orderDeliveryType }}</b>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3" style="width: 100%; text-align: center;">
+                  <span><b>№ Заказа: </b></span>
+                  <u style="font-size: 70px;">{{ orderData.orderId }}</u>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="1" style="width: 10%">
+                  <strong style="font-size: 20px;">Заказчик: </strong>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="width: 182px; text-align: left;">
+                  <u style="font-size: 55px;">{{ orderData.clientName }}</u>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="width: 73px; padding-top: 10px;">
+                  <p style="text-align: justify;">
+                    <strong>Комментарий:</strong>
+                    <span contenteditable="true" style="margin-left: 5px;">
+                      {{ orderData.orderDetails }}
+                    </span>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="width: 73px;">
+                  <strong>Букет:</strong>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="5" style="width: 73px;">
+                  {{ elem.name }}
+                  <!-- (кол-во: {{ elem.count }}) -->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
       </template>
     </div>
     <br>

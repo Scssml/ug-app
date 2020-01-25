@@ -424,7 +424,9 @@
                         </template>
                         <template v-else-if="prop.field === 'bouquets'">
                           <template v-for="(item, key) in props.item[prop.field]">
-                            {{ item.name }} - {{ item.count }}
+                            <div :class="(item.isReady && props.item.alreadyPaid) ? 'green' : ''">
+                              {{ item.name }} - {{ item.count }}
+                            </div>
                             <br :key="key">
                           </template>
                         </template>

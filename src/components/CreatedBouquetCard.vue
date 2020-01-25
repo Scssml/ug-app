@@ -510,8 +510,8 @@ export default {
       sum += +this.delivery;
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
-      console.log(sum);
-      return this.priceRound(sum);
+
+      return this.priceRound(sum) * +this.bouquetCount;
     },
     sumChange: function sumChange() {
       const sum = +this.sumClient + +this.secondSumClient - this.sumPay;
@@ -633,7 +633,8 @@ export default {
               }
             : null,
           comment: this.comment,
-          orderBouquet: this.orderBouquet
+          orderBouquet: this.orderBouquet,
+          bouquetCount: +this.bouquetCount,
         };
 
         if (this.sumFlowers === 0) {

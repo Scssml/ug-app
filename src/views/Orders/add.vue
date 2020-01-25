@@ -516,6 +516,7 @@ import inside from "point-in-geopolygon";
 import DeliveryMap from "./deliveryMap.vue";
 import { getDistance } from "geolib";
 import geocoder from "geocoder";
+import { PaymentTypes } from '../../constants'
 
 const baseCoordinates = [53.186104, 50.1602];
 
@@ -753,8 +754,7 @@ export default {
       this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
-          console.log(response);
-          this.paymentTypesList = response;
+          this.paymentTypesList = response.filter(pt => pt.id !== PaymentTypes.BALANCE);
         })
         .catch(() => {
           console.log("error");

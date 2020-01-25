@@ -474,7 +474,6 @@ export default {
         item.success = true;
         this.$set(this.cardsList, index, item);
 
-        // if (props.payment.paymentTypeId === 5) {
         if (item.goods.length === 0) {
           const itemParams = {
             type: 'payments',
@@ -490,7 +489,7 @@ export default {
               description: 'На баланс',
             },
           };
-          console.log(itemParams);
+
           this.$store.dispatch('addItem', itemParams).then(() => {
             this.getPaymentsList();
           });
@@ -511,7 +510,6 @@ export default {
           };
 
           this.$store.dispatch('addItem', bouquetParams).then(() => {
-            // this.getBouquetsList();
             this.getPaymentsList();
           });
 

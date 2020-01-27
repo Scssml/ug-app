@@ -54,6 +54,7 @@
         color="info"
         @click="submitForm"
         v-if="order.orderStatus.id === 3"
+        :loading="btnLoad"
       >Доставил</v-btn>
       <v-btn
         color="info"
@@ -78,6 +79,7 @@ export default {
       deliveredSuccess: false,
       deliveredError: false,
       editedItem: {},
+      btnLoad: false,
     };
   },
   methods: {

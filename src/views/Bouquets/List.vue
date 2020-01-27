@@ -89,7 +89,7 @@
           >
             <bouquet-edit
               v-if="editedId && editDialog"
-              :id="editedId"
+              :bouquet="bouquetsList.find(item => item.id === editedId)"
               @cancel="closeDialog()"
             ></bouquet-edit>
 
@@ -114,6 +114,9 @@
             <td>
               {{ props.item.client.name }}
               <br>{{ props.item.client.phone }}
+              <template v-if="props.item.orderId">
+                <br>Заказ: {{ props.item.orderId }}
+              </template>
             </td>
             <td>{{ props.item.florist ? props.item.florist.name : '' }}</td>
             <td>{{ props.item.user.name }}</td>

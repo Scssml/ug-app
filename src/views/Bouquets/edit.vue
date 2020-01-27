@@ -13,7 +13,7 @@
       <v-card-title
         class="px-4"
       >
-        <span class="headline">Просмотр букета №{{ id }}</span>
+        <span class="headline">Просмотр букета №{{ this.editedItem.id }}</span>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text
@@ -35,7 +35,7 @@
             ></v-text-field>
             <v-text-field
               label="Флорист"
-              :value="editedItem.florist.name"
+              :value="(editedItem.florist) ? editedItem.florist.name : ''"
                readonly
             ></v-text-field>
             <v-text-field
@@ -65,11 +65,6 @@
               row-height="15"
               readonly
             ></v-textarea>
-            <v-textarea
-              label="Место букета"
-              auto-grow
-              row-height="10"
-            ></v-textarea>
             <v-text-field
               label="Заказ"
               :value="editedItem.orderId"
@@ -82,6 +77,14 @@
               readonly
               v-if="editedItem.orderBouquet"
             ></v-text-field>
+            <v-textarea
+              label="Место букета"
+              auto-grow
+              row-height="10"
+              :rules="[v => !!v || 'Заполните поле']"
+              v-model="place"
+              v-if="editedItem.orderId && editedItem.orderBouquet"
+            ></v-textarea>
           </v-flex>
 
           <v-flex
@@ -148,11 +151,11 @@
         <v-btn
           @click.native="cancel()"
         >Отмена</v-btn>
-        <!-- <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
         <v-btn
           color="info"
-          @click="submitForm"
-        >Сохранить</v-btn> -->
+          @click="submitForm()"
+        >Сохранить</v-btn>
       </v-card-actions>
     </v-form>
   </v-card>
@@ -161,8 +164,8 @@
 <script>
 export default {
   props: {
-    id: {
-      type: Number,
+    bouquet: {
+      type: Object,
       required: true,
     },
   },
@@ -188,38 +191,74 @@ export default {
           value: 'count',
         },
       ],
+      order: {},
+      place: '',
     };
   },
   methods: {
     getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'bouquets',
-          id: this.id,
-        };
+      this.editedItem = Object.assign({}, this.bouquet);
+      this.loading = false;
+      this.place = this.editedItem.orderBouquet.place;
+      this.getOrder();
+      // if (this.id) {
+      //   const itemParams = {
+      //     type: 'bouquets',
+      //     id: this.id,
+      //   };
 
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-          this.loading = false;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      //   this.$store.dispatch('getItem', itemParams).then((response) => {
+      //     this.editedItem = response;
+      //     this.loading = false;
+      //   }).catch(() => {
+      //     console.log('error');
+      //   });
+      // }
     },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
       this.$emit('cancel');
     },
+    getOrder() {
+      if (this.editedItem.orderId) {
+        const itemParams = {
+          type: 'orders',
+          id: this.editedItem.orderId,
+        };
+
+        this.$store.dispatch('getItem', itemParams).then((response) => {
+          const props = response;
+          props.addressee = (props.addressee) ? +props.addressee.id : null;
+          props.client = (props.client) ? +props.client.id : 0;
+          props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
+          props.clientType = (props.clientType) ? +props.clientType.id : 0;
+          props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
+          props.responsible = (props.responsible) ? +props.responsible.id : null;
+          props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
+          props.courier = (props.courier) ? +props.courier.id : null;
+          props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
+
+          this.order = props;
+        }).catch(() => {
+          console.log('error');
+        });
+      }
+    },
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
+        const bouquetOrderIndex = this.order.bouquets.findIndex((item) => {
+          return item.id === this.editedItem.orderBouquet.id;
+        });
+        this.order.bouquets[bouquetOrderIndex].place = this.place;
+
+        const propsItem = Object.assign({}, this.order);
         delete propsItem.id;
 
         const itemParams = {
-          type: 'payments',
-          id: this.id,
+          type: 'orders',
+          id: this.order.id,
           props: propsItem,
         };
 
@@ -229,6 +268,21 @@ export default {
             this.$emit('cancel');
           }, 1000);
         });
+        // const propsItem = Object.assign({}, this.editedItem);
+        // delete propsItem.id;
+
+        // const itemParams = {
+        //   type: 'payments',
+        //   id: this.editedItem.id,
+        //   props: propsItem,
+        // };
+
+        // this.$store.dispatch('updateItem', itemParams).then(() => {
+        //   this.createdSuccess = true;
+        //   setTimeout(() => {
+        //     this.$emit('cancel');
+        //   }, 1000);
+        // });
       }
     },
   },

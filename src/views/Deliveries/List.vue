@@ -276,6 +276,9 @@
                               <template v-else-if="prop.field === 'bouquets'">
                                 <template v-for="(item, key) in props.item[prop.field]">
                                   {{ item.name }} - {{ item.count }}
+                                  <template v-if="item.place">
+                                    ({{ item.place }})
+                                  </template>
                                   <br :key="key">
                                 </template>
                               </template>
@@ -544,7 +547,15 @@
             <td
               class="px-1"
               @click.prevent="viewOrder(props.item.id)"
-            ></td>
+            >
+              <template v-for="(item, key) in props.item.bouquets">
+                <!-- {{ item.name }} - {{ item.count }} -->
+                <template v-if="item.place">
+                  ({{ item.place }})
+                  <br :key="key">
+                </template>
+              </template>
+            </td>
             <td class="px-1 text-xs-center" style="width: 40px;">
               <v-icon
                 left

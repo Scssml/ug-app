@@ -468,6 +468,18 @@
                   class="mb-4"
                 ></v-text-field>
               </v-flex>
+              <v-flex
+                xs2
+                class="pr-3"
+              >
+                <v-text-field
+                  label="Место"
+                  hide-details
+                  class="mb-4"
+                  v-model="bouquet.place"
+                  readonly
+                ></v-text-field>
+              </v-flex>
               <v-flex xs1>
                 <v-icon @click="bouquetDelete(index)">
                   delete
@@ -564,12 +576,14 @@ export default {
         bouquets: [
           {
             count: null,
-            name: null
-          }
+            name: null,
+            place: '',
+            isReady: false,
+          },
         ],
         responsible: null,
         prePaymentSource: null,
-        prePayment: 0
+        prePayment: 0,
       },
       createdSuccess: false,
       userInfo: {},
@@ -968,7 +982,9 @@ export default {
     bouquetAdd() {
       this.editedItem.bouquets.push({
         name: null,
-        count: null
+        count: null,
+        place: '',
+        isReady: false,
       });
     },
     bouquetDelete(index) {

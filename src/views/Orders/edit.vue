@@ -527,6 +527,7 @@
                   label="Место"
                   hide-details
                   class="mb-4"
+                  v-model="bouquet.place"
                   readonly
                 ></v-text-field>
               </v-flex>
@@ -1202,6 +1203,8 @@ export default {
       this.editedItem.bouquets.push({
         name: null,
         count: null,
+        place: '',
+        isReady: false,
       });
     },
     bouquetDelete(index) {

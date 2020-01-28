@@ -1177,6 +1177,13 @@ export default {
 
         propsItem.delivery = false;
 
+        if (propsItem.deliveryType === 1) {
+          propsItem.address = '';
+          propsItem.entrance = '';
+          propsItem.flat = '';
+          propsItem.floor = '';
+        }
+
         const itemParams = {
           type: 'orders',
 

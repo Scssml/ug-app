@@ -36,6 +36,7 @@ export default new Vuex.Store({
     },
     showGoodsList: [],
     orderFilter: {},
+    orderSort: {},
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -48,6 +49,7 @@ export default new Vuex.Store({
     getCountElemPage: state => state.countElemPage,
     getShowGoodsList: state => state.showGoodsList,
     getOrderFilter: state => state.orderFilter,
+    getOrderSort: state => state.orderSort,
   },
   mutations: {
     authRequest: (state) => {
@@ -89,6 +91,9 @@ export default new Vuex.Store({
     setOrderFilter: (state, value) => {
       state.orderFilter = value;
     },
+    setOrderSort: (state, value) => {
+      state.orderSort = value;
+    },
     clearPurchaseFilter: (state) => {
       state.purchaseFilter = {
         startDate: null,
@@ -96,8 +101,8 @@ export default new Vuex.Store({
         type: null,
         search: null,
         goodId: null,
-      }
-    }
+      };
+    },
   },
   actions: {
     login({ state, commit }, user) {

@@ -1002,12 +1002,14 @@ export default {
         }
       });
 
+      const sortSettings = {};
+      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+      sortSettings.deliveryDate = 'asc';
+      sortSettings.deliveryTimeOfDay = 'asc';
+
       const itemParams = {
         type: 'orders',
-        sort: {
-          deliveryDate: 'asc',
-          deliveryTimeOfDay: 'asc',
-        },
+        sort: sortSettings,
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -1060,19 +1062,6 @@ export default {
           return elem;
         });
 
-        const { settings } = response;
-
-        this.userSettings = (settings) ? settings : [];
-
-        if (settings) {
-          const colSort = this.userSettings.find(item => item.sortOrder);
-
-          if (colSort) {
-            this.pagination.sortBy = colSort.sortField;
-            this.pagination.descending = (colSort.sortOrder === 'desc');
-          }
-        }
-
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
         loadData.loading = false;
@@ -1084,6 +1073,44 @@ export default {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = errorData;
         loadData.error = true;
+      });
+    },
+    getUserSettings() {
+      const userSort = this.$store.getters.getOrderSort;
+
+      const itemParams = {
+        type: 'users',
+        id: this.$store.getters.getAuthUser,
+      };
+
+      this.$store.dispatch('getItem', itemParams).then((response) => {
+        const settings = response.settings.orderSettings;
+
+        this.userSettings = (settings) || [];
+
+        if (userSort.sortBy) {
+          this.pagination.sortBy = userSort.sortBy;
+          this.pagination.descending = userSort.descending;
+          this.getOrdersList();
+        } else if (settings) {
+          const colSort = this.userSettings.find(item => item.sortOrder);
+
+          if (colSort) {
+            this.pagination.sortBy = colSort.sortField;
+            this.pagination.descending = (colSort.sortOrder === 'desc');
+
+            const sort = {
+              sortBy: this.pagination.sortBy,
+              descending: this.pagination.descending,
+            };
+
+            this.$store.commit('setOrderSort', sort);
+          }
+        }
+
+        this.getOrdersList();
+      }).catch(() => {
+        console.log('error');
       });
     },
     getDeliveryNow() {
@@ -1308,6 +1335,14 @@ export default {
         this.pagination.sortBy = column;
         this.pagination.descending = false;
       }
+
+      const sort = {
+        sortBy: this.pagination.sortBy,
+        descending: this.pagination.descending,
+      };
+
+      this.$store.commit('setOrderSort', sort);
+      this.getOrdersList();
     },
   },
   mounted() {
@@ -1333,12 +1368,12 @@ export default {
       this.filter.dateEnd = dateEnd;
     }
 
+    this.getUserSettings();
     this.getTsList();
     this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();
     this.getUsersList();
-    this.getOrdersList();
   },
 };
 </script>

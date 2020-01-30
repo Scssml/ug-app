@@ -693,7 +693,7 @@ export default {
       const placemarks = [];
 
       this.ordersList.forEach((item) => {
-        if (item.coordinates.length === 2) {
+        if (item.coordinates && item.coordinates.length === 2) {
           placemarks.push({
             id: item.id,
             coords: item.coordinates,
@@ -962,7 +962,7 @@ export default {
       this.dialogForm = true;
     },
     zoomOrderMap(coordinates) {
-      if (coordinates.length === 2) {
+      if (coordinates && coordinates.length === 2) {
         this.zoomMap = 15;
         setTimeout(() => {
           this.coordsMap = coordinates;

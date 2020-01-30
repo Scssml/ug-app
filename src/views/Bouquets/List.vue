@@ -121,9 +121,11 @@
             <td>{{ props.item.florist ? props.item.florist.name : '' }}</td>
             <td>{{ props.item.user.name }}</td>
             <td>
-              {{ props.item.payments[props.item.payments.length - 1].amount }}р
+              {{ props.item.payments.reduce((acc, item) => {
+                return acc + +item.amount
+              }, 0)}}р
               <br>{{ props.item.payments[props.item.payments.length - 1].creationDate }}
-              <br>{{ props.item.payments[props.item.payments.length - 1].paymentType.name }}
+              <br>{{ props.item.payments.map(p => p.paymentType.name).join(', ') }}
             </td>
             <td class="text-xs-right" style="width: 160px;">
               <v-btn

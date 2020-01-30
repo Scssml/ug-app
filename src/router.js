@@ -182,5 +182,11 @@ export default new Router({
         pagePrint: true,
       },
     },
+    {
+      path: '/reports/',
+      name: 'repprts',
+      component: () => import('./views/Reports/created.vue'),
+      beforeEnter: ifManager,
+    },
   ],
 });

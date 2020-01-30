@@ -103,6 +103,10 @@ export default {
           link: '/deliveries/',
         },
         {
+          title: 'Отчеты',
+          link: '/reports/',
+        },
+        {
           title: 'Пользователи',
           link: '/users/',
         },

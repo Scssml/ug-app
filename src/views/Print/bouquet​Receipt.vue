@@ -62,7 +62,7 @@
           </div>
         </li>
         <li style="display: flex ; font-size: 16px">
-          <div style="width: calc(320px / 2); text-align: end">Оплачено</div>
+          <div style="width: calc(320px / 2); text-align: end">К оплате</div>
           <div style="width: calc(320px / 2); text-align: center">{{ Math.abs(orderData.paid) }}</div>
         </li>
       </ul>

@@ -855,7 +855,7 @@ export default {
           this.clientsList = response.map(item => {
             item.id = +item.id;
             return item;
-          });
+          }).filter(i => i.id !== 0);
         })
         .catch(() => {
           console.log("error");

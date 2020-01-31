@@ -66,6 +66,7 @@
           no-data-text="Оплат не найдено"
           no-results-text="Оплат не найдено"
           :search="search"
+          :disable-initial-sort="true"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">

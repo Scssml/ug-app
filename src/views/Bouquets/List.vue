@@ -104,6 +104,7 @@
         <v-data-table
           :headers="headersTable"
           :items="filteredBouquestsList"
+          :disable-initial-sort="true"
           hide-actions
           no-data-text="Букетов не найдено"
           no-results-text="Букетов не найдено"
@@ -288,16 +289,16 @@ export default {
     getBouquetsList() {
       const itemParams = {
         type: 'bouquets',
+        sort: {
+          id: 'desc',
+        }
       };
 
       const successData = 'Букеты получены!';
       const errorData = 'Ошибка получения букетов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.bouquetsList = response.map((item) => {
-          item.payments.sort((a, b) => (a.creationDate > b.creationDate ? 1 : -1));
-          return item;
-        });
+        this.bouquetsList = response;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;

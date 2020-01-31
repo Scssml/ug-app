@@ -492,7 +492,7 @@ export default {
     },
     sumSale: function sumSale() {
       const sum = Math.ceil(
-        (this.sumFlowers + this.sumDecor) * (this.clientSale / 100)
+        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) * (this.clientSale / 100)
       );
       return this.priceRound(sum);
     },

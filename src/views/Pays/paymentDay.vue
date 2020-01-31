@@ -71,22 +71,6 @@
     </v-layout> -->
     <v-layout row wrap align-center>
       <v-flex xs7>
-        <b>Сумма оплат:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ allSumPay }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPay"
-          class="scs-small"
-        ></v-text-field> -->
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
-      <v-flex xs7>
         <b>Сумма наличка:</b>
       </v-flex>
       <v-flex xs5>
@@ -97,55 +81,6 @@
           hide-details
           readonly
           :value="allSumPayCash"
-          class="scs-small"
-        ></v-text-field> -->
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
-      <v-flex xs7>
-        <b>Сумма безнал:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ allSumPayNoCash }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayNoCash"
-          class="scs-small"
-        ></v-text-field> -->
-      </v-flex>
-    </v-layout>
-
-    <v-layout row wrap align-center>
-      <v-flex xs7>
-        <b>За счет компании:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ allSumPayPresent }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayPresent"
-          class="scs-small"
-        ></v-text-field> -->
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
-      <v-flex xs7>
-        <b>На баланс:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ allSumPayBalance }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayBalance"
           class="scs-small"
         ></v-text-field> -->
       </v-flex>
@@ -211,22 +146,6 @@
           hide-details
           readonly
           :value="allSumReturn"
-          class="scs-small"
-        ></v-text-field> -->
-      </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
-      <v-flex xs7>
-        <b>Остаток в кассе:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ cashPrevDay }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="cashPrevDay"
           class="scs-small"
         ></v-text-field> -->
       </v-flex>

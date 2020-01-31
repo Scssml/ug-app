@@ -280,6 +280,12 @@
             <v-btn
               color="primary"
               dark
+              @click.prevent="setFilterNewOrderSite()"
+            >Новые заказы с сайта</v-btn>
+
+            <v-btn
+              color="primary"
+              dark
               @click.prevent="setFilter14February()"
             >14 февраля</v-btn>
 
@@ -1318,6 +1324,14 @@ export default {
       const date = new Date();
       this.filter.dateStart = `${date.getFullYear()}-03-08`;
       this.filter.dateEnd = `${date.getFullYear()}-03-08`;
+      this.page = 0;
+      this.getOrdersList();
+    },
+    setFilterNewOrderSite() {
+      this.filter.dateStart = '';
+      this.filter.dateEnd = '';
+      this.filter.orderSourceType = 2;
+      this.filter.orderStatus = 1;
       this.page = 0;
       this.getOrdersList();
     },

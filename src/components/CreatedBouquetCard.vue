@@ -393,9 +393,15 @@
 </template>
 
 <script>
+import { ClientTypes, PaymentTypes } from "../constants";
+
 export default {
   name: "CreatedBouquetCard",
   props: {
+    goods: {
+      type: Array,
+      required: true
+    },
     floristsList: {
       type: Array,
       required: true
@@ -472,10 +478,20 @@ export default {
 
       return orderList;
     },
+    selectedClient() {
+      return this.clientsList.find(c => c.id === this.client);
+    },
     typePayList: function() {
       return this.paymentTypesList.filter(item => {
         if (this.client === 0) {
           return item.id !== 5;
+        }
+
+        if (
+          item.id === PaymentTypes.PRESENT &&
+          (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
+        ) {
+          return false;
         }
 
         return item.id !== 7;
@@ -492,7 +508,8 @@ export default {
     },
     sumSale: function sumSale() {
       const sum = Math.ceil(
-        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) * (this.clientSale / 100)
+        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
+          (this.clientSale / 100)
       );
       return this.priceRound(sum);
     },
@@ -634,7 +651,7 @@ export default {
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount,
+          bouquetCount: +this.bouquetCount
         };
 
         if (this.sumFlowers === 0) {

@@ -101,6 +101,7 @@
                   :payment-types-list="paymentTypesList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
+                  :goods="item.goods"
                   @saveProps="saveProps(index, $event)"
                   @updateProps="updateProps(index, $event)"
                   @copy="copyItem(index)"

@@ -8,3 +8,9 @@ export const PaymentTypes = {
   RETURN: 7,
   COLLECTION: 8
 };
+
+export const ClientTypes = {
+  INDIVIDUAL: 1,
+  LEGAL: 2,
+  OUR: 3,
+};

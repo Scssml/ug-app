@@ -23,17 +23,17 @@
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
       <!-- <v-select
-        label="Клиент"
-        :items="clientsList"
-        item-text="name"
-        item-value="id"
-        solo
-        flat
-        hide-details
-        v-model="client"
-        class="scs-small"
-        @change="updateProps()"
-      ></v-select> -->
+              label="Клиент"
+              :items="clientsList"
+              item-text="name"
+              item-value="id"
+              solo
+              flat
+              hide-details
+              v-model="client"
+              class="scs-small"
+              @change="updateProps()"
+            ></v-select> -->
       <v-autocomplete
         label="Клиент"
         :items="clientsList"
@@ -116,8 +116,8 @@
     </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
-      <span class="px-3">{{ sumFlowers }}</span>
-    </div> -->
+          <span class="px-3">{{ sumFlowers }}</span>
+        </div> -->
     <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
@@ -160,20 +160,20 @@
     </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
-      <span class="px-3">{{ sumDecor }}</span>
-    </div> -->
+          <span class="px-3">{{ sumDecor }}</span>
+        </div> -->
     <!-- <div class="px-0" style="height: 30px;">
-      <v-text-field
-        label="0"
-        solo
-        flat
-        hide-details
-        :value="sumDecor"
-        class="scs-small"
-        @input="sumDecorCustom = $event"
-        @change="updateProps()"
-      ></v-text-field>
-    </div> -->
+          <v-text-field
+            label="0"
+            solo
+            flat
+            hide-details
+            :value="sumDecor"
+            class="scs-small"
+            @input="sumDecorCustom = $event"
+            @change="updateProps()"
+          ></v-text-field>
+        </div> -->
     <v-layout row wrap>
       <v-flex xs6>
         <div class="px-0" style="height: 30px;">
@@ -222,8 +222,8 @@
       </v-flex>
       <v-flex xs6>
         <!-- <div class="py-1 px-3" style="height: 30px;">
-          <span class="px-3">{{ sumSale }}</span>
-        </div> -->
+                  <span class="px-3">{{ sumSale }}</span>
+                </div> -->
         <div class="px-0" style="height: 30px;">
           <v-text-field
             label="0"
@@ -239,8 +239,8 @@
     </v-layout>
     <v-divider></v-divider>
     <!-- <div class="py-1 px-3" style="height: 30px;">
-      <span class="px-3">{{ sumPay }}</span>
-    </div> -->
+          <span class="px-3">{{ sumPay }}</span>
+        </div> -->
     <div class="pl-0" style="height: 30px;">
       <v-text-field
         label="0"
@@ -255,8 +255,8 @@
     <v-divider></v-divider>
     <div class="px-0 text-xs-center" style="height: 40px;">
       <v-btn color="info" @click.native="dialogPay = true" small
-        >Оплатить</v-btn
-      >
+        >Оплатить
+      </v-btn>
       <v-btn
         @click.native="dialogClear = true"
         flat
@@ -329,7 +329,7 @@
               label="Сумма"
               :rules="[v => validateTotalSum(v) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="sumFlowers > 0"
+              v-if="sumFlowers > 0 && (partlyPayment || typePay === 1)"
               @keyup="handleFirstSumChange"
               ref="firstSum"
             ></v-text-field>
@@ -364,7 +364,7 @@
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="sumFlowers > 0"
+              v-if="sumFlowers > 0 && (partlyPayment || typePay === 1)"
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="px-4 pb-4">
@@ -531,7 +531,12 @@ export default {
       return this.priceRound(sum) * +this.bouquetCount;
     },
     sumChange: function sumChange() {
-      const sum = +this.sumClient + +this.secondSumClient - this.sumPay;
+      const sumClient =
+        !this.partlyPayment && this.typePay === PaymentTypes.CASH
+          ? +this.sumPay
+          : +this.sumClient;
+
+      const sum = sumClient + +this.secondSumClient - this.sumPay;
       return sum > 0 ? sum : 0;
     },
     activePayBtn: function activePayBtn() {

@@ -483,15 +483,15 @@ export default {
     },
     typePayList: function() {
       return this.paymentTypesList.filter(item => {
-        if (this.client === 0) {
-          return item.id !== 5;
-        }
-
         if (
           item.id === PaymentTypes.PRESENT &&
           (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
         ) {
           return false;
+        }
+
+        if (this.client === 0) {
+          return item.id !== 5;
         }
 
         return item.id !== 7;

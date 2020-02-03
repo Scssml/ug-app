@@ -553,7 +553,7 @@ export default {
           salePersent = this.clientSaleCustom;
         } else if (client !== 0 && client.discountPercent > 0) {
           salePersent = client.discountPercent;
-        } else if (this.sumFlowers + this.sumDecor >= 3000) {
+        } else if (this.sumFlowers + this.sumDecor + this.sumDecorAdditional >= 3000) {
           salePersent = 5;
         } else {
           salePersent = null;

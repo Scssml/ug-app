@@ -4,7 +4,9 @@
     class="pa-0"
   >
     <v-card>
-      <v-card-title>
+      <v-card-title
+        class="print-hidden"
+      >
         <v-layout
           row
           wrap
@@ -75,6 +77,14 @@
         class="report"
       ></v-card-text>
     </v-card>
+
+    <br>
+    <v-btn
+      color="primary"
+      dark
+      class="mb-4 print-btn"
+      @click.prevent="printPage()"
+    >Распечатать</v-btn>
   </v-container>
 </template>
 
@@ -122,6 +132,9 @@ export default {
         this.report = response;
         this.loadingBtn = false;
       });
+    },
+    printPage() {
+      window.print();
     },
   },
 };

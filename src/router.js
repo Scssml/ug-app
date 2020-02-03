@@ -188,5 +188,11 @@ export default new Router({
       component: () => import('./views/Reports/created.vue'),
       beforeEnter: ifManager,
     },
+    {
+      path: '/reviews/',
+      name: 'reviews',
+      component: () => import('./views/Reviews/List.vue'),
+      beforeEnter: ifManager,
+    },
   ],
 });

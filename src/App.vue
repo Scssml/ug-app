@@ -5,7 +5,7 @@
       color="blue-grey lighten-4"
       height="42px"
       v-if="!$route.meta.pagePrint"
-      class="hidden-sm-and-down"
+      class="hidden-sm-and-down print-hidden"
     >
       <v-toolbar-items>
         <template
@@ -41,7 +41,7 @@
       color="blue-grey darken-3"
       dark
       v-if="!$route.meta.pagePrint"
-      class="hidden-sm-and-down"
+      class="hidden-sm-and-down print-hidden"
     >
       <v-layout
         justify-center
@@ -105,6 +105,10 @@ export default {
         {
           title: 'Отчеты',
           link: '/reports/',
+        },
+        {
+          title: 'Отзывы',
+          link: '/reviews/',
         },
         {
           title: 'Пользователи',

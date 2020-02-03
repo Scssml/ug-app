@@ -634,7 +634,7 @@ export default {
           orderId: this.order,
           totalCost: this.sumPay,
           decorPercent: this.decorPercent,
-          decorCost: this.sumDecor,
+          decorCost: this.sumDecor + this.sumDecorAdditional,
           deliveryCost: this.delivery,
           salePercent: +this.clientSale,
           sumSale: this.sumSale,

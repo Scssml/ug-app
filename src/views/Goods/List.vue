@@ -340,8 +340,8 @@ export default {
         type: "clients",
         filter: {
           active: true,
-          type: 2
-        }
+          type: 4,
+        },
       };
 
       this.$store

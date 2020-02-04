@@ -42,26 +42,22 @@
           :loading="tableLoading"
         >
           <template slot="items" slot-scope="props">
-            <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
-            <td>
-              <template v-for="(review, index) in props.item.reviews">
-                {{ review }}
-                <br :key="index">
-              </template>
-            </td>
+            <td class="text-xs-right" style="width: 30px;">{{ props.item.orderId }}</td>
+            <td>{{ props.item.comment }}</td>
             <td></td>
             <td>
-              <template v-if="props.item.client">
-                {{ props.item.client.name }}
-                <br>{{ props.item.client.phone }}
+              <template v-if="props.item.order.client">
+                {{ props.item.order.client.name }}
+                <br>
               </template>
+              {{ props.item.phoneNumber }}
             </td>
             <td class="text-xs-right">
-              <template v-if="props.item.createdBy">
-                {{ props.item.createdBy.name }}
+              <template v-if="props.item.order.createdBy">
+                <div>М: {{ props.item.order.createdBy.name }}</div>
               </template>
-              <template v-if="props.item.courier">
-                {{ props.item.courier.name }}
+              <template v-if="props.item.order.courier">
+                <div>К: {{ props.item.order.courier.name }}</div>
               </template>
             </td>
           </template>
@@ -123,7 +119,7 @@ export default {
           error: false,
           loading: true,
           color: 'deep-orange',
-          id: 'orders',
+          id: 'deliveries',
         },
       ],
       headersTable: [
@@ -181,7 +177,7 @@ export default {
       }
 
       const itemParams = {
-        type: 'orders',
+        type: 'deliveries',
         sort: {
           id: 'desc',
         },
@@ -193,7 +189,7 @@ export default {
       const errorData = 'Ошибка получения отзывов!';
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.reviewsList = response.orders;
+        this.reviewsList = response;
         this.tableLoading = false;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);

@@ -340,7 +340,7 @@ export default {
         type: "clients",
         filter: {
           active: true,
-          type: 4,
+          typeId: 4,
         },
       };
 

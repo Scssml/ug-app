@@ -409,5 +409,24 @@ export default new Vuex.Store({
         // }, 2500);
       });
     },
+
+    getGraphQL({ dispatch }, item) {
+      return new Promise((resolve, rejected) => {
+        const url = 'http://192.168.4.161:7000/v1/graphql';
+        axios({
+          method: 'post',
+          url,
+          data: item.data,
+        }).then((response) => {
+          resolve(response.data);
+        }).catch((error) => {
+          if (error.response.status === 401) {
+            dispatch('logout');
+            router.push('/login');
+          }
+          rejected();
+        });
+      });
+    },
   },
 });

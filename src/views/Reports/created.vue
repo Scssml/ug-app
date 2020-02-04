@@ -136,6 +136,23 @@ export default {
     printPage() {
       window.print();
     },
+    createdReportGraphQL() {
+      const itemParams = {
+        type: 'v1/graphql',
+        data: {
+          query: 'query MyQuery{orders(where:{orderStatusId:{_eq:"1"}}){id,orderStatusId,client{phone,name}}}',
+          variables: null,
+          operationName: 'MyQuery',
+        },
+      };
+
+      this.$store.dispatch('getGraphQL', itemParams).then((response) => {
+        console.log(response);
+      });
+    },
+  },
+  mounted() {
+    this.createdReportGraphQL();
   },
 };
 </script>

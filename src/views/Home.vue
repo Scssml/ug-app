@@ -608,6 +608,9 @@ export default {
     getGoodsList: function getGoodsList() {
       const itemParams = {
         type: 'goods',
+        sort: {
+          sortIndex: "asc",
+        },
       };
 
       const successData = 'Товары получены!';

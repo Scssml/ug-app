@@ -609,7 +609,7 @@ export default {
       const itemParams = {
         type: 'goods',
         sort: {
-          sortIndex: "asc",
+          sortIndex: "desc",
         },
       };
 

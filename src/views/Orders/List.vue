@@ -804,7 +804,9 @@ export default {
       },
       userSettings: [],
       pagination: {
+        sortBy: "id",
         rowsPerPage: -1,
+        descending: false,
       },
       deliveryTimeOfDayFilter: [
         {

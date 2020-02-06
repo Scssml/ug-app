@@ -306,30 +306,30 @@
               label="Сумма заказа"
               readonly
               :value="sumOrder"
-              v-if="sumFlowers > 0"
+              v-if="!isEmptySum"
             ></v-text-field>
             <v-text-field
               label="К оплате"
               readonly
               :value="sumPay"
-              v-if="sumFlowers > 0"
+              v-if="!isEmptySum"
             ></v-text-field>
             <v-text-field
               label="Предоплата"
               readonly
               :value="prePayment"
-              v-if="sumFlowers > 0"
+              v-if="!isEmptySum"
             ></v-text-field>
             <v-text-field
               label="К оплате"
               v-model.number="sumPayCustom"
-              v-if="sumFlowers === 0"
+              v-if="isEmptySum"
             ></v-text-field>
             <v-text-field
               label="Сумма"
               :rules="[v => validateTotalSum(v) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="sumFlowers > 0 && (partlyPayment || typePay === 1)"
+              v-if="!isEmptySum && (partlyPayment || typePay === 1)"
               @keyup="handleFirstSumChange"
               ref="firstSum"
             ></v-text-field>
@@ -356,7 +356,7 @@
               label="Вторая сумма"
               :rules="[v => validateTotalSum(v) || 'Заполните поле']"
               v-model="secondSumClient"
-              v-if="sumFlowers > 0 && secondTypePay"
+              v-if="!isEmptySum && secondTypePay"
               ref="secondSum"
               @keyup="handleSecondSumChange"
             ></v-text-field>
@@ -364,7 +364,7 @@
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="sumFlowers > 0 && (partlyPayment || typePay === 1)"
+              v-if="!isEmptySum && (partlyPayment || typePay === 1)"
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="px-4 pb-4">
@@ -519,7 +519,7 @@ export default {
       sum += +this.delivery;
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
-      return this.priceRound(sum);
+      return +sum.toFixed();
     },
     sumPay: function sumPay() {
       let sum = this.sumFlowers;
@@ -528,7 +528,15 @@ export default {
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
 
-      return this.priceRound(sum) * +this.bouquetCount;
+      return +sum.toFixed() * +this.bouquetCount;
+    },
+    isEmptySum() {
+      let emptySum = true;
+      if (this.sumFlowers > 0) emptySum = false;
+      if (this.sumDecorAdditional > 0) emptySum = false;
+      if (this.delivery > 0) emptySum = false;
+
+      return emptySum;
     },
     sumChange: function sumChange() {
       const sumClient =

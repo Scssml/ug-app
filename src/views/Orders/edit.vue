@@ -1184,6 +1184,10 @@ export default {
           propsItem.floor = '';
         }
 
+        if (!propsItem.coordinates) {
+          propsItem.coordinates = [];
+        }
+
         const itemParams = {
           type: 'orders',
 

@@ -596,17 +596,17 @@ export default {
       ordersList: [],
       deliveryTimeOfDayList: [
         {
-          name: "Утро",
-          id: 1
+          name: 'Утро',
+          id: 1,
         },
         {
-          name: "День",
-          id: 2
+          name: 'День',
+          id: 2,
         },
         {
-          name: "Вечер",
-          id: 3
-        }
+          name: 'Вечер',
+          id: 3,
+        },
       ],
       coordsMap: [53.05, 50.101783],
       responsible: undefined,
@@ -714,16 +714,16 @@ export default {
           _,
           {
             results: [
-              { geometry: { location: { lat, lng } = {} } = {} } = {}
-            ] = []
-          } = {}
+              { geometry: { location: { lat, lng } = {} } = {} } = {},
+            ] = [],
+          } = {},
         ) => {
           this.updateAddress({
             geo: [lat, lng],
-            address
+            address,
           });
         },
-        { language: "ru", key: window.GOOGLE_API_KEY }
+        { language: 'ru', key: window.GOOGLE_API_KEY },
       );
     },
     setDataResponsible() {
@@ -951,24 +951,28 @@ export default {
         propsItem.floor = '';
       }
 
+      if (!propsItem.coordinates) {
+        propsItem.coordinates = [];
+      }
+
       const itemParams = {
-        type: "orders",
-        props: propsItem
+        type: 'orders',
+        props: propsItem,
       };
 
-      this.$store.dispatch("addItem", itemParams).then(() => {
+      this.$store.dispatch('addItem', itemParams).then(() => {
         this.createdSuccess = true;
         setTimeout(() => {
-          this.$emit("cancel");
+          this.$emit('cancel');
         }, 1000);
       });
     },
     addClient() {
       const itemParams = {
-        type: "clients",
+        type: 'clients',
         props: {
           name: this.editedItem.clientName,
-          birthDay: "1900-01-01",
+          birthDay: '1900-01-01',
           bill: 0,
           sale: 0,
           phone: this.editedItem.clientPhone,
@@ -977,7 +981,7 @@ export default {
           address: this.editedItem.address,
           entrance: this.editedItem.entrance,
           flat: this.editedItem.flat,
-          floor: this.editedItem.floor
+          floor: this.editedItem.floor,
         }
       };
 

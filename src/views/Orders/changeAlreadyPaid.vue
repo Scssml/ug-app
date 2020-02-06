@@ -25,6 +25,10 @@ export default {
       const propsItem = Object.assign({}, this.editedItem);
       delete propsItem.id;
 
+      if (!propsItem.coordinates) {
+        propsItem.coordinates = [];
+      }
+
       const itemParams = {
         type: 'orders',
         id: this.editedItem.id,

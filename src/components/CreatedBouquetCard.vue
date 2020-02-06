@@ -370,7 +370,11 @@
           <v-card-actions class="px-4 pb-4">
             <v-btn @click.native="dialogPay = false">Отмена</v-btn>
             <v-spacer></v-spacer>
-            <v-btn color="info" @click="submitForm">Оплатить</v-btn>
+            <v-btn
+              color="info"
+              @click="submitForm"
+              :loading="btnLoad"
+            >Оплатить</v-btn>
           </v-card-actions>
         </v-form>
       </v-card>
@@ -446,7 +450,8 @@ export default {
       bouquetCount: 1,
       orderBouquet: null,
       clientOrdersList: [],
-      partlyPayment: false
+      partlyPayment: false,
+      btnLoad: false,
     };
   },
   computed: {
@@ -635,13 +640,14 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         this.createdSuccess = true;
+        this.btnLoad = true;
 
         const props = {
           floristId: this.florist,
           clientId: this.client,
           orderId: this.order,
           totalCost: this.sumPay,
-          decorPercent: this.decorPercent,
+          decorPercent: +this.decorPercent,
           decorCost: this.sumDecor + this.sumDecorAdditional,
           deliveryCost: this.delivery,
           salePercent: +this.clientSale,

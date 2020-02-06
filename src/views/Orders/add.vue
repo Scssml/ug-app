@@ -955,6 +955,10 @@ export default {
         propsItem.coordinates = [];
       }
 
+      if (!propsItem.description) {
+        propsItem.description = '';
+      }
+
       const itemParams = {
         type: 'orders',
         props: propsItem,

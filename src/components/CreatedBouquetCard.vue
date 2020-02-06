@@ -701,7 +701,8 @@ export default {
           description: ""
         },
         comment: this.comment,
-        orderBouquet: this.orderBouquet
+        orderBouquet: this.orderBouquet,
+        sumDecorAdditional: this.sumDecorAdditional,
       };
 
       this.$emit("updateProps", props);
@@ -723,6 +724,7 @@ export default {
         this.salePersent = this.propsDefault.salePercent;
         this.comment = this.propsDefault.comment;
         this.orderBouquet = this.propsDefault.orderBouquet;
+        this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
       }
     }
   },

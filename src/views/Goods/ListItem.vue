@@ -56,16 +56,22 @@
         class="scs-small"
       ></v-text-field>
     </td>
-    <td class="text-xs-right" style="width: 7%;"></td>
+    <td class="text-xs-right" style="width: 7%;">
+      <v-icon
+        @click="deleteItem(props.item.id)"
+      >
+        delete
+      </v-icon>
+    </td>
   </tr>
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
-  name: "ListItem",
-  props: ["props", "exelCalc"],
+  name: 'ListItem',
+  props: ['props', 'exelCalc'],
   methods: {
     changeSortIndex(e) {
       const { id } = this.props.item;
@@ -84,7 +90,10 @@ export default {
           this.$emit("onChange", { id: this.props.item.id, value, prop });
         }
       };
-    }
+    },
+    deleteItem(id) {
+      this.$emit('deleteItem', id);
+    },
   }
 };
 </script>

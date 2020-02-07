@@ -26,7 +26,15 @@
     <template v-if="!loadingDialog">
       <v-dialog v-model="dialogForm" persistent max-width="420px">
         <template v-if="dialogForm">
-          <good-add @cancel="closeDialogAdd()"></good-add>
+          <good-delete
+            v-if="deleteId"
+            :id="deleteId"
+            @cancel="closeDialogAdd()"
+          ></good-delete>
+          <good-add
+            v-else
+            @cancel="closeDialogAdd()"
+          ></good-add>
         </template>
       </v-dialog>
       <v-card>
@@ -139,7 +147,11 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <list-item :props="props" @onChange="handleRowItemChange" />
+            <list-item
+              :props="props"
+              @onChange="handleRowItemChange"
+              @deleteItem="deleteGood"
+            />
           </template>
         </v-data-table>
         <v-btn fab color="info" class="mx-4" @click="dialogForm = true">
@@ -151,71 +163,74 @@
 </template>
 
 <script>
-import GoodAdd from "./add.vue";
-import ListItem from "./ListItem";
-import { PaymentTypes } from "./constants";
+import GoodAdd from './add.vue';
+import ListItem from './ListItem';
+import { PaymentTypes } from './constants';
+import GoodDelete from './delete.vue';
 
 export default {
-  name: "Goods",
+  name: 'Goods',
   components: {
     GoodAdd,
-    ListItem
+    ListItem,
+    GoodDelete,
   },
   data() {
     return {
       loadingData: [
         {
-          title: "Получение товаров",
+          title: 'Получение товаров',
           error: false,
           loading: true,
-          color: "indigo",
-          id: "goods"
-        }
+          color: 'indigo',
+          id: 'goods',
+        },
       ],
       typeEdit: [],
       dataEdit: {
         type: 0,
-        company: "",
-        purchase: 0
+        company: '',
+        purchase: 0,
       },
-      search: "",
+      search: '',
       headersTable: [
         {
-          text: "Остаток",
-          align: "left",
-          value: "stockBalance"
+          text: 'Остаток',
+          align: 'left',
+          value: 'stockBalance',
         },
         {
-          text: "Название",
-          align: "left",
-          value: "name"
+          text: 'Название',
+          align: 'left',
+          value: 'name',
         },
         {
-          text: "Сортировка",
-          align: "left",
-          value: "sortIndex"
+          text: 'Сортировка',
+          align: 'left',
+          value: 'sortIndex',
         },
         {
-          text: "Цена",
-          align: "left",
-          value: "price"
+          text: 'Цена',
+          align: 'left',
+          value: 'price',
         },
         {
-          text: "Кол-во",
-          align: "left",
-          value: "count"
+          text: 'Кол-во',
+          align: 'left',
+          value: 'count',
         },
         {
-          text: "",
-          align: "right",
+          text: '',
+          align: 'right',
           sortable: false,
-          value: "action"
-        }
+          value: 'action',
+        },
       ],
       goodsList: [],
       createdSuccess: false,
       dialogForm: false,
-      clientsList: []
+      clientsList: [],
+      deleteId: 0,
     };
   },
   computed: {
@@ -225,7 +240,7 @@ export default {
       );
     },
     historyLinkPage() {
-      return "/goods/history";
+      return '/goods/history';
     },
     loadingDialog() {
       const loadData = this.loadingData.filter(
@@ -234,7 +249,7 @@ export default {
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     formAlertTitle() {
-      return "Остатки изменены";
+      return 'Остатки изменены';
     },
     arrival() {
       switch (+this.dataEdit.type) {
@@ -253,7 +268,7 @@ export default {
       }
 
       return +markupVal.toFixed(2);
-    }
+    },
   },
   methods: {
     calculateRevaluation(goodsList) {
@@ -266,7 +281,7 @@ export default {
       return goodsList.reduce((sum, item) => sum + item.price * item.count, 0);
     },
     handleHistoryButtonClick() {
-      this.$store.commit("clearPurchaseFilter");
+      this.$store.commit('clearPurchaseFilter');
     },
     handleRowItemChange({ id, prop, value }) {
       const good = this.goodsList.find(g => g.id === id);
@@ -276,7 +291,7 @@ export default {
     exelCalc(val) {
       /* eslint no-eval: 0 */
 
-      const value = val.length > 1 ? val.replace(/^0+/, "") : val;
+      const value = val.length > 1 ? val.replace(/^0+/, '') : val;
       console.log(value);
 
       // return value;
@@ -284,17 +299,20 @@ export default {
     },
     getGoodsList() {
       const itemParams = {
-        type: "goods",
+        type: 'goods',
         sort: {
-          sortIndex: "asc"
-        }
+          sortIndex: 'asc'
+        },
+        filter: {
+          isActive: true,
+        },
       };
 
-      const successData = "Товары получены!";
-      const errorData = "Ошибка получения товаров!";
+      const successData = 'Товары получены!';
+      const errorData = 'Ошибка получения товаров!';
 
       this.$store
-        .dispatch("getItemsList", itemParams)
+        .dispatch('getItemsList', itemParams)
         .then(response => {
           this.goodsList = response.map(item => {
             const good = item;
@@ -320,11 +338,11 @@ export default {
     },
     getPurchaseTypesList() {
       const itemParams = {
-        type: "purchase-types"
+        type: 'purchase-types'
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
+        .dispatch('getItemsList', itemParams)
         .then(response => {
           this.typeEdit = response.map(item => {
             item.id = +item.id;
@@ -332,12 +350,12 @@ export default {
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getClientsList() {
       const itemParams = {
-        type: "clients",
+        type: 'clients',
         filter: {
           active: true,
           typeId: 4,
@@ -345,7 +363,7 @@ export default {
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
+        .dispatch('getItemsList', itemParams)
         .then(response => {
           this.clientsList = response.map(item => {
             item.id = +item.id;
@@ -353,12 +371,12 @@ export default {
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, "");
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
       return (
@@ -394,11 +412,11 @@ export default {
         ];
 
         const itemParams = {
-          type: "purchase",
+          type: 'purchase',
           props: propsItem
         };
 
-        this.$store.dispatch("addItem", itemParams).then(() => {
+        this.$store.dispatch('addItem', itemParams).then(() => {
           this.createdSuccess = true;
           this.getGoodsList();
           setTimeout(() => {
@@ -415,12 +433,12 @@ export default {
           propsGood.price = +propsGood.price;
 
           const goodParams = {
-            type: "goods",
+            type: 'goods',
             props: propsGood,
             id: elem.id
           };
 
-          this.$store.dispatch("updateItem", goodParams);
+          this.$store.dispatch('updateItem', goodParams);
         });
       }
     },
@@ -430,7 +448,12 @@ export default {
     closeDialogAdd() {
       this.getGoodsList();
       this.dialogForm = false;
-    }
+      this.deleteId = 0;
+    },
+    deleteGood(id) {
+      this.deleteId = id;
+      this.dialogForm = true;
+    },
   },
   mounted() {
     this.getGoodsList();

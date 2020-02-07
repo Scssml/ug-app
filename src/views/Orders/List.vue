@@ -1264,6 +1264,7 @@ export default {
             decorPercent: 20,
             deliveryCost: item.deliveryCost,
             salePercent: 0,
+            sumDecorAdditional: 0,
           },
           goods: [],
         });

@@ -154,7 +154,13 @@
             />
           </template>
         </v-data-table>
-        <v-btn fab color="info" class="mx-4" @click="dialogForm = true">
+        <v-btn
+          fab
+          color="info"
+          class="mx-4"
+          @click="dialogForm = true"
+          title="Добавить товар"
+        >
           <v-icon dark>add</v-icon>
         </v-btn>
       </v-card>

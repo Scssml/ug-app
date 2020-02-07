@@ -135,6 +135,7 @@
                 :to="`/print/bouquet/receipt/${props.item.id}/`"
                 target="_blank"
                 class="mx-0"
+                title="Печать"
               >
                 <v-icon>insert_drive_file</v-icon>
               </v-btn>
@@ -143,6 +144,7 @@
                 icon
                 @click="editItem(props.item.id)"
                 class="mx-0"
+                title="Просмотр"
               >
                 <v-icon>visibility</v-icon>
               </v-btn>
@@ -152,6 +154,7 @@
                 @click="cancelItem(props.item.id)"
                 v-if="props.item.payments.every(item => item.paymentType.id !== 7)"
                 class="mx-0"
+                title="Возврат"
               >
                 <v-icon>delete</v-icon>
               </v-btn>

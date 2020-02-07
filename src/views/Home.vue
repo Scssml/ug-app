@@ -119,6 +119,7 @@
                 color="info"
                 class="mx-4"
                 @click="addCard"
+                title="Добавить букет"
               >
                 <v-icon dark>add</v-icon>
               </v-btn>

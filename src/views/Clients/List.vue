@@ -125,17 +125,20 @@
               <v-icon
                 class="mr-2"
                 @click="showOrders(props.item.id)"
+                title="Показать заказы"
               >
                 assignment
               </v-icon>
               <v-icon
                 class="mr-2"
                 @click="showBouquests(props.item.id)"
+                title="Показать букеты"
               >
                 local_florist
               </v-icon>
               <v-icon
                 @click="editItem(props.item.id)"
+                title="Изменить"
               >
                 edit
               </v-icon>
@@ -143,6 +146,7 @@
                 @click="deleteItem(props.item.id)"
                 class="ml-2"
                 v-if="props.item.id > 0 && $store.getters.getAuthUserGroup.code === 'admin'"
+                title="Удалить"
               >
                 delete
               </v-icon>

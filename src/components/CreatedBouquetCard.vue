@@ -263,6 +263,7 @@
         small
         color="error"
         class="mx-0"
+        title="Удалить"
       >
         <v-icon dark>clear</v-icon>
       </v-btn>
@@ -272,6 +273,7 @@
         small
         color="warning"
         class="mx-0"
+        title="Скопировать"
       >
         <v-icon dark>library_add</v-icon>
       </v-btn>
@@ -283,11 +285,20 @@
           hide-details
           v-model="bouquetCount"
           class="scs-small text-lg-right"
+          title="Количество"
         ></v-text-field>
       </div>
       <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
-        <v-icon dark v-if="check">check_box</v-icon>
-        <v-icon dark v-else>check_box_outline_blank</v-icon>
+        <v-icon
+          dark
+          v-if="check"
+          title="Убрать"
+        >check_box</v-icon>
+        <v-icon
+          dark
+          v-else
+          title="Выбрать"
+        >check_box_outline_blank</v-icon>
       </v-btn>
     </div>
     <v-divider></v-divider>

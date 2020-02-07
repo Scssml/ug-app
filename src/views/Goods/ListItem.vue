@@ -59,6 +59,7 @@
     <td class="text-xs-right" style="width: 7%;">
       <v-icon
         @click="deleteItem(props.item.id)"
+        title="Удалить"
       >
         delete
       </v-icon>

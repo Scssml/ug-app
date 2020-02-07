@@ -86,6 +86,7 @@
             <td class="text-xs-right" style="width: 110px;">
               <v-icon
                 @click="editItem(props.item.id)"
+                title="Изменить"
               >
                 edit
               </v-icon>
@@ -94,6 +95,7 @@
                 class="ml-2"
                 v-if="$store.getters.getAuthUserGroup.code === 'admin'"
                 @click="deleteItem(props.item.id)"
+                title="Удалить"
               >
                 delete
               </v-icon>

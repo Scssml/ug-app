@@ -82,7 +82,10 @@
             <td>{{ props.item.paymentType.name }}</td>
             <td>{{ props.item.description }}</td>
             <td class="text-xs-right" style="width: 110px;">
-              <v-icon @click="editItem(props.item.id)">
+              <v-icon
+                @click="editItem(props.item.id)"
+                title="Просмотр"
+              >
                 visibility
               </v-icon>
             </td>

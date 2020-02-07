@@ -561,6 +561,7 @@
                 left
                 @click.prevent="viewMap(props.item.id)"
                 class="mr-0"
+                title="Карта"
               >
                 my_location
               </v-icon>

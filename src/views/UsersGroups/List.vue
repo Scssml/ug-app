@@ -81,6 +81,7 @@
               <v-icon
                 class="mr-2"
                 @click="editItem(props.item.id)"
+                title="Изменить"
               >
                 edit
               </v-icon>

@@ -476,7 +476,12 @@ export default {
         item.success = true;
         this.$set(this.cardsList, index, item);
 
-        if (item.goods.length === 0) {
+        let emptySum = true;
+        if (item.goods.length > 0) emptySum = false;
+        if (props.sumDecorAdditional > 0) emptySum = false;
+        if (props.deliveryCost > 0) emptySum = false;
+
+        if (emptySum) {
           const itemParams = {
             type: 'payments',
             props: {

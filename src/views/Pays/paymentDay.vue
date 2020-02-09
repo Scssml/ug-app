@@ -156,14 +156,30 @@
       </v-flex>
       <v-flex xs5>
         {{ allSumEncashment }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumEncashment"
-          class="scs-small"
-        ></v-text-field> -->
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap align-center>
+      <v-flex xs7>
+        <b>Терминал ЮГ-2:</b>
+      </v-flex>
+      <v-flex xs5>
+        {{ terminalUg2 }}
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap align-center>
+      <v-flex xs7>
+        <b>Тинькофф:</b>
+      </v-flex>
+      <v-flex xs5>
+        {{ tinkoff }}
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap align-center>
+      <v-flex xs7>
+        <b>Газпром:</b>
+      </v-flex>
+      <v-flex xs5>
+        {{ gazprom }}
       </v-flex>
     </v-layout>
     <v-layout row wrap align-center>
@@ -172,14 +188,6 @@
       </v-flex>
       <v-flex xs5>
         {{ cashNow }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="cashNow"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
 
@@ -214,6 +222,8 @@
 </template>
 
 <script>
+import { PaymentTypes } from '../../constants';
+
 const datesAreOnSameDay = (first, second) => {
   return (
     first.getFullYear() === second.getFullYear() &&
@@ -467,6 +477,21 @@ export default {
       let allSum = this.cashPrevDay + this.allSumPayCash;
       allSum -= this.allSumEncashment;
       return allSum;
+    },
+    tinkoff() {
+      return this.paymentsNow
+              .filter(p => p.paymentType.id === PaymentTypes.TINKOFF)
+              .reduce((sum, item) => sum + item.amount, 0);
+    },
+    gazprom() {
+      return this.paymentsNow
+              .filter(p => p.paymentType.id === PaymentTypes.GAZPROM)
+              .reduce((sum, item) => sum + item.amount, 0);
+    },
+    terminalUg2() {
+      return this.paymentsNow
+              .filter(p => p.paymentType.id === PaymentTypes.UG2)
+              .reduce((sum, item) => sum + item.amount, 0);
     }
   },
   methods: {

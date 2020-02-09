@@ -6,7 +6,10 @@ export const PaymentTypes = {
   BALANCE: 5,
   PRESENT: 6,
   RETURN: 7,
-  COLLECTION: 8
+  COLLECTION: 8,
+  UG2: 10,
+  TINKOFF: 11,
+  GAZPROM: 12,
 };
 
 export const ClientTypes = {

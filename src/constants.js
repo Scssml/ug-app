@@ -7,6 +7,7 @@ export const PaymentTypes = {
   PRESENT: 6,
   RETURN: 7,
   COLLECTION: 8,
+  EXPENSES: 9,
   UG2: 10,
   TINKOFF: 11,
   GAZPROM: 12,

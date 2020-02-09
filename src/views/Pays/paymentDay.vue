@@ -184,6 +184,14 @@
     </v-layout>
     <v-layout row wrap align-center>
       <v-flex xs7>
+        <b>Расход:</b>
+      </v-flex>
+      <v-flex xs5>
+        {{ expenses }}
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap align-center>
+      <v-flex xs7>
         <b>Сейчас в кассе:</b>
       </v-flex>
       <v-flex xs5>
@@ -491,6 +499,11 @@ export default {
     terminalUg2() {
       return this.paymentsNow
               .filter(p => p.paymentType.id === PaymentTypes.UG2)
+              .reduce((sum, item) => sum + item.amount, 0);
+    },
+    expenses() {
+      return this.paymentsNow
+              .filter(p => p.paymentType.id === PaymentTypes.EXPENSES)
               .reduce((sum, item) => sum + item.amount, 0);
     }
   },

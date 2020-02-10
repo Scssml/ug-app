@@ -681,7 +681,7 @@ export default {
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount
+          bouquetCount: +this.bouquetCount,
         };
 
         if (this.sumFlowers === 0) {
@@ -714,6 +714,7 @@ export default {
         comment: this.comment,
         orderBouquet: this.orderBouquet,
         sumDecorAdditional: this.sumDecorAdditional,
+        bouquetCount: +this.bouquetCount,
       };
 
       this.$emit("updateProps", props);

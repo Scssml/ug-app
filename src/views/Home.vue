@@ -720,6 +720,19 @@ export default {
 
       checkCards.forEach((item) => {
         const card = this.cardsList[item.index];
+
+        let sumPay = card.sum;
+        sumPay += +card.props.decorCost;
+        sumPay += +card.props.deliveryCost;
+        sumPay -= +card.props.sumSale;
+
+        card.props.payment = {
+          paymentTypeId: this.typePay,
+          amount: sumPay,
+          clientId: card.props.clientId,
+          description: '',
+        };
+
         card.props.typePay = this.typePay;
         this.saveProps(item.index, card.props);
       });

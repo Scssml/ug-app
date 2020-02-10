@@ -69,6 +69,18 @@
               :loading="loadingBtn"
             >Создать</v-btn>
           </v-flex>
+          <v-spacer></v-spacer>
+          <!-- <v-flex
+            xs2
+            class="px-2 text-xs-right"
+          >
+            <v-btn
+              color="primary"
+              dark
+              @click="getReconciliation"
+              class="mt-3"
+            >Акт сверки</v-btn>
+          </v-flex> -->
         </v-layout>
       </v-card-title>
 
@@ -84,6 +96,7 @@
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
+      v-if="report"
     >Распечатать</v-btn>
   </v-container>
 </template>
@@ -131,6 +144,15 @@ export default {
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.report = response;
         this.loadingBtn = false;
+      });
+    },
+    getReconciliation() {
+      const itemParams = {
+        type: 'print/act-of-reconciliation',
+      };
+
+      this.$store.dispatch('addItem', itemParams).then((response) => {
+        console.log(response);
       });
     },
     printPage() {

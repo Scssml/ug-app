@@ -46,26 +46,27 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
-                  :items="allManagers"
-                  v-model="filterManagerStatus"
-                  item-value="id"
+                  :items="[{id: '', name: 'Все'}].concat(usersList)"
                   item-text="name"
-                  @change="filterByManager"
+                  item-value="id"
+                  v-model="filter.user"
+                  hide-details
+                  @change="customFilter()"
                 ></v-select>
               </v-flex>
 
               <v-flex xs3 class="px-2">
                 <v-autocomplete
                   label="Клиент"
-                  :items="allClients"
+                  :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
                   :filter="clientsFilter"
                   item-text="name"
                   item-value="id"
-                  v-model="filterClientStatus"
+                  v-model="filter.client"
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
-                  @change="filterByClient"
+                  @change="customFilter()"
                 ></v-autocomplete>
               </v-flex>
 
@@ -103,12 +104,14 @@
 
         <v-data-table
           :headers="headersTable"
-          :items="filteredBouquestsList"
+          :items="bouquetsList"
           :disable-initial-sort="true"
           hide-actions
           no-data-text="Букетов не найдено"
           no-results-text="Букетов не найдено"
           :search="search"
+          :pagination.sync="pagination"
+          :loading="tableLoading"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
@@ -161,6 +164,47 @@
             </td>
           </template>
         </v-data-table>
+        <v-layout
+          row
+          wrap
+          justify-space-around
+          class="py-2"
+        >
+          <v-flex
+            xs2
+            class="px-3"
+          >
+            <v-text-field
+              label="Количество на странице"
+              v-model.number="take"
+              hide-details
+              @change="changeShowElem()"
+            ></v-text-field>
+          </v-flex>
+          <v-flex
+            xs10
+            class="text-xs-right px-3"
+          >
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="page === 0"
+              @click="prevPage()"
+            >
+              <v-icon dark>keyboard_arrow_left</v-icon>
+            </v-btn>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="bouquetsList.length < take"
+              @click="nextPage()"
+            >
+              <v-icon dark>keyboard_arrow_right</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
       </v-card>
     </template>
   </v-container>
@@ -178,8 +222,8 @@ export default {
   },
   data() {
     return {
-      filterManagerStatus: -1,
-      filterClientStatus: -1,
+      // filterManagerStatus: -1,
+      // filterClientStatus: -1,
       loadingData: [
         {
           title: 'Получение букетов',
@@ -189,27 +233,35 @@ export default {
           id: 'bouquets',
         },
       ],
+      filter: {
+        user: '',
+        client: '',
+      },
       search: '',
       headersTable: [
         {
           text: 'ID',
           align: 'right',
           value: 'id',
+          sortable: false,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'client.name',
+          sortable: false,
         },
         {
           text: 'Флорист',
           align: 'left',
           value: 'florist',
+          sortable: false,
         },
         {
           text: 'Менеджер',
           align: 'left',
           value: 'user.name',
+          sortable: false,
         },
         {
           text: 'Оплата',
@@ -229,6 +281,14 @@ export default {
       cancelDialog: false,
       editedId: 0,
       bouquetsList: [],
+      usersList: [],
+      clientsList: [],
+      pagination: {
+        rowsPerPage: -1,
+      },
+      take: 20,
+      page: 0,
+      tableLoading: false,
     };
   },
   computed: {
@@ -236,45 +296,49 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
     },
-    allManagers() {
-      return [
-        { id: -1, name: 'Все' },
-        ...this.bouquetsList
-          .filter(p => p.user)
-          .map(p => ({ id: p.user.id, name: p.user.name })),
-      ];
-    },
-    allClients() {
-      return [
-        { id: -1, name: 'Все', phone: '' },
-        ...this.bouquetsList
-          .filter(p => p.client)
-          .map(p => ({ id: p.client.id, name: p.client.name, phone: p.client.phone })),
-      ];
-    },
-    filteredBouquestsList() {
-      let bouquetsList = this.bouquetsList;
-      if (this.filterManagerStatus !== -1) {
-        bouquetsList = bouquetsList.filter(
-          p => p.user && p.user.id === this.filterManagerStatus
-        );
-      }
+    // allManagers() {
+    //   return [
+    //     { id: -1, name: 'Все' },
+    //     ...this.bouquetsList
+    //       .filter(p => p.user)
+    //       .map(p => ({ id: p.user.id, name: p.user.name })),
+    //   ];
+    // },
+    // allClients() {
+    //   return [
+    //     { id: -1, name: 'Все', phone: '' },
+    //     ...this.bouquetsList
+    //       .filter(p => p.client)
+    //       .map(p => ({ id: p.client.id, name: p.client.name, phone: p.client.phone })),
+    //   ];
+    // },
+    // filteredBouquestsList() {
+    //   let bouquetsList = this.bouquetsList;
+    //   if (this.filterManagerStatus !== -1) {
+    //     bouquetsList = bouquetsList.filter(
+    //       p => p.user && p.user.id === this.filterManagerStatus
+    //     );
+    //   }
 
-      if (this.filterClientStatus !== -1) {
-        bouquetsList = bouquetsList.filter(
-          p => p.client && p.client.id === this.filterClientStatus
-        );
-      }
+    //   if (this.filterClientStatus !== -1) {
+    //     bouquetsList = bouquetsList.filter(
+    //       p => p.client && p.client.id === this.filterClientStatus
+    //     );
+    //   }
 
-      return bouquetsList;
-    },
+    //   return bouquetsList;
+    // },
   },
   methods: {
-    filterByManager(filter) {
-      this.filterManagerStatus = filter;
-    },
-    filterByClient(filter) {
-      this.filterClientStatus = filter;
+    // filterByManager(filter) {
+    //   this.filterManagerStatus = filter;
+    // },
+    // filterByClient(filter) {
+    //   this.filterClientStatus = filter;
+    // },
+    customFilter: function customFilter() {
+      this.page = 0;
+      this.getBouquetsList();
     },
     printDoc(id) {
       const { protocol, hostname } = window.location;
@@ -289,12 +353,30 @@ export default {
       return textOne.indexOf(searchText) > -1 ||
         textTwo.indexOf(searchText) > -1;
     },
-    getBouquetsList() {
+    getBouquetsList(loading = true) {
+      if (loading) {
+        this.tableLoading = true;
+        this.reviewsList = [];
+      }
+
+      const orderFilter = {};
+
+      Object.keys(this.filter).forEach((key) => {
+        const val = this.filter[key];
+
+        if (val) {
+          orderFilter[key] = val;
+        }
+      });
+
       const itemParams = {
         type: 'bouquets',
         sort: {
           id: 'desc',
-        }
+        },
+        filter: orderFilter,
+        skip: this.page * this.take,
+        take: this.take,
       };
 
       const successData = 'Букеты получены!';
@@ -302,6 +384,7 @@ export default {
 
       this.$store.dispatch('getItemsList', itemParams).then((response) => {
         this.bouquetsList = response;
+        this.tableLoading = false;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -310,6 +393,38 @@ export default {
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = errorData;
         loadData.error = true;
+      });
+    },
+    getUsersList() {
+      const itemParams = {
+        type: 'users',
+        filter: {
+          active: true,
+          group: [1, 2],
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.usersList = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    getClientsList() {
+      const itemParams = {
+        type: 'clients',
+        filter: {
+          active: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
       });
     },
     closeDialog() {
@@ -329,13 +444,29 @@ export default {
       this.dialogForm = true;
       this.cancelDialog = true;
     },
+    changeShowElem() {
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
+      this.page = 0;
+      this.getBouquetsList();
+    },
+    prevPage() {
+      this.page -= 1;
+      this.getBouquetsList();
+    },
+    nextPage() {
+      this.page += 1;
+      this.getBouquetsList();
+    },
   },
   mounted() {
-    this.getBouquetsList();
-
     if (this.$route.query.client !== undefined) {
-      this.filterClientStatus = +this.$route.query.client;
+      this.filter.client = +this.$route.query.client;
     }
+
+    this.getBouquetsList();
+    this.getUsersList();
+    this.getClientsList();
   },
 };
 </script>

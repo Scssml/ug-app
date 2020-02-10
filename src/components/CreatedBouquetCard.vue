@@ -737,7 +737,7 @@ export default {
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
       }
-    }
+    },
   },
   updated() {
     // if ((this.salePersent === null || this.salePersent === '')

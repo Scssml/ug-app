@@ -58,7 +58,8 @@
                 :items="[{id: '', name: 'Все'}].concat(typeClient)"
                 item-text="name"
                 item-value="id"
-                v-model="filter.type"
+                v-model="filter.typeId"
+                @change="customFilter()"
                 hide-details
               ></v-select>
             </v-flex>
@@ -99,7 +100,8 @@
           no-data-text="Клиентов не найдено"
           no-results-text="Клиентов не найдено"
           :search="search"
-          :custom-filter="customFilter"
+          :pagination.sync="pagination"
+          :loading="tableLoading"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
@@ -153,6 +155,47 @@
             </td>
           </template>
         </v-data-table>
+        <v-layout
+          row
+          wrap
+          justify-space-around
+          class="py-2"
+        >
+          <v-flex
+            xs2
+            class="px-3"
+          >
+            <v-text-field
+              label="Количество на странице"
+              v-model.number="take"
+              hide-details
+              @change="changeShowElem()"
+            ></v-text-field>
+          </v-flex>
+          <v-flex
+            xs10
+            class="text-xs-right px-3"
+          >
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="page === 0"
+              @click="prevPage()"
+            >
+              <v-icon dark>keyboard_arrow_left</v-icon>
+            </v-btn>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="clientsList.length < take"
+              @click="nextPage()"
+            >
+              <v-icon dark>keyboard_arrow_right</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
       </v-card>
     </template>
   </v-container>
@@ -182,7 +225,7 @@ export default {
         },
       ],
       filter: {
-        type: '',
+        typeId: '',
       },
       typeClient: [],
       search: '',
@@ -191,41 +234,49 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
+          sortable: false,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'name',
+          sortable: false,
         },
         {
           text: 'Телефон',
           align: 'left',
           value: 'phone',
+          sortable: false,
         },
         {
           text: 'Тип',
           align: 'left',
           value: 'type',
+          sortable: false,
         },
         {
           text: 'Ответственный',
           align: 'left',
           value: 'responsible',
+          sortable: false,
         },
         {
           text: 'Счет',
           align: 'right',
           value: 'bill',
+          sortable: false,
         },
         {
           text: 'Скидка',
           align: 'right',
           value: 'sale',
+          sortable: false,
         },
         {
           text: 'Активность',
           align: 'right',
           value: 'isActive',
+          sortable: false,
         },
         {
           text: '',
@@ -238,6 +289,12 @@ export default {
       editedId: 0,
       clientsList: [],
       deleteId: 0,
+      pagination: {
+        rowsPerPage: -1,
+      },
+      take: 20,
+      page: 0,
+      tableLoading: false,
     };
   },
   computed: {
@@ -248,23 +305,47 @@ export default {
   },
   methods: {
     customFilter: function customFilter(items) {
-      const filterProps = this.filter;
-      let itemsFind = [];
+      // const filterProps = this.filter;
+      // let itemsFind = [];
 
-      itemsFind = items.filter((item) => {
-        let find = false;
-        if (item.type === filterProps.type || filterProps.type === '') {
-          find = true;
+      // itemsFind = items.filter((item) => {
+      //   let find = false;
+      //   if (item.type === filterProps.type || filterProps.type === '') {
+      //     find = true;
+      //   }
+
+      //   return find;
+      // });
+
+      // return itemsFind;
+
+      this.page = 0;
+      this.getClientsList();
+    },
+    getClientsList: function getClientsList(loading = true) {
+      if (loading) {
+        this.tableLoading = true;
+        this.reviewsList = [];
+      }
+
+      const orderFilter = {};
+
+      Object.keys(this.filter).forEach((key) => {
+        const val = this.filter[key];
+
+        if (val) {
+          orderFilter[key] = val;
         }
-
-        return find;
       });
 
-      return itemsFind;
-    },
-    getClientsList: function getClientsList() {
       const itemParams = {
         type: 'clients',
+        sort: {
+          id: 'asc',
+        },
+        filter: orderFilter,
+        skip: this.page * this.take,
+        take: this.take,
       };
 
       const successData = 'Клиенты получены!';
@@ -282,6 +363,7 @@ export default {
           }
           return elem;
         });
+        this.tableLoading = false;
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);
         loadData.title = successData;
@@ -326,6 +408,20 @@ export default {
     },
     showBouquests(id) {
       this.$router.push({ path: `/bouquets/?client=${id}` });
+    },
+    changeShowElem() {
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
+      this.page = 0;
+      this.getClientTypeList();
+    },
+    prevPage() {
+      this.page -= 1;
+      this.getClientTypeList();
+    },
+    nextPage() {
+      this.page += 1;
+      this.getClientTypeList();
     },
   },
   mounted() {

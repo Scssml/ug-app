@@ -56,11 +56,22 @@
         class="scs-small"
       ></v-text-field>
     </td>
-    <td class="text-xs-right" style="width: 7%;">
+    <td>
       <v-icon
-        @click="deleteItem(props.item.id)"
-        title="Удалить"
+        title="Выбрать цвет"
+        v-if="!showPicker && $store.getters.getAuthUserGroup.code === 'admin'"
+        @click="handleColorPickerButtonClick"
       >
+        color_lens
+      </v-icon>
+      <chrome-picker
+        v-model="color"
+        v-if="showPicker"
+        v-click-outside="handleClickOutsidePicker"
+      />
+    </td>
+    <td class="text-xs-right" style="width: 7%;">
+      <v-icon @click="deleteItem(props.item.id)" title="Удалить">
         delete
       </v-icon>
     </td>
@@ -68,33 +79,57 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
+import Chrome from "vue-color/src/components/Chrome";
 
 export default {
-  name: 'ListItem',
-  props: ['props', 'exelCalc'],
+  name: "ListItem",
+  props: ["props", "exelCalc"],
+  data: () => ({
+    color: "#FFF",
+    showPicker: false
+  }),
+  components: {
+    "chrome-picker": Chrome
+  },
   methods: {
-    changeSortIndex(e) {
-      const { id } = this.props.item;
+    handleColorPickerButtonClick() {
+      this.showPicker = true;
+    },
+    handleClickOutsidePicker() {
+      if (this.showPicker) {
+        this.updateItem({
+          color: this.color.hex
+        });
+      }
 
-      axios
-        .put(`/goods/${id}`, {
-          sortIndex: +e.target.value
-        })
-        .then(() => {});
+      this.showPicker = false;
+    },
+    changeSortIndex(e) {
+      this.updateItem({
+        sortIndex: +e.target.value
+      });
     },
     handleItemChange(prop) {
       return e => {
         const { value } = e.target;
 
-        if(value) {
+        if (value) {
           this.$emit("onChange", { id: this.props.item.id, value, prop });
         }
       };
     },
     deleteItem(id) {
-      this.$emit('deleteItem', id);
+      this.$emit("deleteItem", id);
     },
+    updateItem(data) {
+      const { id } = this.props.item;
+
+      return axios.put(`/goods/${id}`, data);
+    }
+  },
+  mounted() {
+    this.color = this.props.item.color;
   }
 };
 </script>

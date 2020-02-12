@@ -103,6 +103,23 @@
           :pagination.sync="pagination"
           :loading="tableLoading"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th
+                v-for="header in props.headers"
+                :key="header.text"
+                class="text-xs-left column"
+                :class="[
+                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                @click="(header.sortable) ? changeSort(header.value) : ''"
+              >
+                <v-icon small>arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
@@ -234,25 +251,24 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Телефон',
           align: 'left',
           value: 'phone',
-          sortable: false,
         },
         {
           text: 'Тип',
           align: 'left',
-          value: 'type',
-          sortable: false,
+          value: 'typeId',
+          sortable: true,
         },
         {
           text: 'Ответственный',
@@ -264,19 +280,19 @@ export default {
           text: 'Счет',
           align: 'right',
           value: 'bill',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Скидка',
           align: 'right',
           value: 'sale',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Активность',
           align: 'right',
           value: 'isActive',
-          sortable: false,
+          sortable: true,
         },
         {
           text: '',
@@ -291,6 +307,8 @@ export default {
       deleteId: 0,
       pagination: {
         rowsPerPage: -1,
+        sortBy: 'name',
+        descending: false,
       },
       take: 20,
       page: 0,
@@ -325,7 +343,7 @@ export default {
     getClientsList: function getClientsList(loading = true) {
       if (loading) {
         this.tableLoading = true;
-        this.reviewsList = [];
+        this.clientsList = [];
       }
 
       const orderFilter = {};
@@ -338,11 +356,12 @@ export default {
         }
       });
 
+      const sortSettings = {};
+      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+
       const itemParams = {
         type: 'clients',
-        sort: {
-          id: 'asc',
-        },
+        sort: sortSettings,
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -388,6 +407,16 @@ export default {
       }).catch(() => {
         console.log('error');
       });
+    },
+    changeSort(column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+
+      this.getClientsList();
     },
     closeDialog() {
       this.getClientsList();

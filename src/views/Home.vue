@@ -182,7 +182,8 @@
                 <template v-if="showGoodsList.indexOf(item.id) !== -1">
                   <div
                     class="py-1 px-1 text-xs-center"
-                    :style="'height: 30px;' + item.color ? `background-color: ${item.color}` : '' "
+                    style="height: 30px;"
+                    :style="item.color ? `background-color: ${item.color}` : '' "
                     :key="index"
                   >{{ item.name }}</div>
                   <v-divider :key="'divider-' + index"></v-divider>

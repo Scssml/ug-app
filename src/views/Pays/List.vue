@@ -28,13 +28,92 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <v-text-field
+              <!-- <v-text-field
                 v-model="search"
                 prepend-icon="search"
                 label="Поиск"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></v-text-field> -->
+              <v-flex xs2 class="px-2">
+                <v-select
+                  label="Тип"
+                  :items="[{id: '', name: 'Все'}].concat(paymentTypes)"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.paymentType"
+                  hide-details
+                  @change="customFilter()"
+                ></v-select>
+              </v-flex>
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataStartPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (с)"
+                    v-model="filter.dateStart"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateStart"
+                    @input="dataStartPicker = false"
+                    no-title
+                    scrollable
+                    locale="ru-ru"
+                    first-day-of-week="1"
+                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                    @change="customFilter()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataEndPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (по)"
+                    v-model="filter.dateEnd"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateEnd"
+                    @input="dataEndPicker = false"
+                    no-title
+                    locale="ru-ru"
+                    scrollable
+                    first-day-of-week="1"
+                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                    @change="customFilter()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
@@ -45,6 +124,20 @@
                   hide-details
                   @change="customFilter()"
                 ></v-select>
+              </v-flex>
+              <v-flex xs3 class="px-2">
+                <v-autocomplete
+                  label="Клиент"
+                  :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
+                  :filter="clientsFilter"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.client"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  @change="customFilter()"
+                ></v-autocomplete>
               </v-flex>
             </v-layout>
           </v-flex>
@@ -71,6 +164,26 @@
           :pagination.sync="pagination"
           :loading="tableLoading"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th
+                v-for="header in props.headers"
+                :key="header.text"
+                class="text-xs-left column"
+                :class="[
+                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                @click="(header.sortable) ? changeSort(header.value) : ''"
+              >
+                <v-icon
+                  small
+                  v-if="header.sortable"
+                >arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">
               {{ props.item.id }}
@@ -158,50 +271,54 @@ export default {
           loading: true,
           color: "cyan",
           id: "payments"
-        }
+        },
       ],
       filter: {
         createdBy: '',
+        client: '',
+        paymentType: '',
+        dateStart: null,
+        dateEnd: null,
       },
+      dataStartPicker: false,
+      dataEndPicker: false,
       search: "",
       headersTable: [
         {
           text: "ID",
           align: "right",
           value: "id",
-          filterable: false,
-          sortable: false,
+          sortable: true,
         },
         {
           text: "Дата",
           align: "left",
           value: "creationDate",
-          filterable: false,
-          sortable: false,
+          sortable: true,
         },
         {
           text: "Клиент",
           align: "left",
-          value: "client.name",
+          value: "client",
           sortable: false,
         },
         {
           text: "Стоимость",
           align: "left",
           value: "amount",
-          sortable: false,
+          sortable: true,
         },
         {
           text: "Тип",
           align: "left",
-          value: "paymentType.name",
-          sortable: false,
+          value: "paymentType",
+          sortable: true,
         },
         {
           text: "Комментарий",
           align: "left",
           value: "description",
-          sortable: false,
+          sortable: true,
         },
         {
           text: "",
@@ -213,9 +330,13 @@ export default {
       usersList: [],
       dialogForm: false,
       editedId: 0,
-      paymentsList: [],
+      paymentTypes: [],
+      clientsList: [],
+      paymentType: [],
       pagination: {
         rowsPerPage: -1,
+        sortBy: 'id',
+        descending: true,
       },
       take: 20,
       page: 0,
@@ -255,27 +376,44 @@ export default {
       this.page = 0;
       this.getPaymentsList();
     },
+    clientsFilter(item, queryText) {
+      const textOne = item.name.toLowerCase();
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const searchText = queryText.toLowerCase();
+
+      return textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1;
+    },
     getPaymentsList(loading = true) {
       if (loading) {
         this.tableLoading = true;
-        this.reviewsList = [];
+        this.paymentsList = [];
       }
 
-      const orderFilter = {};
+      const orderFilter = {
+        creationDate: [],
+      };
 
       Object.keys(this.filter).forEach((key) => {
         const val = this.filter[key];
 
         if (val) {
-          orderFilter[key] = val;
+          if (key === 'dateStart') {
+            orderFilter.creationDate[0] = `${val} 00:00:00`;
+          } else if (key === 'dateEnd') {
+            orderFilter.creationDate[1] = `${val} 23:59:59`;
+          } else {
+            orderFilter[key] = val;
+          }
         }
       });
 
+      const sortSettings = {};
+      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+
       const itemParams = {
-        type: "payments",
-        sort: {
-          id: 'desc',
-        },
+        type: 'payments',
+        sort: sortSettings,
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -319,6 +457,45 @@ export default {
         console.log('error');
       });
     },
+    getPaymentTypes() {
+      const itemParams = {
+        type: 'paymentTypes',
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.paymentTypes = response;
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    getClientsList() {
+      const itemParams = {
+        type: 'clients',
+        filter: {
+          active: true,
+        },
+      };
+
+      this.$store.dispatch('getItemsList', itemParams).then((response) => {
+        this.clientsList = response.map((item) => {
+          item.id = +item.id;
+          return item;
+        });
+      }).catch(() => {
+        console.log('error');
+      });
+    },
+    changeSort(column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+
+      this.page = 0;
+      this.getPaymentsList();
+    },
     closeDialog() {
       this.getPaymentsList();
       this.dialogForm = false;
@@ -344,6 +521,8 @@ export default {
     },
   },
   mounted() {
+    this.getClientsList();
+    this.getPaymentTypes();
     this.getPaymentsList();
     this.getUsersList();
   }

@@ -506,7 +506,7 @@ export default {
           return false;
         }
 
-        if (this.client === 0) {
+        if (this.client === 0 || this.goods.length === 0) {
           return item.id !== 5;
         }
 

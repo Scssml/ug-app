@@ -35,13 +35,82 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <v-text-field
+              <!-- <v-text-field
                 v-model="search"
                 prepend-icon="search"
                 label="Поиск"
                 single-line
                 hide-details
-              ></v-text-field>
+              ></v-text-field> -->
+
+              <!-- <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataStartPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (с)"
+                    v-model="filter.dateStart"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateStart"
+                    @input="dataStartPicker = false"
+                    no-title
+                    scrollable
+                    locale="ru-ru"
+                    first-day-of-week="1"
+                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                    @change="customFilter()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataEndPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (по)"
+                    v-model="filter.dateEnd"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateEnd"
+                    @input="dataEndPicker = false"
+                    no-title
+                    locale="ru-ru"
+                    scrollable
+                    first-day-of-week="1"
+                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                    @change="customFilter()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex> -->
 
               <v-flex xs2 class="px-2">
                 <v-select
@@ -113,6 +182,26 @@
           :pagination.sync="pagination"
           :loading="tableLoading"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th
+                v-for="header in props.headers"
+                :key="header.text"
+                class="text-xs-left column"
+                :class="[
+                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                @click="(header.sortable) ? changeSort(header.value) : ''"
+              >
+                <v-icon
+                  small
+                  v-if="header.sortable"
+                >arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>
@@ -236,14 +325,18 @@ export default {
       filter: {
         user: '',
         client: '',
+        dateStart: null,
+        dateEnd: null,
       },
+      dataStartPicker: false,
+      dataEndPicker: false,
       search: '',
       headersTable: [
         {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Клиент',
@@ -267,7 +360,7 @@ export default {
           text: 'Оплата',
           align: 'left',
           value: 'payments[0].amount',
-          sortable: false,
+          sortable: true,
         },
         {
           text: '',
@@ -285,6 +378,8 @@ export default {
       clientsList: [],
       pagination: {
         rowsPerPage: -1,
+        sortBy: 'id',
+        descending: true,
       },
       take: 20,
       page: 0,
@@ -356,7 +451,7 @@ export default {
     getBouquetsList(loading = true) {
       if (loading) {
         this.tableLoading = true;
-        this.reviewsList = [];
+        this.bouquetsList = [];
       }
 
       const orderFilter = {};
@@ -369,11 +464,12 @@ export default {
         }
       });
 
+      const sortSettings = {};
+      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+
       const itemParams = {
         type: 'bouquets',
-        sort: {
-          id: 'desc',
-        },
+        sort: sortSettings,
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -426,6 +522,17 @@ export default {
       }).catch(() => {
         console.log('error');
       });
+    },
+    changeSort(column) {
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+
+      this.page = 0;
+      this.getBouquetsList();
     },
     closeDialog() {
       this.getBouquetsList();

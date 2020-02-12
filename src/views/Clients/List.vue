@@ -63,6 +63,17 @@
                 hide-details
               ></v-select>
             </v-flex>
+            <v-flex
+              xs4
+              class="px-3"
+            >
+              <v-text-field
+                label="Имя"
+                v-model="filter.name"
+                hide-details
+                @change="customFilter()"
+              ></v-text-field>
+            </v-flex>
           </v-layout>
           <v-spacer></v-spacer>
 
@@ -115,7 +126,10 @@
                 ]"
                 @click="(header.sortable) ? changeSort(header.value) : ''"
               >
-                <v-icon small>arrow_upward</v-icon>
+                <v-icon
+                  small
+                  v-if="header.sortable"
+                >arrow_upward</v-icon>
                 {{ header.text }}
               </th>
             </tr>
@@ -243,6 +257,7 @@ export default {
       ],
       filter: {
         typeId: '',
+        name: '',
       },
       typeClient: [],
       search: '',
@@ -262,7 +277,8 @@ export default {
         {
           text: 'Телефон',
           align: 'left',
-          value: 'phone',
+          value: 'phoneNumber',
+          sortable: true,
         },
         {
           text: 'Тип',
@@ -416,6 +432,7 @@ export default {
         this.pagination.descending = false;
       }
 
+      this.page = 0;
       this.getClientsList();
     },
     closeDialog() {

@@ -454,13 +454,21 @@ export default {
         this.bouquetsList = [];
       }
 
-      const orderFilter = {};
+      const orderFilter = {
+        created_at: [],
+      };
 
       Object.keys(this.filter).forEach((key) => {
         const val = this.filter[key];
 
         if (val) {
-          orderFilter[key] = val;
+          if (key === 'dateStart') {
+            orderFilter.created_at[0] = `${val} 00:00:00`;
+          } else if (key === 'dateEnd') {
+            orderFilter.created_at[1] = `${val} 23:59:59`;
+          } else {
+            orderFilter[key] = val;
+          }
         }
       });
 

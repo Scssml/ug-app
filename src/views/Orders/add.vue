@@ -150,6 +150,7 @@
                   clearable
                   @change="setDataClient()"
                   :search-input.sync="clientName"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -192,6 +193,7 @@
                   clearable
                   @change="setDataResponsible()"
                   v-if="editedItem.clientType === 2"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -382,6 +384,7 @@
                   @change="setDataAddressee()"
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-text-field

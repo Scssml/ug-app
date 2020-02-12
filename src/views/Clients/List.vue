@@ -81,13 +81,19 @@
             v-model="dialogForm"
             persistent
             max-width="420px"
+            :fullscreen="(printedId >= 0) ? true : false"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
             <template
               v-if="dialogForm"
             >
+              <client-print
+                v-if="printedId >= 0"
+                :id="printedId"
+                @cancel="closeDialog()"
+              ></client-print>
               <client-edit
-                v-if="editedId"
+                v-else-if="editedId"
                 :id="editedId"
                 @cancel="closeDialog()"
               ></client-edit>
@@ -154,13 +160,20 @@
             <td class="text-xs-right">
               {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
             </td>
-            <td class="text-xs-right" style="width: 170px;">
+            <td class="text-xs-right" style="width: 200px;">
               <v-icon
                 class="mr-2"
                 @click="showOrders(props.item.id)"
                 title="Показать заказы"
               >
                 assignment
+              </v-icon>
+              <v-icon
+                class="mr-2"
+                @click="printedItem(props.item.id)"
+                title="Акт сверки"
+              >
+                insert_drive_file
               </v-icon>
               <v-icon
                 class="mr-2"
@@ -236,6 +249,7 @@
 import ClientEdit from './edit.vue';
 import ClientAdd from './add.vue';
 import ClientDelete from './delete.vue';
+import ClientPrint from './printAct.vue';
 
 export default {
   name: 'Clients',
@@ -243,6 +257,7 @@ export default {
     ClientEdit,
     ClientAdd,
     ClientDelete,
+    ClientPrint,
   },
   data() {
     return {
@@ -321,6 +336,7 @@ export default {
       editedId: 0,
       clientsList: [],
       deleteId: 0,
+      printedId: null,
       pagination: {
         rowsPerPage: -1,
         sortBy: 'name',
@@ -440,6 +456,7 @@ export default {
       this.dialogForm = false;
       this.editedId = 0;
       this.deleteId = 0;
+      this.printedId = null;
     },
     editItem(id) {
       this.editedId = +id;
@@ -447,6 +464,10 @@ export default {
     },
     deleteItem(id) {
       this.deleteId = +id;
+      this.dialogForm = true;
+    },
+    printedItem(id) {
+      this.printedId = +id;
       this.dialogForm = true;
     },
     showOrders(id) {

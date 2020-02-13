@@ -3,8 +3,8 @@
     <div style="display: flex">
       <header style="display: flex; flex-flow: column; align-items: center; width: 300px">
         <div style="text-transform: uppercase; font-size: 18px;">Товарный чек</div>
-        <div>{{ orderData.currentDate }}</div>
-        <div>{{ orderData.currentTime }}</div>
+        <div contenteditable>{{ orderData.currentDate }}</div>
+        <div contenteditable>{{ orderData.currentTime }}</div>
       </header>
       <ul
         style="display: flex; flex-flow: column; width: 320px; margin: 0 0 5px 0; font-size: 14px"

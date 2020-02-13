@@ -38,12 +38,12 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
-                  :items="[{id: '', name: 'Все'}].concat(usersList)"
+                  :items="[{ id: 0, name: 'Все' }].concat(usersList)"
                   item-text="name"
                   item-value="id"
                   v-model="filter.createdBy"
                   hide-details
-                  @change="customFilter()"
+                  @change="handleSelectedManagerChange($event)"
                 ></v-select>
               </v-flex>
             </v-layout>
@@ -69,41 +69,30 @@
           :search="search"
           :disable-initial-sort="true"
           :pagination.sync="pagination"
-          :loading="tableLoading"
+          :loading="!!$apollo.queries.paymentsList.loading"
         >
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">
               {{ props.item.id }}
             </td>
-            <td>{{ props.item.creationDate }}</td>
+            <td>{{ new Date(props.item.creationDate).toLocaleString() }}</td>
             <td>
               {{ props.item.client.name }}
-              <br />{{ props.item.client.phone }}
-              <br>Баланс: {{ props.item.client.bill }}
+              <br />{{ props.item.client.phone }} <br />Баланс:
+              {{ props.item.client.bill }}
             </td>
             <td>{{ props.item.amount }}</td>
             <td>{{ props.item.paymentType.name }}</td>
             <td>{{ props.item.description }}</td>
             <td class="text-xs-right" style="width: 110px;">
-              <v-icon
-                @click="editItem(props.item.id)"
-                title="Просмотр"
-              >
+              <v-icon @click="editItem(props.item.id)" title="Просмотр">
                 visibility
               </v-icon>
             </td>
           </template>
         </v-data-table>
-        <v-layout
-          row
-          wrap
-          justify-space-around
-          class="py-2"
-        >
-          <v-flex
-            xs2
-            class="px-3"
-          >
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
             <v-text-field
               label="Количество на странице"
               v-model.number="take"
@@ -111,10 +100,7 @@
               @change="changeShowElem()"
             ></v-text-field>
           </v-flex>
-          <v-flex
-            xs10
-            class="text-xs-right px-3"
-          >
+          <v-flex xs10 class="text-xs-right px-3">
             <v-btn
               small
               color="info"
@@ -142,6 +128,7 @@
 
 <script>
 import PaymentEdit from "./edit.vue";
+import gql from "graphql-tag";
 
 export default {
   name: "Payments",
@@ -155,13 +142,13 @@ export default {
         {
           title: "Получение оплат",
           error: false,
-          loading: true,
+          loading: false,
           color: "cyan",
           id: "payments"
         }
       ],
       filter: {
-        createdBy: '',
+        createdBy: ""
       },
       search: "",
       headersTable: [
@@ -170,38 +157,38 @@ export default {
           align: "right",
           value: "id",
           filterable: false,
-          sortable: false,
+          sortable: false
         },
         {
           text: "Дата",
           align: "left",
           value: "creationDate",
           filterable: false,
-          sortable: false,
+          sortable: false
         },
         {
           text: "Клиент",
           align: "left",
           value: "client.name",
-          sortable: false,
+          sortable: false
         },
         {
           text: "Стоимость",
           align: "left",
           value: "amount",
-          sortable: false,
+          sortable: false
         },
         {
           text: "Тип",
           align: "left",
           value: "paymentType.name",
-          sortable: false,
+          sortable: false
         },
         {
           text: "Комментарий",
           align: "left",
           value: "description",
-          sortable: false,
+          sortable: false
         },
         {
           text: "",
@@ -213,14 +200,65 @@ export default {
       usersList: [],
       dialogForm: false,
       editedId: 0,
-      paymentsList: [],
       pagination: {
-        rowsPerPage: -1,
+        rowsPerPage: -1
       },
       take: 20,
       page: 0,
       tableLoading: false,
+      paymentsList: [],
+      selectedManagerId: null
     };
+  },
+  apollo: {
+    paymentsList: {
+      query: gql`
+        query PaymentsList($managerId: bigint_comparison_exp, $limit: Int, $offset: Int) {
+          paymentsList: payments(
+            order_by: { id: desc }
+            where: { managerId: $managerId }
+            limit: $limit,
+            offset: $offset
+          ) {
+            id
+            client {
+              name
+              phone
+              bill
+            }
+            paymentType {
+              name
+            }
+            creationDate: creation_date
+            description
+            amount
+          }
+        }
+      `,
+      variables() {
+        return {
+          managerId: this.selectedManagerId
+            ? {
+                _eq: this.selectedManagerId
+              }
+            : undefined,
+          offset: this.page * this.take,
+          limit: this.take
+        };
+      }
+    },
+    usersList: {
+      query: gql`
+        query {
+          usersList: users(
+            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
+          ) {
+            id
+            name
+          }
+        }
+      `
+    }
   },
   computed: {
     loadingDialog: function loadingDialog() {
@@ -228,42 +266,25 @@ export default {
         item => !item.error && !item.loading
       );
       return loadData.length === this.loadingData.length ? 0 : 1;
-    },
-    // allManagers() {
-    //   return [
-    //     { id: -1, name: "Все" },
-    //     ...this.paymentsList
-    //       .filter(p => p.manager)
-    //       .map(p => ({ id: p.manager.id, name: p.manager.name }))
-    //   ];
-    // },
-    // filteredPaymentList() {
-    //   if (this.filterManagerStatus === -1) {
-    //     return this.paymentsList;
-    //   }
-
-    //   return this.paymentsList.filter(
-    //     p => p.manager && p.manager.id === this.filterManagerStatus
-    //   );
-    // }
+    }
   },
   methods: {
     // filterByManager(filter) {
     //   this.filterManagerStatus = filter;
     // },
-    customFilter: function customFilter(items) {
+    handleSelectedManagerChange(selectedId) {
+      this.selectedManagerId = selectedId !== 0 ? selectedId : undefined;
       this.page = 0;
-      this.getPaymentsList();
     },
     getPaymentsList(loading = true) {
       if (loading) {
-        this.tableLoading = true;
+        this.tableLoading = false;
         this.reviewsList = [];
       }
 
       const orderFilter = {};
 
-      Object.keys(this.filter).forEach((key) => {
+      Object.keys(this.filter).forEach(key => {
         const val = this.filter[key];
 
         if (val) {
@@ -274,53 +295,43 @@ export default {
       const itemParams = {
         type: "payments",
         sort: {
-          id: 'desc',
+          id: "desc"
         },
         filter: orderFilter,
         skip: this.page * this.take,
-        take: this.take,
+        take: this.take
       };
 
       const successData = "Оплаты получены!";
       const errorData = "Ошибка получения оплат!";
 
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then((response) => {
-          this.paymentsList = response;
-          this.tableLoading = false;
+      const loadData = this.loadingData.find(
+        item => item.id === itemParams.type
+      );
+      loadData.title = successData;
+      loadData.loading = false;
 
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = successData;
-          loadData.loading = false;
-        })
-        .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = errorData;
-          loadData.error = true;
-        });
-    },
-    getUsersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
-          active: true,
-          group: [1, 2],
-        },
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
-      }).catch(() => {
-        console.log('error');
-      });
+      // this.$store
+      //   .dispatch("getItemsList", itemParams)
+      //   .then((response) => {
+      //     this.paymentsList = response;
+      //     this.tableLoading = false;
+      //
+      //     const loadData = this.loadingData.find(
+      //       item => item.id === itemParams.type
+      //     );
+      //     loadData.title = successData;
+      //     loadData.loading = false;
+      //   })
+      //   .catch(() => {
+      //     const loadData = this.loadingData.find(
+      //       item => item.id === itemParams.type
+      //     );
+      //     loadData.title = errorData;
+      //     loadData.error = true;
+      //   });
     },
     closeDialog() {
-      this.getPaymentsList();
       this.dialogForm = false;
       this.editedId = 0;
     },
@@ -329,23 +340,18 @@ export default {
       this.dialogForm = true;
     },
     changeShowElem() {
-      localStorage.setItem('countElemPage', this.take);
-      this.$store.commit('setCountElemPage', this.take);
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
       this.page = 0;
-      this.getPaymentsList();
     },
     prevPage() {
       this.page -= 1;
-      this.getPaymentsList();
     },
     nextPage() {
       this.page += 1;
-      this.getPaymentsList();
-    },
+    }
   },
   mounted() {
-    this.getPaymentsList();
-    this.getUsersList();
   }
 };
 </script>

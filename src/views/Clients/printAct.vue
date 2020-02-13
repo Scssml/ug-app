@@ -106,48 +106,62 @@
         v-if="Object.keys(report).length"
       >
         <v-flex
-          xs4
+          xs12
           class="px-2"
         >
-          Баланс: <b>{{ report.balance }}</b>
+          <p>Клиент: {{ name }}</p>
+          <p>Период: с {{ dateStartFormat }} по {{ dateEndFormat }}</p>
+          <p>Баланс на начало: {{ report.beforeBalance }}</p>
+          <p>Обороты: {{ report.turnover }}</p>
+          <p>Баланс на конец: {{ report.endPeriodBalance }}</p>
+          <p>Баланс за период: {{ report.periodBalance }}</p>
         </v-flex>
+
         <v-flex
-          xs4
+          xs6
           class="px-2"
         >
-          Баланс за предыдущий день: <b>{{ report.beforeBalance }}</b>
+          <h2>Оплаты</h2>
+          <v-data-table
+            :headers="headersTablePayments"
+            :items="report.payments"
+            hide-actions
+            no-data-text="Оплат не найдено"
+            no-results-text="Оплат не найдено"
+          >
+            <template slot="items" slot-scope="props">
+              <td class="text-xs-right" style="width: 30px;">
+                {{ props.item.id }}
+              </td>
+              <td>{{ props.item.creationDate }}</td>
+              <td>{{ props.item.amount }}</td>
+              <td>{{ props.item.paymentType.name }}</td>
+            </template>
+          </v-data-table>
         </v-flex>
+
         <v-flex
-          xs4
+          xs6
           class="px-2"
         >
-          Оборот: <b>{{ report.turnover }}</b>
+          <h2>Букеты</h2>
+          <v-data-table
+            :headers="headersTableBouquets"
+            :items="report.bouquets"
+            hide-actions
+            no-data-text="Букетов не найдено"
+            no-results-text="Букетов не найдено"
+          >
+            <template slot="items" slot-scope="props">
+              <td class="text-xs-right" style="width: 30px;">
+                {{ props.item.id }}
+              </td>
+              <td>{{ props.item.createdAt }}</td>
+              <td>{{ props.item.totalCost }}</td>
+            </template>
+          </v-data-table>
         </v-flex>
       </v-layout>
-
-      <v-data-table
-        :headers="headersTable"
-        :items="report.payments"
-        hide-actions
-        no-data-text="Оплат не найдено"
-        no-results-text="Оплат не найдено"
-        v-if="Object.keys(report).length"
-      >
-        <template slot="items" slot-scope="props">
-          <td class="text-xs-right" style="width: 30px;">
-            {{ props.item.id }}
-          </td>
-          <td>{{ props.item.creationDate }}</td>
-          <td>
-            {{ props.item.client.name }}
-            <br />{{ props.item.client.phone }}
-            <br>Баланс: {{ props.item.client.bill }}
-          </td>
-          <td>{{ props.item.amount }}</td>
-          <td>{{ props.item.paymentType.name }}</td>
-          <td>{{ props.item.description }}</td>
-        </template>
-      </v-data-table>
     </v-card-text>
     <v-card-actions
       class="px-4 py-2"
@@ -167,6 +181,10 @@ export default {
       type: Number,
       required: true,
     },
+    name: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -176,7 +194,7 @@ export default {
       dateEnd: null,
       loadingBtn: false,
       report: {},
-      headersTable: [
+      headersTablePayments: [
         {
           text: 'ID',
           align: 'right',
@@ -190,12 +208,6 @@ export default {
           sortable: true,
         },
         {
-          text: 'Клиент',
-          align: 'left',
-          value: 'client',
-          sortable: false,
-        },
-        {
           text: 'Стоимость',
           align: 'left',
           value: 'amount',
@@ -207,14 +219,36 @@ export default {
           value: 'paymentType',
           sortable: true,
         },
+      ],
+      headersTableBouquets: [
         {
-          text: 'Комментарий',
+          text: 'ID',
+          align: 'right',
+          value: 'id',
+          sortable: true,
+        },
+        {
+          text: 'Дата',
           align: 'left',
-          value: 'description',
+          value: 'createdAt',
+          sortable: true,
+        },
+        {
+          text: 'Стоимость',
+          align: 'left',
+          value: 'totalCost',
           sortable: true,
         },
       ],
     };
+  },
+  computed: {
+    dateStartFormat() {
+      return this.formatDate(this.dateStart);
+    },
+    dateEndFormat() {
+      return this.formatDate(this.dateEnd);
+    },
   },
   methods: {
     cancel() {
@@ -234,15 +268,12 @@ export default {
         this.report = {};
         this.loadingBtn = true;
 
-        const dateStartFormat = this.formatDate(this.dateStart);
-        const dateEndFormat = this.formatDate(this.dateEnd);
-
         const itemParams = {
           type: 'print/act-of-reconciliation',
           props: {
             clientId: this.id,
-            startDate: dateStartFormat,
-            endDate: dateEndFormat,
+            startDate: this.dateStartFormat,
+            endDate: this.dateEndFormat,
           },
         };
 
@@ -253,6 +284,17 @@ export default {
             if (elem.creationDate) {
               const date = new Date(elem.creationDate);
               elem.creationDate = date.toLocaleString('ru');
+            }
+
+            return elem;
+          });
+
+          response.bouquets = response.bouquets.map((item) => {
+            const elem = item;
+
+            if (elem.createdAt) {
+              const date = new Date(elem.createdAt);
+              elem.createdAt = date.toLocaleString('ru');
             }
 
             return elem;

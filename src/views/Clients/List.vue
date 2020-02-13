@@ -90,6 +90,7 @@
               <client-print
                 v-if="printedId >= 0"
                 :id="printedId"
+                :name="clientsList.find(item => item.id === printedId)['name']"
                 @cancel="closeDialog()"
               ></client-print>
               <client-edit

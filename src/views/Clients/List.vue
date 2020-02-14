@@ -27,26 +27,14 @@
       <v-card>
         <v-card-title>
           <v-layout row wrap>
-            <!-- <v-flex
-              xs4
-              class="px-3"
-            >
-              <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                single-line
-                hide-details
-              ></v-text-field>
-            </v-flex> -->
             <v-flex xs2 class="px-3">
               <v-select
                 label="Тип клиента"
-                :items="[{ id: '', name: 'Все' }].concat(typeClient)"
+                :items="[{ id: 0, name: 'Все' }].concat(typeClient)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.typeId"
-                @change="customFilter()"
+                @change="handleClientTypeChange($event)"
                 hide-details
               ></v-select>
             </v-flex>
@@ -266,22 +254,19 @@ export default {
       },
       take: 20,
       page: 0,
-      tableLoading: false
+      tableLoading: false,
+      selectedClientType: 0
     };
   },
   apollo: {
     clientsList: {
       query: gql`
-        query ClientsList(
-          $clientTypeId: bigint_comparison_exp
-          $limit: Int
-          $offset: Int
-        ) {
+        query ClientsList($clientTypeId: bigint, $limit: Int, $offset: Int) {
           clientsList: clients(
             order_by: { id: desc }
             limit: $limit
             offset: $offset
-            where: {clientType: {id: {_eq: $clientTypeId}}}
+            where: { clientType: { id: { _eq: $clientTypeId } } }
           ) {
             id
             name
@@ -308,16 +293,22 @@ export default {
       `,
       variables() {
         return {
-          // managerId: this.selectedManagerId
-          //   ? {
-          //       _eq: this.selectedManagerId
-          //     }
-          //   : undefined,
-          clientTypeId: undefined,
+          clientTypeId:
+            this.selectedClientType !== 0 ? this.selectedClientType : undefined,
           offset: this.page * this.take,
           limit: this.take
         };
       }
+    },
+    typeClient: {
+      query: gql`
+        query {
+          typeClient: clientTypes {
+            id
+            name
+          }
+        }
+      `
     }
   },
   computed: {
@@ -329,107 +320,11 @@ export default {
     }
   },
   methods: {
-    customFilter: function customFilter(items) {
-      // const filterProps = this.filter;
-      // let itemsFind = [];
-
-      // itemsFind = items.filter((item) => {
-      //   let find = false;
-      //   if (item.type === filterProps.type || filterProps.type === '') {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // return itemsFind;
-
+    handleClientTypeChange(clientTypeId) {
+      this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
       this.page = 0;
-      this.getClientsList();
-    },
-    getClientsList: function getClientsList(loading = true) {
-      // if (loading) {
-      //   this.tableLoading = true;
-      //   this.reviewsList = [];
-      // }
-      //
-      // const orderFilter = {};
-      //
-      // Object.keys(this.filter).forEach(key => {
-      //   const val = this.filter[key];
-      //
-      //   if (val) {
-      //     orderFilter[key] = val;
-      //   }
-      // });
-      //
-      // const itemParams = {
-      //   type: "clients",
-      //   sort: {
-      //     id: "asc"
-      //   },
-      //   filter: orderFilter,
-      //   skip: this.page * this.take,
-      //   take: this.take
-      // };
-      //
-      // const successData = "Клиенты получены!";
-      // const errorData = "Ошибка получения клиентов!";
-      //
-      // this.$store
-      //   .dispatch("getItemsList", itemParams)
-      //   .then(response => {
-      //     this.clientsList = response.map((item, index, clients) => {
-      //       const elem = Object.assign({}, item);
-      //       const itemTypeClient = this.typeClient.find(
-      //         client => client.id === elem.type
-      //       );
-      //       elem.typeName = itemTypeClient ? itemTypeClient.name : "-";
-      //
-      //       elem.responsible = [];
-      //       if (elem.id !== 0) {
-      //         elem.responsible = clients.filter(
-      //           client => +client.referenceId === elem.id
-      //         );
-      //       }
-      //       return elem;
-      //     });
-      //     this.tableLoading = false;
-      //
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = successData;
-      //     loadData.loading = false;
-      //   })
-      //   .catch(() => {
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = errorData;
-      //     loadData.error = true;
-      //   });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: "client-type"
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.typeClient = response.map(item => {
-            item.id = +item.id;
-            return item;
-          });
-          this.getClientsList();
-        })
-        .catch(() => {
-          console.log("error");
-        });
     },
     closeDialog() {
-      this.getClientsList();
       this.dialogForm = false;
       this.editedId = 0;
       this.deleteId = 0;
@@ -452,19 +347,13 @@ export default {
       localStorage.setItem("countElemPage", this.take);
       this.$store.commit("setCountElemPage", this.take);
       this.page = 0;
-      this.getClientTypeList();
     },
     prevPage() {
       this.page -= 1;
-      this.getClientTypeList();
     },
     nextPage() {
       this.page += 1;
-      this.getClientTypeList();
     }
-  },
-  mounted() {
-    this.getClientTypeList();
   }
 };
 </script>

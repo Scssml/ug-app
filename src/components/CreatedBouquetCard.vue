@@ -22,18 +22,6 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <!-- <v-select
-              label="Клиент"
-              :items="clientsList"
-              item-text="name"
-              item-value="id"
-              solo
-              flat
-              hide-details
-              v-model="client"
-              class="scs-small"
-              @change="updateProps()"
-            ></v-select> -->
       <v-autocomplete
         label="Клиент"
         :items="clientsList"

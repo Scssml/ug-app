@@ -1,88 +1,11 @@
 <template>
   <div class="statPayBlock">
-    <!-- <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
-        <b>Сумма скидки:</b>
-      </v-flex>
-      <v-flex
-        xs5
-      >
-        <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumSale"
-          class="scs-small"
-        ></v-text-field>
-      </v-flex>
-    </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
-        <b>Сумма оформления:</b>
-      </v-flex>
-      <v-flex
-        xs5
-      >
-        <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumDecor"
-          class="scs-small"
-        ></v-text-field>
-      </v-flex>
-    </v-layout>
-    <v-layout
-      row
-      wrap
-      align-center
-    >
-      <v-flex
-        xs7
-      >
-        <b>Сумма доставки:</b>
-      </v-flex>
-      <v-flex
-        xs5
-      >
-        <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumDelivery"
-          class="scs-small"
-        ></v-text-field>
-      </v-flex>
-    </v-layout> -->
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма наличка:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumPayCash }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayCash"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout row wrap align-center>
@@ -91,14 +14,6 @@
       </v-flex>
       <v-flex xs5>
         {{ allSumPayTerminal }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayTerminal"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout row wrap align-center>
@@ -107,14 +22,6 @@
       </v-flex>
       <v-flex xs5>
         {{ allSumPayCard }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayCard"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout row wrap align-center>
@@ -123,31 +30,14 @@
       </v-flex>
       <v-flex xs5>
         {{ allSumPayYandex }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumPayYandex"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
-
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма возвратов:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumReturn }}
-        <!-- <v-text-field
-          solo
-          flat
-          hide-details
-          readonly
-          :value="allSumReturn"
-          class="scs-small"
-        ></v-text-field> -->
       </v-flex>
     </v-layout>
     <v-layout row wrap align-center>
@@ -230,22 +120,53 @@
 </template>
 
 <script>
-import { PaymentTypes } from '../../constants';
+import { PaymentTypes } from "../../constants";
+import gql from "graphql-tag";
 
-const datesAreOnSameDay = (first, second) => {
-  return (
-    first.getFullYear() === second.getFullYear() &&
-    first.getMonth() === second.getMonth() &&
-    first.getDate() === second.getDate()
-  );
-};
+const startCurrentDate = new Date();
+startCurrentDate.setHours(0, 0, 0, 0);
+
+const endCurrentDate = new Date();
+endCurrentDate.setHours(23, 59, 59, 999);
+
+const startPrevDate = new Date();
+startPrevDate.setDate(startPrevDate.getDate() - 1);
+startPrevDate.setHours(0, 0, 0, 0);
+
+const endPrevDate = new Date();
+endPrevDate.setDate(startPrevDate.getDate() - 1);
+endPrevDate.setHours(23, 59, 59, 999);
+
+const simplePaymentQuery = gql`
+  query($startDate: timestamptz, $endDate: timestamptz, $type: bigint) {
+    payments_aggregate(
+      where: {
+        _and: [
+          { creation_date: { _gte: $startDate } }
+          { creation_date: { _lte: $endDate } }
+          { paymentTypeId: { _eq: $type } }
+        ]
+      }
+    ) {
+      aggregate {
+        sum {
+          amount
+        }
+      }
+    }
+  }
+`;
+
+const getValueFromPaymentSimpleQuery = ({
+  payments_aggregate: {
+    aggregate: {
+      sum: { amount }
+    }
+  }
+}) => amount || 0;
 
 export default {
   props: {
-    // bouquetsList: {
-    //   type: Array,
-    //   required: true,
-    // },
     paymentsList: {
       type: Array,
       required: true
@@ -257,254 +178,140 @@ export default {
       dateYesterday: "",
       createdSuccess: false,
       dialog: false,
-      sumEncashment: 0
+      sumEncashment: 0,
+
+      allSumPayCashPrevDay: 0,
+      allSumPayCash: 0,
+      allSumPayTerminal: 0,
+      allSumPayCard: 0,
+      allSumPayYandex: 0,
+      allSumReturn: 0,
+      allSumEncashmentPrevDay: 0,
+      allSumEncashment: 0,
+      terminalUg2: 0,
+      tinkoff: 0,
+      gazprom: 0,
+      expenses: 0
     };
   },
+  apollo: {
+    allSumPayCash: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.CASH
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumPayTerminal: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.TERMINAL
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumPayCard: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.CARD
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumPayYandex: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.YANDEX
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumReturn: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.RETURN
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumEncashment: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.COLLECTION
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    terminalUg2: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.UG2
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    tinkoff: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.TINKOFF
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    gazprom: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.GAZPROM
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    expenses: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startCurrentDate,
+        endDate: endCurrentDate,
+        type: PaymentTypes.EXPENSES
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumPayCashPrevDay: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startPrevDate,
+        endDate: endPrevDate,
+        type: PaymentTypes.CASH
+      },
+      update: getValueFromPaymentSimpleQuery
+    },
+    allSumEncashmentPrevDay: {
+      query: simplePaymentQuery,
+      variables: {
+        startDate: startPrevDate,
+        endDate: endPrevDate,
+        type: PaymentTypes.COLLECTION
+      },
+      update: getValueFromPaymentSimpleQuery
+    }
+  },
   computed: {
-    paymentsNow() {
-      return this.paymentsList
-        .map(i => ({
-          ...i,
-          paymentType:
-            i.paymentType.id === 7 && i.paymentTypeBeforeReturn
-              ? i.paymentTypeBeforeReturn
-              : i.paymentType
-        }))
-        .filter(item => {
-          const paymentDate = new Date(Date.parse(item.creationDate));
-
-          return datesAreOnSameDay(paymentDate, this.dateNow);
-        });
-    },
-    paymentsPrevDay() {
-      return this.paymentsList.filter(
-        item => item.creationDate === this.dateYesterday
-      );
-    },
-    // allSumSale() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const subtotal = sum + item.sumSale;
-    //     return subtotal;
-    //   }, 0);
-    //   return allSum;
-    // },
-    // allSumDecor() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const subtotal = sum + item.decorCost;
-    //     return subtotal;
-    //   }, 0);
-    //   return allSum;
-    // },
-    // allSumDelivery() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const subtotal = sum + item.deliveryCost;
-    //     return subtotal;
-    //   }, 0);
-    //   return allSum;
-    // },
-    // allSumPay() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const allPaySum = item.payments.reduce((sumPay, payment) => {
-    //       let amountPay = 0;
-    //       if (payment.paymentType.id !== 7) {
-    //         amountPay = payment.amount;
-    //       }
-    //       return sumPay + amountPay;
-    //     }, 0);
-    //     return sum + allPaySum;
-    //   }, 0);
-    //   return allSum;
-    // },
-    allSumPay() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id !== 7 && item.paymentType.id !== 8) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    // allSumPayCash() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const allPaySum = item.payments.reduce((sumPay, payment) => {
-    //       let amountPay = 0;
-    //       if (payment.paymentType.id === 1) {
-    //         amountPay = payment.amount;
-    //       }
-    //       return sumPay + amountPay;
-    //     }, 0);
-    //     return sum + allPaySum;
-    //   }, 0);
-    //   return allSum;
-    // },
-    allSumPayCash() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 1) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayCashPrevDay() {
-      const allSum = this.paymentsPrevDay.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 1) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    // allSumPayNoCash() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const allPaySum = item.payments.reduce((sumPay, payment) => {
-    //       let amountPay = 0;
-    //       if (payment.paymentType.id !== 1 && payment.paymentType.id !== 7) {
-    //         amountPay = payment.amount;
-    //       }
-    //       return sumPay + amountPay;
-    //     }, 0);
-    //     return sum + allPaySum;
-    //   }, 0);
-    //   return allSum;
-    // },
-    allSumPayNoCash() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (
-          item.paymentType.id !== 1 &&
-          item.paymentType.id !== 7 &&
-          item.paymentType.id !== 8
-        ) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayPresent() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 6) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayBalance() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 5) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayTerminal() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 4) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayCard() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 3) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumPayYandex() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 2) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    // allSumReturn() {
-    //   const allSum = this.bouquetsList.reduce((sum, item) => {
-    //     const allPaySum = item.payments.reduce((sumPay, payment) => {
-    //       let amountPay = 0;
-    //       if (payment.paymentType.id === 7) {
-    //         amountPay = payment.amount;
-    //       }
-    //       return sumPay + amountPay;
-    //     }, 0);
-    //     return sum + allPaySum;
-    //   }, 0);
-    //   return allSum;
-    // },
-    allSumReturn() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 7) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumEncashment() {
-      const allSum = this.paymentsNow.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 8) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    allSumEncashmentPrevDay() {
-      const allSum = this.paymentsPrevDay.reduce((sum, item) => {
-        let amountPay = 0;
-        if (item.paymentType.id === 8) {
-          amountPay = item.amount;
-        }
-        return sum + amountPay;
-      }, 0);
-      return allSum;
-    },
-    cashPrevDay() {
-      return this.allSumPayCashPrevDay - this.allSumEncashmentPrevDay;
-    },
     cashNow() {
-      let allSum = this.cashPrevDay + this.allSumPayCash;
-      allSum -= this.allSumEncashment;
-      return allSum;
-    },
-    tinkoff() {
-      return this.paymentsNow
-              .filter(p => p.paymentType.id === PaymentTypes.TINKOFF)
-              .reduce((sum, item) => sum + item.amount, 0);
-    },
-    gazprom() {
-      return this.paymentsNow
-              .filter(p => p.paymentType.id === PaymentTypes.GAZPROM)
-              .reduce((sum, item) => sum + item.amount, 0);
-    },
-    terminalUg2() {
-      return this.paymentsNow
-              .filter(p => p.paymentType.id === PaymentTypes.UG2)
-              .reduce((sum, item) => sum + item.amount, 0);
-    },
-    expenses() {
-      return this.paymentsNow
-              .filter(p => p.paymentType.id === PaymentTypes.EXPENSES)
-              .reduce((sum, item) => sum + item.amount, 0);
+      return (
+        this.allSumPayCashPrevDay -
+        this.allSumEncashmentPrevDay +
+        this.allSumPayCash -
+        this.allSumEncashment
+      );
     }
   },
   methods: {

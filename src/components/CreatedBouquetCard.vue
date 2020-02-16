@@ -22,23 +22,30 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <v-autocomplete
-        label="Клиент"
-        :items="clientsList"
-        :filter="clientsFilter"
+      <!--      <v-autocomplete-->
+      <!--        label="Клиент"-->
+      <!--        :items="clientsList"-->
+      <!--        :filter="clientsFilter"-->
+      <!--        item-text="name"-->
+      <!--        item-value="id"-->
+      <!--        solo-->
+      <!--        flat-->
+      <!--        v-model.number="client"-->
+      <!--        hide-details-->
+      <!--        class="mb-4 scs-small"-->
+      <!--        no-data-text="Не надено"-->
+      <!--        @change="-->
+      <!--          updateProps();-->
+      <!--          getOrdersClient();-->
+      <!--        "-->
+      <!--      ></v-autocomplete>-->
+      <InfiniteAutocomplete
+        :items="this.clientsList"
         item-text="name"
+        :has-more="true"
         item-value="id"
-        solo
-        flat
-        v-model.number="client"
-        hide-details
-        class="mb-4 scs-small"
-        no-data-text="Не надено"
-        @change="
-          updateProps();
-          getOrdersClient();
-        "
-      ></v-autocomplete>
+        @needMore="handleLoadMoreClients"
+      />
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -277,16 +284,8 @@
         ></v-text-field>
       </div>
       <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
-        <v-icon
-          dark
-          v-if="check"
-          title="Убрать"
-        >check_box</v-icon>
-        <v-icon
-          dark
-          v-else
-          title="Выбрать"
-        >check_box_outline_blank</v-icon>
+        <v-icon dark v-if="check" title="Убрать">check_box</v-icon>
+        <v-icon dark v-else title="Выбрать">check_box_outline_blank</v-icon>
       </v-btn>
     </div>
     <v-divider></v-divider>
@@ -369,11 +368,9 @@
           <v-card-actions class="px-4 pb-4">
             <v-btn @click.native="dialogPay = false">Отмена</v-btn>
             <v-spacer></v-spacer>
-            <v-btn
-              color="info"
-              @click="submitForm"
-              :loading="btnLoad"
-            >Оплатить</v-btn>
+            <v-btn color="info" @click="submitForm" :loading="btnLoad"
+              >Оплатить</v-btn
+            >
           </v-card-actions>
         </v-form>
       </v-card>
@@ -397,9 +394,13 @@
 
 <script>
 import { ClientTypes, PaymentTypes } from "../constants";
+import InfiniteAutocomplete from "../components/InfiniteAutocomplete";
 
 export default {
   name: "CreatedBouquetCard",
+  components: {
+    InfiniteAutocomplete
+  },
   props: {
     goods: {
       type: Array,
@@ -450,7 +451,7 @@ export default {
       orderBouquet: null,
       clientOrdersList: [],
       partlyPayment: false,
-      btnLoad: false,
+      btnLoad: false
     };
   },
   computed: {
@@ -486,20 +487,20 @@ export default {
       return this.clientsList.find(c => c.id === this.client);
     },
     typePayList: function() {
-      return this.paymentTypesList.filter(item => {
-        if (
-          item.id === PaymentTypes.PRESENT &&
-          (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
-        ) {
-          return false;
-        }
-
-        if (this.client === 0) {
-          return item.id !== 5;
-        }
-
-        return item.id !== 7;
-      });
+      // return this.paymentTypesList.filter(item => {
+      //   if (
+      //     item.id === PaymentTypes.PRESENT &&
+      //     (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
+      //   ) {
+      //     return false;
+      //   }
+      //
+      //   if (this.client === 0) {
+      //     return item.id !== 5;
+      //   }
+      //
+      //   return item.id !== 7;
+      // });
     },
     sumDecor: function decorSum() {
       let sum = 0;
@@ -565,7 +566,10 @@ export default {
           salePersent = this.clientSaleCustom;
         } else if (client !== 0 && client.discountPercent > 0) {
           salePersent = client.discountPercent;
-        } else if (this.sumFlowers + this.sumDecor + this.sumDecorAdditional >= 3000) {
+        } else if (
+          this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
+          3000
+        ) {
           salePersent = 5;
         } else {
           salePersent = null;
@@ -576,6 +580,10 @@ export default {
     }
   },
   methods: {
+    handleLoadMoreClients() {
+      this.$emit("loadMoreClient");
+      console.log(this.clientsList);
+    },
     handleSecondSumChange() {
       this.$refs.firstSum.validate();
     },
@@ -669,7 +677,7 @@ export default {
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount,
+          bouquetCount: +this.bouquetCount
         };
 
         if (this.sumFlowers === 0) {
@@ -702,7 +710,7 @@ export default {
         comment: this.comment,
         orderBouquet: this.orderBouquet,
         sumDecorAdditional: this.sumDecorAdditional,
-        bouquetCount: +this.bouquetCount,
+        bouquetCount: +this.bouquetCount
       };
 
       this.$emit("updateProps", props);
@@ -726,7 +734,7 @@ export default {
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
       }
-    },
+    }
   },
   updated() {
     // if ((this.salePersent === null || this.salePersent === '')

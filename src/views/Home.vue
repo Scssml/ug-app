@@ -39,6 +39,7 @@
       v-if="!loadingDialog"
       :payments-list="paymentsList"
       @input="getPaymentsList()"
+      ref="paymentDayRef"
     ></payment-day>
 
     <v-layout row wrap v-if="!loadingDialog">
@@ -74,6 +75,7 @@
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
                   @checkCard="checkCard(index, $event)"
+                  @loadMoreClient="handleLoadMoreClients"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -286,7 +288,7 @@ export default {
         {
           title: "Получение оплат",
           error: false,
-          loading: true,
+          loading: false,
           color: "deep-orange",
           id: "payments"
         }
@@ -309,13 +311,16 @@ export default {
       clientsList: [],
       paymentTypesList: [],
       goodsList: [],
-      // bouquetsList: [],
       paymentsList: [],
       checkCardList: [],
       createdSuccess: false,
       dialogPay: false,
       sumClient: 0,
-      typePay: null
+      typePay: null,
+      paymentsPagination: {
+        page: 0,
+        limit: 40
+      }
     };
   },
   apollo: {
@@ -337,8 +342,8 @@ export default {
     },
     clientsList: {
       query: gql`
-        query {
-          clientsList: clients {
+        query ClientsList($limit: Int, $offset: Int) {
+          clientsList: clients(limit: $limit, offset: $offset) {
             id
             name
             phone
@@ -347,12 +352,52 @@ export default {
           }
         }
       `,
-      result() {
+      variables() {
+        return {
+          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
+          limit: this.paymentsPagination.limit
+        };
+      },
+      update({ clientsList }) {
+        const data = [...this.clientsList, ...clientsList]
+        console.log(data);
+        this.clientsList = data;
+        return data;
+      },
+      result(data) {
         this.handleLoadingSuccess("clients", "Клиенты получены!");
       },
       error() {
         this.handleLoadingFailed("clients", "Ошибка получения клиентов!");
       }
+    },
+    goodsList: {
+      query: gql`
+        query {
+          goodsList: goods {
+            id
+            name
+            price
+            stockBalance
+          }
+        }
+      `,
+      result() {
+        this.handleLoadingSuccess("goods", "Товары получены!");
+      },
+      error() {
+        this.handleLoadingFailed("goods", "Ошибка получения товаров!");
+      }
+    },
+    paymentTypesList: {
+      query: gql`
+        query {
+          paymentTypesList: paymentTypes {
+            id
+            name
+          }
+        }
+      `
     }
   },
   computed: {
@@ -391,6 +436,25 @@ export default {
     }
   },
   methods: {
+    handleLoadMoreClients() {
+      this.paymentsPagination.page++;
+      this.$apollo.queries.clientsList.fetchMore({
+        variables: {
+          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
+          limit: this.paymentsPagination.limit
+        },
+
+        updateQuery: (previousResult, { fetchMoreResult }) => {
+          console.log("tesss");
+          return {
+            clientsList: {
+              __typename: previousResult.clientsList.__typename,
+              clientsList: [...previousResult.clientsList]
+            }
+          };
+        }
+      });
+    },
     handleLoadingSuccess(loadingBarId, msg) {
       const loadData = this.loadingData.find(item => item.id === loadingBarId);
       loadData.title = msg;
@@ -533,56 +597,6 @@ export default {
       );
       localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
     },
-    getPaymentTypesList() {
-      const itemParams = {
-        type: "paymentTypes",
-        filter: {
-          isActive: true
-        }
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.paymentTypesList = response;
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getGoodsList: function getGoodsList() {
-      const itemParams = {
-        type: "goods",
-        sort: {
-          sortIndex: "desc"
-        },
-        filter: {
-          isActive: true
-        }
-      };
-
-      const successData = "Товары получены!";
-      const errorData = "Ошибка получения товаров!";
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.goodsList = response;
-
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = successData;
-          loadData.loading = false;
-        })
-        .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = errorData;
-          loadData.error = true;
-        });
-    },
     getPaymentsList() {
       const itemParams = {
         type: "payments",
@@ -594,30 +608,24 @@ export default {
       const successData = "Оплаты получены!";
       const errorData = "Ошибка получения оплат!";
 
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.paymentsList = response;
-
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = successData;
-          loadData.loading = false;
-        })
-        .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = errorData;
-          loadData.error = true;
-        });
-    },
-    getDataProps: function getDataProps() {
-      this.getGoodsList();
-      // this.getBouquetsList();
-      this.getPaymentsList();
-      this.getPaymentTypesList();
+      // this.$store
+      //   .dispatch("getItemsList", itemParams)
+      //   .then(response => {
+      //     this.paymentsList = response;
+      //
+      //     const loadData = this.loadingData.find(
+      //       item => item.id === itemParams.type
+      //     );
+      //     loadData.title = successData;
+      //     loadData.loading = false;
+      //   })
+      //   .catch(() => {
+      //     const loadData = this.loadingData.find(
+      //       item => item.id === itemParams.type
+      //     );
+      //     loadData.title = errorData;
+      //     loadData.error = true;
+      //   });
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);
@@ -700,8 +708,6 @@ export default {
     for (let i = 0; i < addCountElem; i += 1) {
       this.addCard();
     }
-
-    this.getDataProps();
   }
 };
 </script>

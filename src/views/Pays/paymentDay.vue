@@ -134,7 +134,7 @@ startPrevDate.setDate(startPrevDate.getDate() - 1);
 startPrevDate.setHours(0, 0, 0, 0);
 
 const endPrevDate = new Date();
-endPrevDate.setDate(startPrevDate.getDate() - 1);
+endPrevDate.setDate(endPrevDate.getDate() - 1);
 endPrevDate.setHours(23, 59, 59, 999);
 
 export default {
@@ -151,6 +151,7 @@ export default {
       createdSuccess: false,
       dialog: false,
       sumEncashment: 0,
+      queryValue: 0,
 
       allSumPayCashPrevDay: 0,
       allSumPayCash: 0,
@@ -167,7 +168,7 @@ export default {
     };
   },
   apollo: {
-    allSumPayCash: {
+    queryValue: {
       query: gql`
         query(
           $todayStartDate: timestamptz
@@ -236,21 +237,6 @@ export default {
                 { creation_date: { _gte: $todayStartDate } }
                 { creation_date: { _lte: $todayEndDate } }
                 { paymentTypeId: { _eq: $yandexType } }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          allSumPayYandex: payments_aggregate(
-            where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $returnType } }
               ]
             }
           ) {
@@ -349,34 +335,34 @@ export default {
                 amount
               }
             }
-            allSumPayCashPrevDay: payments_aggregate(
-              where: {
-                _and: [
-                  { creation_date: { _gte: $prevStartDate } }
-                  { creation_date: { _lte: $prevEndDate } }
-                  { paymentTypeId: { _eq: $cashType } }
-                ]
-              }
-            ) {
-              aggregate {
-                sum {
-                  amount
-                }
+          }
+          allSumPayCashPrevDay: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $prevStartDate } }
+                { creation_date: { _lte: $prevEndDate } }
+                { paymentTypeId: { _eq: $cashType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
               }
             }
-            allSumEncashmentPrevDay: payments_aggregate(
-              where: {
-                _and: [
-                  { creation_date: { _gte: $prevStartDate } }
-                  { creation_date: { _lte: $prevEndDate } }
-                  { paymentTypeId: { _eq: $encashmentType } }
-                ]
-              }
-            ) {
-              aggregate {
-                sum {
-                  amount
-                }
+          }
+          allSumEncashmentPrevDay: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $prevStartDate } }
+                { creation_date: { _lte: $prevEndDate } }
+                { paymentTypeId: { _eq: $encashmentType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
               }
             }
           }
@@ -384,8 +370,8 @@ export default {
       `,
       variables: {
         todayStartDate: startCurrentDate,
-        prevStartDate: startPrevDate,
         todayEndDate: endCurrentDate,
+        prevStartDate: startPrevDate,
         prevEndDate: endPrevDate,
         cashType: PaymentTypes.CASH,
         terminalType: PaymentTypes.TERMINAL,
@@ -398,7 +384,7 @@ export default {
         gazpromType: PaymentTypes.GAZPROM,
         expensesType: PaymentTypes.EXPENSES
       },
-      update: ({
+      update: function({
         allSumPayCash: {
           aggregate: {
             sum: { amount: allSumPayCash }
@@ -459,20 +445,20 @@ export default {
             sum: { amount: allSumReturn }
           }
         }
-      }) => {
-        this.allSumPayCashPrevDay = allSumPayCashPrevDay;
-        this.allSumPayCash = allSumPayCash;
-        this.allSumPayTerminal = allSumPayTerminal;
-        this.allSumPayCard = allSumPayCard;
-        this.allSumPayYandex = allSumPayYandex;
-        this.allSumReturn = allSumReturn;
-        this.allSumEncashmentPrevDay = allSumEncashmentPrevDay;
-        this.allSumEncashment = allSumEncashment;
-        this.terminalUg2 = terminalUg2;
-        this.tinkoff = tinkoff;
-        this.gazprom = gazprom;
-        this.expenses = expenses;
-      }
+      }) {
+        this.allSumPayCashPrevDay = allSumPayCashPrevDay || 0;
+        this.allSumPayCash = allSumPayCash || 0;
+        this.allSumPayTerminal = allSumPayTerminal || 0;
+        this.allSumPayCard = allSumPayCard || 0;
+        this.allSumPayYandex = allSumPayYandex || 0;
+        this.allSumReturn = allSumReturn || 0;
+        this.allSumEncashmentPrevDay = allSumEncashmentPrevDay || 0;
+        this.allSumEncashment = allSumEncashment || 0;
+        this.terminalUg2 = terminalUg2 || 0;
+        this.tinkoff = tinkoff || 0;
+        this.gazprom = gazprom || 0;
+        this.expenses = expenses || 0;
+      },
     }
   },
   computed: {
@@ -481,11 +467,15 @@ export default {
         this.allSumPayCashPrevDay -
         this.allSumEncashmentPrevDay +
         this.allSumPayCash -
-        this.allSumEncashment
+        this.allSumEncashment -
+        this.expenses
       );
     }
   },
   methods: {
+    refreshPayments() {
+      this.$apollo.queries.queryValue.refetch()
+    },
     submit() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -504,7 +494,7 @@ export default {
 
         this.$store.dispatch("addItem", itemParams).then(() => {
           this.createdSuccess = true;
-          this.$emit("input");
+          this.refreshPayments();
 
           setTimeout(() => {
             this.dialog = false;
@@ -514,12 +504,6 @@ export default {
       }
     }
   },
-  mounted() {
-    const dateNow = new Date();
-    dateNow.setDate(dateNow.getDate() - 1);
-    const dateYesterdayStr = dateNow.toISOString().split("T")[0];
-    this.dateYesterday = dateYesterdayStr;
-  }
 };
 </script>
 

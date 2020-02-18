@@ -31,7 +31,7 @@ export default {
     handleScroll(event) {
       const element = event.target;
 
-      if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+      if (Math.round(element.scrollHeight - element.scrollTop) <= element.clientHeight + 100) {
         element.scrollTop -= 100;
         this.handleEndOfItemsList(event);
       }

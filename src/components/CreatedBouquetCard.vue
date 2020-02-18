@@ -487,20 +487,20 @@ export default {
       return this.clientsList.find(c => c.id === this.client);
     },
     typePayList: function() {
-      // return this.paymentTypesList.filter(item => {
-      //   if (
-      //     item.id === PaymentTypes.PRESENT &&
-      //     (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
-      //   ) {
-      //     return false;
-      //   }
-      //
-      //   if (this.client === 0) {
-      //     return item.id !== 5;
-      //   }
-      //
-      //   return item.id !== 7;
-      // });
+      return this.paymentTypesList.filter(item => {
+        if (
+          item.id === PaymentTypes.PRESENT &&
+          (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
+        ) {
+          return false;
+        }
+
+        if (this.client === 0) {
+          return item.id !== 5;
+        }
+
+        return item.id !== 7;
+      });
     },
     sumDecor: function decorSum() {
       let sum = 0;

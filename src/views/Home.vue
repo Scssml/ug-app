@@ -38,7 +38,6 @@
     <payment-day
       v-if="!loadingDialog"
       :payments-list="paymentsList"
-      @input="getPaymentsList()"
       ref="paymentDayRef"
     ></payment-day>
 
@@ -319,7 +318,7 @@ export default {
       typePay: null,
       paymentsPagination: {
         page: 0,
-        limit: 40
+        limit: 200
       }
     };
   },
@@ -343,7 +342,11 @@ export default {
     clientsList: {
       query: gql`
         query ClientsList($limit: Int, $offset: Int) {
-          clientsList: clients(limit: $limit, offset: $offset) {
+          clientsList: clients(
+            order_by: { id: asc }
+            limit: $limit
+            offset: $offset
+          ) {
             id
             name
             phone
@@ -359,12 +362,11 @@ export default {
         };
       },
       update({ clientsList }) {
-        const data = [...this.clientsList, ...clientsList]
-        console.log(data);
+        const data = [...this.clientsList, ...clientsList];
         this.clientsList = data;
         return data;
       },
-      result(data) {
+      result() {
         this.handleLoadingSuccess("clients", "Клиенты получены!");
       },
       error() {
@@ -436,6 +438,10 @@ export default {
     }
   },
   methods: {
+    refreshPayments() {
+      console.log(this.$refs.paymentDayRef);
+      this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
+    },
     handleLoadMoreClients() {
       this.paymentsPagination.page++;
       this.$apollo.queries.clientsList.fetchMore({
@@ -541,7 +547,7 @@ export default {
           };
 
           this.$store.dispatch("addItem", itemParams).then(() => {
-            this.getPaymentsList();
+            this.refreshPayments();
           });
         } else {
           const newBouqet = props;
@@ -560,7 +566,7 @@ export default {
           };
 
           this.$store.dispatch("addItem", bouquetParams).then(() => {
-            this.getPaymentsList();
+            this.refreshPayments();
           });
 
           item.goods.forEach(elem => {

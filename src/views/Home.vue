@@ -64,7 +64,6 @@
               <v-flex :key="index" v-if="!item.success">
                 <created-bouquet-card
                   :florists-list="floristsList"
-                  :clients-list="clientsList"
                   :payment-types-list="paymentTypesList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
@@ -74,7 +73,6 @@
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
                   @checkCard="checkCard(index, $event)"
-                  @loadMoreClient="handleLoadMoreClients"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -264,13 +262,6 @@ export default {
       dateYesterday: "",
       loadingData: [
         {
-          title: "Получение клиентов",
-          error: false,
-          loading: true,
-          color: "indigo",
-          id: "clients"
-        },
-        {
           title: "Получение флористов",
           error: false,
           loading: true,
@@ -307,7 +298,6 @@ export default {
       ],
       cardsList: [],
       floristsList: [],
-      clientsList: [],
       paymentTypesList: [],
       goodsList: [],
       paymentsList: [],
@@ -337,40 +327,6 @@ export default {
       },
       error() {
         this.handleLoadingFailed("florists", "Ошибка получения флористов!");
-      }
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($limit: Int, $offset: Int) {
-          clientsList: clients(
-            order_by: { id: asc }
-            limit: $limit
-            offset: $offset
-          ) {
-            id
-            name
-            phone
-            type: typeId
-            discountPercent: sale
-          }
-        }
-      `,
-      variables() {
-        return {
-          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
-          limit: this.paymentsPagination.limit
-        };
-      },
-      update({ clientsList }) {
-        const data = [...this.clientsList, ...clientsList];
-        this.clientsList = data;
-        return data;
-      },
-      result() {
-        this.handleLoadingSuccess("clients", "Клиенты получены!");
-      },
-      error() {
-        this.handleLoadingFailed("clients", "Ошибка получения клиентов!");
       }
     },
     goodsList: {
@@ -441,25 +397,6 @@ export default {
     refreshPayments() {
       console.log(this.$refs.paymentDayRef);
       this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
-    },
-    handleLoadMoreClients() {
-      this.paymentsPagination.page++;
-      this.$apollo.queries.clientsList.fetchMore({
-        variables: {
-          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
-          limit: this.paymentsPagination.limit
-        },
-
-        updateQuery: (previousResult, { fetchMoreResult }) => {
-          console.log("tesss");
-          return {
-            clientsList: {
-              __typename: previousResult.clientsList.__typename,
-              clientsList: [...previousResult.clientsList]
-            }
-          };
-        }
-      });
     },
     handleLoadingSuccess(loadingBarId, msg) {
       const loadData = this.loadingData.find(item => item.id === loadingBarId);

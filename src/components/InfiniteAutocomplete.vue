@@ -9,6 +9,7 @@
     hide-details
     solo
     flat
+    @change="handleChange"
   />
 </template>
 
@@ -20,18 +21,19 @@ export default {
     hasMore: Boolean,
     items: Array,
     itemText: String,
-    itemValue: String,
-  },
-  data() {
-    return {
-      currentValue: "",
-    };
+    itemValue: String
   },
   methods: {
+    handleChange(event) {
+      this.$emit("onChange", event);
+    },
     handleScroll(event) {
       const element = event.target;
 
-      if (Math.round(element.scrollHeight - element.scrollTop) <= element.clientHeight + 100) {
+      if (
+        Math.round(element.scrollHeight - element.scrollTop) <=
+        element.clientHeight + 100
+      ) {
         element.scrollTop -= 100;
         this.handleEndOfItemsList(event);
       }

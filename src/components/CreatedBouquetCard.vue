@@ -45,6 +45,7 @@
         :has-more="true"
         item-value="id"
         @needMore="handleLoadMoreClients"
+        @onChange="handleClientChange"
       />
     </div>
     <v-divider></v-divider>
@@ -580,6 +581,10 @@ export default {
     }
   },
   methods: {
+    handleClientChange(selectedClientId) {
+      this.client = selectedClientId;
+      this.updateProps();
+    },
     handleLoadMoreClients() {
       this.$emit("loadMoreClient");
       console.log(this.clientsList);

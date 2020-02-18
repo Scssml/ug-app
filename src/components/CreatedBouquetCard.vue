@@ -464,6 +464,7 @@ export default {
             prePayment
             deliveryCost
             bouquets: orderBouquets {
+              id
               name
               count
               bouquets_aggregate {
@@ -632,7 +633,7 @@ export default {
       const isHaveReadyBouquets = order.bouquets.some(
         b => b.bouquets_aggregate.aggregate.count
       );
-      
+
       this.delivery = !isHaveReadyBouquets ? order.deliveryCost : 0;
 
       this.updateProps();

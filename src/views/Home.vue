@@ -540,36 +540,6 @@ export default {
       );
       localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
     },
-    getPaymentsList() {
-      const itemParams = {
-        type: "payments",
-        filter: {
-          creationDate: [this.dateYesterday, this.dateNow]
-        }
-      };
-
-      const successData = "Оплаты получены!";
-      const errorData = "Ошибка получения оплат!";
-
-      // this.$store
-      //   .dispatch("getItemsList", itemParams)
-      //   .then(response => {
-      //     this.paymentsList = response;
-      //
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = successData;
-      //     loadData.loading = false;
-      //   })
-      //   .catch(() => {
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = errorData;
-      //     loadData.error = true;
-      //   });
-    },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);
       this.cardsList.push(item);

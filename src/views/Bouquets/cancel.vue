@@ -113,6 +113,7 @@ export default {
       const index = cardsList.findIndex(card => card.props.order === item.id);
 
       const itemProps = {
+        client: item.client,
         clientId: item.client.id,
         decorCost: item.decorCost,
         decorPercent: item.decorPercent,

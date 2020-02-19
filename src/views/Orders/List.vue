@@ -98,7 +98,7 @@
             <v-flex xs2 class="px-2">
               <v-select
                 label="Статус"
-                :items="[{ id: '', name: 'Все' }].concat(statusList)"
+                :items="[{ id: 0, name: 'Все' }].concat(statusList)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.orderStatus"
@@ -130,7 +130,7 @@
             >
               <v-select
                 label="Менеджер"
-                :items="[{ id: '', name: 'Все' }].concat(usersList)"
+                :items="[{ id: 0, name: 'Все' }].concat(usersList)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.createdBy"
@@ -143,7 +143,7 @@
               <v-select
                 label="Время суток"
                 :items="
-                  [{ id: '', name: 'Все' }].concat(deliveryTimeOfDayFilter)
+                  [{ id: 0, name: 'Все' }].concat(deliveryTimeOfDayFilter)
                 "
                 item-text="name"
                 item-value="id"
@@ -354,16 +354,21 @@
                         <template v-else-if="prop.field === 'createdBy'">
                           {{ props.item[prop.field].name }}
                         </template>
-                        <!-- TODO: restore -->
-                        <!--                        <template v-else-if="prop.field === 'orderSourceType'">-->
-                        <!--                          <template-->
-                        <!--                            v-for="(item, index) in props.item[prop.field]"-->
-                        <!--                          >-->
-                        <!--                            <template v-if="item">-->
-                        <!--                              <br :key="index" v-if="index" />{{ item.name }}-->
-                        <!--                            </template>-->
-                        <!--                          </template>-->
-                        <!--                        </template>-->
+                        <template v-else-if="prop.field === 'orderSourceType'">
+                          <template
+                            v-for="(item, index) in props.item[
+                              'orderSourceTypeIds'
+                            ]"
+                          >
+                            <template v-if="item">
+                              <br :key="index" v-if="index" />{{
+                                this.orderSourceTypes.find(o => {
+                                  return o.id == item;
+                                }).name
+                              }}
+                            </template>
+                          </template>
+                        </template>
                         <template v-else-if="prop.field === 'incognito'">
                           {{ props.item[prop.field] ? "Да" : "Нет" }}
                         </template>
@@ -410,7 +415,7 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'deliveryDate'">
-                          {{ props.item[`${prop.field}Str`] }}
+                          {{ props.item[prop.field] }}
                         </template>
                         <template v-else-if="prop.field === 'courier'">
                           {{ props.item[prop.field].name }}
@@ -573,18 +578,18 @@ export default {
   data() {
     return {
       filter: {
-        orderStatus: "",
+        orderStatus: 0,
         client: "",
-        deliveryTimeOfDay: "",
+        deliveryTimeOfDay: 0,
         dateStart: null,
         dateEnd: null,
-        createdBy: ""
+        createdBy: 0
       },
       loadingData: [
         {
           title: "Получение заказов",
           error: false,
-          loading: false,
+          loading: true,
           color: "amber",
           id: "orders"
         }
@@ -638,14 +643,35 @@ export default {
       page: 0,
       tableLoading: false,
       tsList: [],
-      skipQuery: true
+      skipQuery: true,
+      orderSourceTypeIds: []
     };
   },
   apollo: {
     ordersList: {
       query: gql`
-        query OrderList($limit: Int, $offset: Int) {
-          ordersList: orders(limit: $limit, offset: $offset) {
+        query OrderList(
+          $limit: Int
+          $offset: Int
+          $startDate: date
+          $endDate: date
+          $orderStatus: bigint
+          $createdBy: bigint
+          $deliveryTimeOfDay: bigint
+        ) {
+          ordersList: orders(
+            limit: $limit
+            offset: $offset
+            where: {
+              _and: [
+                { deliveryDate: { _gte: $startDate } }
+                { deliveryDate: { _lte: $endDate } }
+                { orderStatusId: { _eq: $orderStatus } }
+                { createdById: { _eq: $createdBy } }
+                { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
+              ]
+            }
+          ) {
             id
             deliveryTimeOfDay
             orderSourceTypeIds
@@ -653,10 +679,15 @@ export default {
             alreadyPaid
             prePayment
             description
+            clientName
+            clientPhone
+            addresseeName
+            addresseePhone
             deliveryType {
               name
             }
             deliveryDate
+            deliveryTime
             clientType {
               name
             }
@@ -689,12 +720,57 @@ export default {
           offset: +this.page * +this.take,
           limit: +this.take,
           startDate: this.filter.dateStart,
-          endDate: this.filter.dateEnd
+          endDate: this.filter.dateEnd,
+          orderStatus:
+            this.filter.orderStatus !== 0 ? this.filter.orderStatus : undefined,
+          createdBy:
+            this.filter.createdBy !== 0 ? this.filter.createdBy : undefined,
+          deliveryTimeOfDay:
+            this.filter.deliveryTimeOfDay !== 0
+              ? this.filter.deliveryTimeOfDay
+              : undefined
         };
       },
       skip() {
         return this.skipQuery;
+      },
+      result() {
+        const loadData = this.loadingData.find(item => item.id === "orders");
+        loadData.title = "Заказы получены!";
+        loadData.loading = false;
       }
+    },
+    orderSourceTypes: {
+      query: gql`
+        query {
+          orderSourceTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    statusList: {
+      query: gql`
+        query {
+          statusList: orderStatuses {
+            id
+            name
+          }
+        }
+      `
+    },
+    usersList: {
+      query: gql`
+        query {
+          usersList: users(
+            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
+          ) {
+            id
+            name
+          }
+        }
+      `
     }
   },
   watch: {
@@ -867,8 +943,7 @@ export default {
       const orderFilter = {
         deliveryDate: []
       };
-
-      console.log(this.filter);
+      
       this.skipQuery = false;
       Object.keys(this.filter).forEach(key => {
         const val = this.filter[key];
@@ -1023,23 +1098,6 @@ export default {
           console.log("error");
         });
     },
-    getStatusList() {
-      const itemParams = {
-        type: "order-status"
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.statusList = response.map(item => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
     getClientsList() {
       const itemParams = {
         type: "clients",
@@ -1072,24 +1130,6 @@ export default {
             item.id = +item.id;
             return item;
           });
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getUsersList() {
-      const itemParams = {
-        type: "users",
-        filter: {
-          active: true,
-          group: [1, 2]
-        }
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.usersList = response;
         })
         .catch(() => {
           console.log("error");
@@ -1293,10 +1333,8 @@ export default {
 
     this.getUserSettings();
     this.getTsList();
-    this.getStatusList();
     this.getClientsList();
     this.getClientTypeList();
-    this.getUsersList();
   }
 };
 </script>

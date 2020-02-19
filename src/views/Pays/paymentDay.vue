@@ -188,10 +188,22 @@ export default {
         ) {
           allSumPayCash: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $cashType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $cashType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -203,10 +215,22 @@ export default {
           }
           allSumPayTerminal: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $terminalType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $terminalType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $terminalType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -218,10 +242,22 @@ export default {
           }
           allSumPayCard: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $cardType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $cardType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -233,10 +269,22 @@ export default {
           }
           allSumPayYandex: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $yandexType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $yandexType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $yandexType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -248,10 +296,22 @@ export default {
           }
           allSumEncashment: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $encashmentType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $encashmentType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $encashmentType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -263,10 +323,22 @@ export default {
           }
           terminalUg2: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $ug2Type } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $ug2Type } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $ug2Type } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -278,10 +350,22 @@ export default {
           }
           tinkoff: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $tinkoffType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $tinkoffType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $tinkoffType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -293,10 +377,22 @@ export default {
           }
           gazprom: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $gazpromType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $gazpromType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $gazpromType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -308,10 +404,22 @@ export default {
           }
           expenses: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $expensesType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $expensesType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $expensesType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -323,10 +431,14 @@ export default {
           }
           allSumReturn: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $todayStartDate } }
-                { creation_date: { _lte: $todayEndDate } }
-                { paymentTypeId: { _eq: $returnType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $todayStartDate } }
+                    { creation_date: { _lte: $todayEndDate } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -338,10 +450,22 @@ export default {
           }
           allSumPayCashPrevDay: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $prevStartDate } }
-                { creation_date: { _lte: $prevEndDate } }
-                { paymentTypeId: { _eq: $cashType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $prevStartDate } }
+                    { creation_date: { _lte: $prevEndDate } }
+                    { paymentTypeId: { _eq: $cashType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $prevStartDate } }
+                    { creation_date: { _lte: $prevEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeId: { _eq: $returnType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -353,10 +477,22 @@ export default {
           }
           allSumEncashmentPrevDay: payments_aggregate(
             where: {
-              _and: [
-                { creation_date: { _gte: $prevStartDate } }
-                { creation_date: { _lte: $prevEndDate } }
-                { paymentTypeId: { _eq: $encashmentType } }
+              _or: [
+                {
+                  _and: [
+                    { creation_date: { _gte: $prevStartDate } }
+                    { creation_date: { _lte: $prevEndDate } }
+                    { paymentTypeId: { _eq: $encashmentType } }
+                  ]
+                }
+                {
+                  _and: [
+                    { creation_date: { _gte: $prevStartDate } }
+                    { creation_date: { _lte: $prevEndDate } }
+                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeId: { _eq: $encashmentType } }
+                  ]
+                }
               ]
             }
           ) {
@@ -458,7 +594,7 @@ export default {
         this.tinkoff = tinkoff || 0;
         this.gazprom = gazprom || 0;
         this.expenses = expenses || 0;
-      },
+      }
     }
   },
   computed: {
@@ -474,7 +610,7 @@ export default {
   },
   methods: {
     refreshPayments() {
-      this.$apollo.queries.queryValue.refetch()
+      this.$apollo.queries.queryValue.refetch();
     },
     submit() {
       const validate = this.$refs.form.validate();
@@ -503,7 +639,7 @@ export default {
         });
       }
     }
-  },
+  }
 };
 </script>
 

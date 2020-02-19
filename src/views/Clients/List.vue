@@ -46,7 +46,7 @@
                 label="Имя"
                 v-model="filter.name"
                 hide-details
-                @change="customFilter()"
+                @change="handleClientNameChange($event)"
               ></v-text-field>
             </v-flex>
           </v-layout>
@@ -57,6 +57,12 @@
               >Добавить</v-btn
             >
             <template v-if="dialogForm">
+              <client-print
+                v-if="printedId >= 0"
+                :id="printedId"
+                :name="clientsList.find(item => item.id === printedId)['name']"
+                @cancel="closeDialog()"
+              ></client-print>
               <client-edit
                 v-else-if="editedId"
                 :id="editedId"
@@ -202,6 +208,7 @@
 import ClientEdit from './edit.vue';
 import ClientAdd from './add.vue';
 import ClientDelete from './delete.vue';
+import ClientPrint from './printAct.vue';
 import gql from 'graphql-tag';
 
 export default {
@@ -210,6 +217,7 @@ export default {
     ClientEdit,
     ClientAdd,
     ClientDelete,
+    ClientPrint,
   },
   data() {
     return {
@@ -295,17 +303,27 @@ export default {
       page: 0,
       tableLoading: false,
       selectedClientType: 0,
+      selectedClientName: '',
     };
   },
   apollo: {
     clientsList: {
       query: gql`
-        query ClientsList($clientTypeId: bigint, $limit: Int, $offset: Int) {
+        query ClientsList($clientTypeId: bigint, $clientName: String, $limit: Int, $offset: Int) {
           clientsList: clients(
             order_by: { id: desc }
             limit: $limit
             offset: $offset
-            where: { clientType: { id: { _eq: $clientTypeId } } }
+            where: {
+              clientType: {
+                id: {
+                  _eq: $clientTypeId
+                }
+              },
+              name: {
+                _ilike: $clientName
+              }
+            }
           ) {
             id
             name
@@ -334,6 +352,8 @@ export default {
         return {
           clientTypeId:
             this.selectedClientType !== 0 ? this.selectedClientType : undefined,
+          clientName:
+            this.selectedClientName !== '' ? `%${this.selectedClientName}%` : undefined,
           offset: this.page * this.take,
           limit: this.take,
         };
@@ -359,6 +379,10 @@ export default {
   methods: {
     handleClientTypeChange(clientTypeId) {
       this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
+      this.page = 0;
+    },
+    handleClientNameChange(clientName) {
+      this.selectedClientName = clientName !== '' ? clientName : '';
       this.page = 0;
     },
     closeDialog() {

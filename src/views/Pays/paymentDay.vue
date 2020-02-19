@@ -134,36 +134,8 @@ startPrevDate.setDate(startPrevDate.getDate() - 1);
 startPrevDate.setHours(0, 0, 0, 0);
 
 const endPrevDate = new Date();
-endPrevDate.setDate(startPrevDate.getDate() - 1);
+endPrevDate.setDate(endPrevDate.getDate() - 1);
 endPrevDate.setHours(23, 59, 59, 999);
-
-const simplePaymentQuery = gql`
-  query($startDate: timestamptz, $endDate: timestamptz, $type: bigint) {
-    payments_aggregate(
-      where: {
-        _and: [
-          { creation_date: { _gte: $startDate } }
-          { creation_date: { _lte: $endDate } }
-          { paymentTypeId: { _eq: $type } }
-        ]
-      }
-    ) {
-      aggregate {
-        sum {
-          amount
-        }
-      }
-    }
-  }
-`;
-
-const getValueFromPaymentSimpleQuery = ({
-  payments_aggregate: {
-    aggregate: {
-      sum: { amount },
-    },
-  },
-}) => amount || 0;
 
 export default {
   props: {
@@ -179,6 +151,7 @@ export default {
       createdSuccess: false,
       dialog: false,
       sumEncashment: 0,
+      queryValue: 0,
 
       allSumPayCashPrevDay: 0,
       allSumPayCash: 0,
@@ -195,113 +168,297 @@ export default {
     };
   },
   apollo: {
-    allSumPayCash: {
-      query: simplePaymentQuery,
+    queryValue: {
+      query: gql`
+        query(
+          $todayStartDate: timestamptz
+          $todayEndDate: timestamptz
+          $prevStartDate: timestamptz
+          $prevEndDate: timestamptz
+          $cashType: bigint
+          $terminalType: bigint
+          $cardType: bigint
+          $yandexType: bigint
+          $encashmentType: bigint
+          $ug2Type: bigint
+          $tinkoffType: bigint
+          $gazpromType: bigint
+          $expensesType: bigint
+          $returnType: bigint
+        ) {
+          allSumPayCash: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $cashType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumPayTerminal: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $terminalType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumPayCard: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $cardType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumPayYandex: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $yandexType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumEncashment: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $encashmentType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          terminalUg2: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $ug2Type } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          tinkoff: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $tinkoffType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          gazprom: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $gazpromType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          expenses: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $expensesType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumReturn: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $todayStartDate } }
+                { creation_date: { _lte: $todayEndDate } }
+                { paymentTypeId: { _eq: $returnType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumPayCashPrevDay: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $prevStartDate } }
+                { creation_date: { _lte: $prevEndDate } }
+                { paymentTypeId: { _eq: $cashType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+          allSumEncashmentPrevDay: payments_aggregate(
+            where: {
+              _and: [
+                { creation_date: { _gte: $prevStartDate } }
+                { creation_date: { _lte: $prevEndDate } }
+                { paymentTypeId: { _eq: $encashmentType } }
+              ]
+            }
+          ) {
+            aggregate {
+              sum {
+                amount
+              }
+            }
+          }
+        }
+      `,
       variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.CASH,
+        todayStartDate: startCurrentDate,
+        todayEndDate: endCurrentDate,
+        prevStartDate: startPrevDate,
+        prevEndDate: endPrevDate,
+        cashType: PaymentTypes.CASH,
+        terminalType: PaymentTypes.TERMINAL,
+        cardType: PaymentTypes.CARD,
+        yandexType: PaymentTypes.YANDEX,
+        returnType: PaymentTypes.RETURN,
+        encashmentType: PaymentTypes.COLLECTION,
+        ug2Type: PaymentTypes.UG2,
+        tinkoffType: PaymentTypes.TINKOFF,
+        gazpromType: PaymentTypes.GAZPROM,
+        expensesType: PaymentTypes.EXPENSES,
       },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumPayTerminal: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.TERMINAL,
+      update({
+        allSumPayCash: {
+          aggregate: {
+            sum: { amount: allSumPayCash },
+          },
+        },
+        allSumPayTerminal: {
+          aggregate: {
+            sum: { amount: allSumPayTerminal },
+          },
+        },
+        allSumPayCard: {
+          aggregate: {
+            sum: { amount: allSumPayCard },
+          },
+        },
+        allSumPayYandex: {
+          aggregate: {
+            sum: { amount: allSumPayYandex },
+          },
+        },
+        allSumEncashment: {
+          aggregate: {
+            sum: { amount: allSumEncashment },
+          },
+        },
+        terminalUg2: {
+          aggregate: {
+            sum: { amount: terminalUg2 },
+          },
+        },
+        tinkoff: {
+          aggregate: {
+            sum: { amount: tinkoff },
+          },
+        },
+        gazprom: {
+          aggregate: {
+            sum: { amount: gazprom },
+          },
+        },
+        expenses: {
+          aggregate: {
+            sum: { amount: expenses },
+          },
+        },
+        allSumPayCashPrevDay: {
+          aggregate: {
+            sum: { amount: allSumPayCashPrevDay },
+          },
+        },
+        allSumEncashmentPrevDay: {
+          aggregate: {
+            sum: { amount: allSumEncashmentPrevDay },
+          },
+        },
+        allSumReturn: {
+          aggregate: {
+            sum: { amount: allSumReturn },
+          },
+        },
+      }) {
+        this.allSumPayCashPrevDay = allSumPayCashPrevDay || 0;
+        this.allSumPayCash = allSumPayCash || 0;
+        this.allSumPayTerminal = allSumPayTerminal || 0;
+        this.allSumPayCard = allSumPayCard || 0;
+        this.allSumPayYandex = allSumPayYandex || 0;
+        this.allSumReturn = allSumReturn || 0;
+        this.allSumEncashmentPrevDay = allSumEncashmentPrevDay || 0;
+        this.allSumEncashment = allSumEncashment || 0;
+        this.terminalUg2 = terminalUg2 || 0;
+        this.tinkoff = tinkoff || 0;
+        this.gazprom = gazprom || 0;
+        this.expenses = expenses || 0;
       },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumPayCard: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.CARD,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumPayYandex: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.YANDEX,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumReturn: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.RETURN,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumEncashment: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.COLLECTION,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    terminalUg2: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.UG2,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    tinkoff: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.TINKOFF,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    gazprom: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.GAZPROM,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    expenses: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startCurrentDate,
-        endDate: endCurrentDate,
-        type: PaymentTypes.EXPENSES,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumPayCashPrevDay: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startPrevDate,
-        endDate: endPrevDate,
-        type: PaymentTypes.CASH,
-      },
-      update: getValueFromPaymentSimpleQuery,
-    },
-    allSumEncashmentPrevDay: {
-      query: simplePaymentQuery,
-      variables: {
-        startDate: startPrevDate,
-        endDate: endPrevDate,
-        type: PaymentTypes.COLLECTION,
-      },
-      update: getValueFromPaymentSimpleQuery,
     },
   },
   computed: {
@@ -310,11 +467,15 @@ export default {
         this.allSumPayCashPrevDay -
         this.allSumEncashmentPrevDay +
         this.allSumPayCash -
-        this.allSumEncashment
+        this.allSumEncashment -
+        this.expenses
       );
     },
   },
   methods: {
+    refreshPayments() {
+      this.$apollo.queries.queryValue.refetch();
+    },
     submit() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -333,7 +494,7 @@ export default {
 
         this.$store.dispatch('addItem', itemParams).then(() => {
           this.createdSuccess = true;
-          this.$emit('input');
+          this.refreshPayments();
 
           setTimeout(() => {
             this.dialog = false;
@@ -342,12 +503,6 @@ export default {
         });
       }
     },
-  },
-  mounted() {
-    const dateNow = new Date();
-    dateNow.setDate(dateNow.getDate() - 1);
-    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
-    this.dateYesterday = dateYesterdayStr;
   },
 };
 </script>

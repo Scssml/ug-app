@@ -23,7 +23,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!loadingDialog">
+    <template>
       <v-card>
         <v-card-title>
           <v-layout row wrap>
@@ -52,22 +52,11 @@
           </v-layout>
           <v-spacer></v-spacer>
 
-          <v-dialog
-            v-model="dialogForm"
-            persistent
-            max-width="420px"
-            :fullscreen="(printedId >= 0) ? true : false"
-          >
-            <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <template
-              v-if="dialogForm"
+          <v-dialog v-model="dialogForm" persistent max-width="420px">
+            <v-btn slot="activator" color="primary" dark class="mb-2"
+              >Добавить</v-btn
             >
-              <client-print
-                v-if="printedId >= 0"
-                :id="printedId"
-                :name="clientsList.find(item => item.id === printedId)['name']"
-                @cancel="closeDialog()"
-              ></client-print>
+            <template v-if="dialogForm">
               <client-edit
                 v-else-if="editedId"
                 :id="editedId"
@@ -213,7 +202,6 @@
 import ClientEdit from './edit.vue';
 import ClientAdd from './add.vue';
 import ClientDelete from './delete.vue';
-import ClientPrint from './printAct.vue';
 import gql from 'graphql-tag';
 
 export default {
@@ -222,7 +210,6 @@ export default {
     ClientEdit,
     ClientAdd,
     ClientDelete,
-    ClientPrint,
   },
   data() {
     return {
@@ -237,7 +224,6 @@ export default {
       ],
       filter: {
         typeId: '',
-        name: '',
       },
       typeClient: [],
       search: '',
@@ -246,25 +232,25 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'name',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Телефон',
           align: 'left',
-          value: 'phoneNumber',
-          sortable: true,
+          value: 'phone',
+          sortable: false,
         },
         {
           text: 'Тип',
           align: 'left',
-          value: 'typeId',
-          sortable: true,
+          value: 'type',
+          sortable: false,
         },
         {
           text: 'Ответственный',
@@ -276,19 +262,19 @@ export default {
           text: 'Счет',
           align: 'right',
           value: 'bill',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Скидка',
           align: 'right',
           value: 'sale',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Активность',
           align: 'right',
           value: 'isActive',
-          sortable: true,
+          sortable: false,
         },
         {
           text: '',
@@ -304,8 +290,6 @@ export default {
       printedId: null,
       pagination: {
         rowsPerPage: -1,
-        sortBy: 'name',
-        descending: false,
       },
       take: 20,
       page: 0,
@@ -376,17 +360,6 @@ export default {
     handleClientTypeChange(clientTypeId) {
       this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
       this.page = 0;
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-
-      this.page = 0;
-      this.getClientsList();
     },
     closeDialog() {
       this.dialogForm = false;

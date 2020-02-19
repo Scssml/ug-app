@@ -310,18 +310,14 @@ export default {
       filter: {
         user: '',
         client: '',
-        dateStart: null,
-        dateEnd: null,
       },
-      dataStartPicker: false,
-      dataEndPicker: false,
       search: '',
       headersTable: [
         {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Клиент',
@@ -345,7 +341,7 @@ export default {
           text: 'Оплата',
           align: 'left',
           value: 'payments[0].amount',
-          sortable: true,
+          sortable: false,
         },
         {
           text: '',
@@ -363,8 +359,6 @@ export default {
       clientsList: [],
       pagination: {
         rowsPerPage: -1,
-        sortBy: 'id',
-        descending: true,
       },
       take: 20,
       page: 0,
@@ -533,7 +527,9 @@ export default {
 
       const itemParams = {
         type: 'bouquets',
-        sort: sortSettings,
+        sort: {
+          id: 'desc',
+        },
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -575,17 +571,6 @@ export default {
         .catch(() => {
           console.log('error');
         });
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-
-      this.page = 0;
-      this.getBouquetsList();
     },
     closeDialog() {
       this.dialogForm = false;

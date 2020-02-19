@@ -262,10 +262,6 @@ export default {
       ],
       filter: {
         createdBy: '',
-        client: '',
-        paymentType: '',
-        dateStart: null,
-        dateEnd: null,
       },
       dataStartPicker: false,
       dataEndPicker: false,
@@ -275,37 +271,39 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: true,
+          filterable: false,
+          sortable: false,
         },
         {
           text: 'Дата',
           align: 'left',
           value: 'creationDate',
-          sortable: true,
+          filterable: false,
+          sortable: false,
         },
         {
           text: 'Клиент',
           align: 'left',
-          value: 'client',
+          value: 'client.name',
           sortable: false,
         },
         {
           text: 'Стоимость',
           align: 'left',
           value: 'amount',
-          sortable: true,
+          sortable: false,
         },
         {
           text: 'Тип',
           align: 'left',
-          value: 'paymentType',
-          sortable: true,
+          value: 'paymentType.name',
+          sortable: false,
         },
         {
           text: 'Комментарий',
           align: 'left',
           value: 'description',
-          sortable: true,
+          sortable: false,
         },
         {
           text: '',
@@ -317,13 +315,8 @@ export default {
       usersList: [],
       dialogForm: false,
       editedId: 0,
-      paymentTypes: [],
-      clientsList: [],
-      paymentType: [],
       pagination: {
         rowsPerPage: -1,
-        sortBy: 'id',
-        descending: true,
       },
       take: 20,
       page: 0,
@@ -396,18 +389,10 @@ export default {
       this.selectedManagerId = selectedId !== 0 ? selectedId : undefined;
       this.page = 0;
     },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
-    },
     getPaymentsList(loading = true) {
       if (loading) {
-        this.tableLoading = true;
-        this.paymentsList = [];
+        this.tableLoading = false;
+        this.reviewsList = [];
       }
 
       const orderFilter = {
@@ -433,7 +418,9 @@ export default {
 
       const itemParams = {
         type: 'payments',
-        sort: sortSettings,
+        sort: {
+          id: 'desc',
+        },
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -466,45 +453,6 @@ export default {
       //     loadData.error = true;
       //   });
     },
-    getPaymentTypes() {
-      const itemParams = {
-        type: 'paymentTypes',
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.paymentTypes = response;
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-        },
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-
-      this.page = 0;
-      this.getPaymentsList();
-    },
     closeDialog() {
       this.dialogForm = false;
       this.editedId = 0;
@@ -526,10 +474,6 @@ export default {
     },
   },
   mounted() {
-    this.getClientsList();
-    this.getPaymentTypes();
-    this.getPaymentsList();
-    this.getUsersList();
   },
 };
 </script>

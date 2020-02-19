@@ -38,7 +38,6 @@
     <payment-day
       v-if="!loadingDialog"
       :payments-list="paymentsList"
-      @input="getPaymentsList()"
       ref="paymentDayRef"
     ></payment-day>
 
@@ -65,7 +64,6 @@
               <v-flex :key="index" v-if="!item.success">
                 <created-bouquet-card
                   :florists-list="floristsList"
-                  :clients-list="clientsList"
                   :payment-types-list="paymentTypesList"
                   :sumFlowers="item.sum"
                   :propsDefault="item.props"
@@ -133,8 +131,11 @@
                 <template v-if="showGoodsList.indexOf(item.id) !== -1">
                   <div
                     class="py-1 px-1 text-xs-center"
-                    style="height: 30px;"
-                    :style="item.color ? `background-color: ${item.color}` : '' "
+                    :style="
+                      'height: 30px;' + item.color
+                        ? `background-color: ${item.color}`
+                        : ''
+                    "
                     :key="index"
                   >
                     {{ item.name }}
@@ -262,13 +263,6 @@ export default {
       dateYesterday: '',
       loadingData: [
         {
-          title: 'Получение клиентов',
-          error: false,
-          loading: true,
-          color: 'indigo',
-          id: 'clients',
-        },
-        {
           title: 'Получение флористов',
           error: false,
           loading: true,
@@ -305,7 +299,6 @@ export default {
       ],
       cardsList: [],
       floristsList: [],
-      clientsList: [],
       paymentTypesList: [],
       goodsList: [],
       paymentsList: [],
@@ -316,7 +309,7 @@ export default {
       typePay: null,
       paymentsPagination: {
         page: 0,
-        limit: 40,
+        limit: 200,
       },
     };
   },
@@ -335,37 +328,6 @@ export default {
       },
       error() {
         this.handleLoadingFailed('florists', 'Ошибка получения флористов!');
-      },
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($limit: Int, $offset: Int) {
-          clientsList: clients(limit: $limit, offset: $offset) {
-            id
-            name
-            phone
-            type: typeId
-            discountPercent: sale
-          }
-        }
-      `,
-      variables() {
-        return {
-          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
-          limit: this.paymentsPagination.limit,
-        };
-      },
-      update({ clientsList }) {
-        const data = [...this.clientsList, ...clientsList];
-        console.log(data);
-        this.clientsList = data;
-        return data;
-      },
-      result(data) {
-        this.handleLoadingSuccess('clients', 'Клиенты получены!');
-      },
-      error() {
-        this.handleLoadingFailed('clients', 'Ошибка получения клиентов!');
       },
     },
     goodsList: {
@@ -431,24 +393,9 @@ export default {
     },
   },
   methods: {
-    handleLoadMoreClients() {
-      this.paymentsPagination.page++;
-      this.$apollo.queries.clientsList.fetchMore({
-        variables: {
-          offset: this.paymentsPagination.limit * this.paymentsPagination.page,
-          limit: this.paymentsPagination.limit,
-        },
-
-        updateQuery: (previousResult, { fetchMoreResult }) => {
-          console.log('tesss');
-          return {
-            clientsList: {
-              __typename: previousResult.clientsList.__typename,
-              clientsList: [...previousResult.clientsList],
-            },
-          };
-        },
-      });
+    refreshPayments() {
+      console.log(this.$refs.paymentDayRef);
+      this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
     },
     handleLoadingSuccess(loadingBarId, msg) {
       const loadData = this.loadingData.find(item => item.id === loadingBarId);
@@ -532,7 +479,7 @@ export default {
           };
 
           this.$store.dispatch('addItem', itemParams).then(() => {
-            this.getPaymentsList();
+            this.refreshPayments();
           });
         } else {
           const newBouqet = props;
@@ -551,7 +498,7 @@ export default {
           };
 
           this.$store.dispatch('addItem', bouquetParams).then(() => {
-            this.getPaymentsList();
+            this.refreshPayments();
           });
 
           item.goods.forEach((elem) => {

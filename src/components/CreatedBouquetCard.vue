@@ -22,30 +22,23 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <!--      <v-autocomplete-->
-      <!--        label="Клиент"-->
-      <!--        :items="clientsList"-->
-      <!--        :filter="clientsFilter"-->
-      <!--        item-text="name"-->
-      <!--        item-value="id"-->
-      <!--        solo-->
-      <!--        flat-->
-      <!--        v-model.number="client"-->
-      <!--        hide-details-->
-      <!--        class="mb-4 scs-small"-->
-      <!--        no-data-text="Не надено"-->
-      <!--        @change="-->
-      <!--          updateProps();-->
-      <!--          getOrdersClient();-->
-      <!--        "-->
-      <!--      ></v-autocomplete>-->
-      <InfiniteAutocomplete
-        :items="this.clientsList"
-        item-text="name"
-        :has-more="true"
-        item-value="id"
-        @needMore="handleLoadMoreClients"
-      />
+      <div class="autosuggest-container">
+        <vue-autosuggest
+          :suggestions="suggestions"
+          :input-props="{
+            id: 'autosuggest__input',
+            placeholder: 'Клиент'
+          }"
+          :get-suggestion-value="getSuggestionValue"
+          :value="client.name"
+          @input="onInputChange"
+          @selected="onSelected"
+        >
+          <template slot-scope="{ suggestion }">
+            <span>{{ suggestion.item.name }}</span>
+          </template>
+        </vue-autosuggest>
+      </div>
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -110,9 +103,6 @@
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <!-- <div class="py-1 px-3" style="height: 30px;">
-          <span class="px-3">{{ sumFlowers }}</span>
-        </div> -->
     <div class="px-0" style="height: 30px;">
       <v-text-field
         label="0"
@@ -154,21 +144,6 @@
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <!-- <div class="py-1 px-3" style="height: 30px;">
-          <span class="px-3">{{ sumDecor }}</span>
-        </div> -->
-    <!-- <div class="px-0" style="height: 30px;">
-          <v-text-field
-            label="0"
-            solo
-            flat
-            hide-details
-            :value="sumDecor"
-            class="scs-small"
-            @input="sumDecorCustom = $event"
-            @change="updateProps()"
-          ></v-text-field>
-        </div> -->
     <v-layout row wrap>
       <v-flex xs6>
         <div class="px-0" style="height: 30px;">
@@ -216,9 +191,6 @@
         </div>
       </v-flex>
       <v-flex xs6>
-        <!-- <div class="py-1 px-3" style="height: 30px;">
-                  <span class="px-3">{{ sumSale }}</span>
-                </div> -->
         <div class="px-0" style="height: 30px;">
           <v-text-field
             label="0"
@@ -233,9 +205,6 @@
       </v-flex>
     </v-layout>
     <v-divider></v-divider>
-    <!-- <div class="py-1 px-3" style="height: 30px;">
-          <span class="px-3">{{ sumPay }}</span>
-        </div> -->
     <div class="pl-0" style="height: 30px;">
       <v-text-field
         label="0"
@@ -393,6 +362,9 @@
 </template>
 
 <script>
+import { VueAutosuggest } from 'vue-autosuggest';
+import gql from 'graphql-tag';
+
 import { ClientTypes, PaymentTypes } from '../constants';
 import InfiniteAutocomplete from '../components/InfiniteAutocomplete';
 
@@ -400,6 +372,7 @@ export default {
   name: 'CreatedBouquetCard',
   components: {
     InfiniteAutocomplete,
+    VueAutosuggest,
   },
   props: {
     goods: {
@@ -407,10 +380,6 @@ export default {
       required: true,
     },
     floristsList: {
-      type: Array,
-      required: true,
-    },
-    clientsList: {
       type: Array,
       required: true,
     },
@@ -431,7 +400,8 @@ export default {
       sumPayCustom: 0,
       createdSuccess: false,
       florist: 0,
-      client: 0,
+      client: {},
+      clientId: 0,
       order: 0,
       decorPercent: 20,
       delivery: 0,
@@ -450,9 +420,68 @@ export default {
       bouquetCount: 1,
       orderBouquet: null,
       clientOrdersList: [],
+      clientsList: [],
       partlyPayment: false,
       btnLoad: false,
+      queryName: '',
+      skipClientsQuery: true,
+      suggestions: [],
     };
+  },
+  apollo: {
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+            id
+            name
+            type: clientType {
+              id
+            }
+            discountPercent: sale
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.suggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.queryName,
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      },
+    },
+    clientOrdersList: {
+      query: gql`
+        query ClientOrdersList($clientId: bigint) {
+          clientOrdersList: orders(where: { clientId: { _eq: $clientId } }) {
+            id
+            prePayment
+            deliveryCost
+            bouquets: orderBouquets {
+              id
+              name
+              count
+              bouquets_aggregate {
+                aggregate {
+                  count
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          clientId: this.clientId,
+        };
+      },
+    },
   },
   computed: {
     prePayment() {
@@ -479,24 +508,21 @@ export default {
 
       return orderList;
     },
-    selectedClient() {
-      return this.clientsList.find(c => c.id === this.client);
-    },
     typePayList() {
-      // return this.paymentTypesList.filter(item => {
-      //   if (
-      //     item.id === PaymentTypes.PRESENT &&
-      //     (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
-      //   ) {
-      //     return false;
-      //   }
-      //
-      //   if (this.client === 0) {
-      //     return item.id !== 5;
-      //   }
-      //
-      //   return item.id !== 7;
-      // });
+      return this.paymentTypesList.filter((item) => {
+        if (
+          item.id === PaymentTypes.PRESENT &&
+          (this.client.type !== ClientTypes.LEGAL || this.goods.length)
+        ) {
+          return false;
+        }
+
+        if (this.clientId === 0) {
+          return item.id !== 5;
+        }
+
+        return item.id !== 7;
+      });
     },
     sumDecor: function decorSum() {
       let sum = 0;
@@ -551,7 +577,7 @@ export default {
       return active;
     },
     clientSale: function clientSale() {
-      const client = this.clientsList.find(item => item.id === this.client);
+      const client = this.client;
 
       let salePersent = 0;
 
@@ -574,9 +600,17 @@ export default {
     },
   },
   methods: {
-    handleLoadMoreClients() {
-      this.$emit('loadMoreClient');
-      console.log(this.clientsList);
+    onSelected({ item }) {
+      this.client = item;
+      this.clientId = item.id;
+      this.updateProps();
+    },
+    getSuggestionValue(suggestion) {
+      return suggestion.item.name;
+    },
+    onInputChange(text) {
+      this.queryName = `%${text}%`;
+      this.skipClientsQuery = false;
     },
     handleSecondSumChange() {
       this.$refs.firstSum.validate();
@@ -590,32 +624,11 @@ export default {
     handleOrderChange(id) {
       const order = this.clientOrdersList.find(item => item.id === id);
 
-      this.delivery = !order.isHaveReadyBouquets ? order.deliveryCost : 0;
+      const isHaveReadyBouquets = order.bouquets.some(b => b.bouquets_aggregate.aggregate.count);
+
+      this.delivery = !isHaveReadyBouquets ? order.deliveryCost : 0;
 
       this.updateProps();
-    },
-    getOrdersClient(changeOrder = true) {
-      if (changeOrder) this.order = 0;
-
-      const itemParams = {
-        type: 'orders',
-        filter: {
-          client: this.client,
-          orderStatus: 1,
-        },
-      };
-
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.clientOrdersList = response.orders.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
     },
     clearProps() {
       this.florist = 0;
@@ -645,7 +658,7 @@ export default {
 
         const props = {
           floristId: this.florist,
-          clientId: this.client,
+          clientId: this.clientId,
           orderId: this.order,
           totalCost: this.sumPay,
           decorPercent: +this.decorPercent,
@@ -658,14 +671,14 @@ export default {
             amount: this.partlyPayment
               ? this.sumPay - this.secondSumClient
               : this.sumPay,
-            clientId: this.client,
+            clientId: this.clientId,
             description: '',
           },
           secondPayment: this.partlyPayment
             ? {
               paymentTypeId: this.secondTypePay,
               amount: this.secondSumClient,
-              clientId: this.client,
+              clientId: this.clientId,
               description: '',
             }
             : null,
@@ -687,7 +700,8 @@ export default {
     updateProps: function updateProps() {
       const props = {
         floristId: this.florist,
-        clientId: this.client,
+        clientId: this.client.id,
+        client: this.client,
         orderId: this.order,
         totalCost: this.sumPay,
         decorPercent: this.decorPercent,
@@ -698,7 +712,7 @@ export default {
         payment: {
           paymentTypeId: 1,
           amount: this.sumPay,
-          clientId: this.client,
+          clientId: this.clientId,
           description: '',
         },
         comment: this.comment,
@@ -719,7 +733,8 @@ export default {
     setValueDefault: function setValueDefault() {
       if (Object.keys(this.propsDefault).length > 0) {
         this.florist = this.propsDefault.floristId;
-        this.client = this.propsDefault.clientId;
+        this.clientId = this.propsDefault.clientId;
+        this.client = this.propsDefault.client;
         this.order = this.propsDefault.orderId;
         this.decorPercent = this.propsDefault.decorPercent;
         this.delivery = this.propsDefault.deliveryCost;
@@ -738,7 +753,79 @@ export default {
   },
   created() {
     this.setValueDefault();
-    this.getOrdersClient(false);
   },
 };
 </script>
+
+<style>
+#autosuggest__input {
+  outline: none;
+  position: relative;
+  display: block;
+  padding: 3px;
+  text-indent: 8px;
+  width: 100%;
+}
+
+#autosuggest__input.autosuggest__input-open {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.autosuggest__results-container {
+  position: relative;
+  width: 100%;
+}
+
+.autosuggest__results {
+  margin: 0;
+  position: absolute;
+  z-index: 10000001;
+  width: 100%;
+  /*border: 1px solid #e0e0e0;*/
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+    0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  background: white;
+  padding: 0px;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.autosuggest__results ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.autosuggest__results .autosuggest__results_item {
+  cursor: pointer;
+  padding: 15px;
+}
+
+#autosuggest ul:nth-child(1) > .autosuggest__results_title {
+  border-top: none;
+}
+
+.autosuggest__results .autosuggest__results_title {
+  color: black;
+  margin-left: 0;
+  padding: 15px 13px 5px;
+  border-top: 1px solid lightgray;
+}
+
+.autosuggest__results-item {
+  padding: 5px;
+}
+
+.autosuggest__results-item:hover {
+  background-color: #e0e0e0;
+}
+
+.autosuggest__results .autosuggest__results_item:active,
+.autosuggest__results .autosuggest__results_item:hover,
+.autosuggest__results .autosuggest__results_item:focus,
+.autosuggest__results
+  .autosuggest__results_item.autosuggest__results_item-highlighted {
+  background-color: #ddd;
+}
+</style>

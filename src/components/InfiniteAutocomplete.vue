@@ -9,6 +9,7 @@
     hide-details
     solo
     flat
+    @change="handleChange"
   />
 </template>
 
@@ -22,21 +23,22 @@ export default {
     itemText: String,
     itemValue: String,
   },
-  data() {
-    return {
-      currentValue: '',
-    };
-  },
   methods: {
+    handleChange(event) {
+      this.$emit('onChange', event);
+    },
     handleScroll(event) {
       const element = event.target;
 
-      if (element.scrollHeight - element.scrollTop === element.clientHeight) {
+      if (
+        Math.round(element.scrollHeight - element.scrollTop) <=
+        element.clientHeight + 100
+      ) {
         element.scrollTop -= 100;
         this.handleEndOfItemsList(event);
       }
     },
-    handleEndOfItemsList(event) {
+    handleEndOfItemsList() {
       if (this.hasMore) {
         this.$emit('needMore');
       }

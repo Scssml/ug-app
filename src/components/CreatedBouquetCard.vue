@@ -22,35 +22,30 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <!-- <v-select
-              label="Клиент"
-              :items="clientsList"
-              item-text="name"
-              item-value="id"
-              solo
-              flat
-              hide-details
-              v-model="client"
-              class="scs-small"
-              @change="updateProps()"
-            ></v-select> -->
-      <v-autocomplete
-        label="Клиент"
-        :items="clientsList"
-        :filter="clientsFilter"
+      <!--      <v-autocomplete-->
+      <!--        label="Клиент"-->
+      <!--        :items="clientsList"-->
+      <!--        :filter="clientsFilter"-->
+      <!--        item-text="name"-->
+      <!--        item-value="id"-->
+      <!--        solo-->
+      <!--        flat-->
+      <!--        v-model.number="client"-->
+      <!--        hide-details-->
+      <!--        class="mb-4 scs-small"-->
+      <!--        no-data-text="Не надено"-->
+      <!--        @change="-->
+      <!--          updateProps();-->
+      <!--          getOrdersClient();-->
+      <!--        "-->
+      <!--      ></v-autocomplete>-->
+      <InfiniteAutocomplete
+        :items="this.clientsList"
         item-text="name"
+        :has-more="true"
         item-value="id"
-        solo
-        flat
-        v-model.number="client"
-        hide-details
-        class="mb-4 scs-small"
-        no-data-text="Не надено"
-        @change="
-          updateProps();
-          getOrdersClient();
-        "
-      ></v-autocomplete>
+        @needMore="handleLoadMoreClients"
+      />
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -289,16 +284,8 @@
         ></v-text-field>
       </div>
       <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
-        <v-icon
-          dark
-          v-if="check"
-          title="Убрать"
-        >check_box</v-icon>
-        <v-icon
-          dark
-          v-else
-          title="Выбрать"
-        >check_box_outline_blank</v-icon>
+        <v-icon dark v-if="check" title="Убрать">check_box</v-icon>
+        <v-icon dark v-else title="Выбрать">check_box_outline_blank</v-icon>
       </v-btn>
     </div>
     <v-divider></v-divider>
@@ -381,11 +368,9 @@
           <v-card-actions class="px-4 pb-4">
             <v-btn @click.native="dialogPay = false">Отмена</v-btn>
             <v-spacer></v-spacer>
-            <v-btn
-              color="info"
-              @click="submitForm"
-              :loading="btnLoad"
-            >Оплатить</v-btn>
+            <v-btn color="info" @click="submitForm" :loading="btnLoad"
+              >Оплатить</v-btn
+            >
           </v-card-actions>
         </v-form>
       </v-card>
@@ -408,34 +393,38 @@
 </template>
 
 <script>
-import { ClientTypes, PaymentTypes } from "../constants";
+import { ClientTypes, PaymentTypes } from '../constants';
+import InfiniteAutocomplete from '../components/InfiniteAutocomplete';
 
 export default {
-  name: "CreatedBouquetCard",
+  name: 'CreatedBouquetCard',
+  components: {
+    InfiniteAutocomplete,
+  },
   props: {
     goods: {
       type: Array,
-      required: true
+      required: true,
     },
     floristsList: {
       type: Array,
-      required: true
+      required: true,
     },
     clientsList: {
       type: Array,
-      required: true
+      required: true,
     },
     paymentTypesList: {
       type: Array,
-      required: true
+      required: true,
     },
     sumFlowers: {
       type: Number,
-      required: true
+      required: true,
     },
     propsDefault: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   data() {
     return {
@@ -446,7 +435,7 @@ export default {
       order: 0,
       decorPercent: 20,
       delivery: 0,
-      comment: "",
+      comment: '',
       sumDecorAdditional: 0,
       salePersent: null,
       dialogPay: false,
@@ -455,8 +444,8 @@ export default {
       typePay: null,
       secondTypePay: null,
       dialogClear: false,
-      sumDecorCustom: "",
-      clientSaleCustom: "",
+      sumDecorCustom: '',
+      clientSaleCustom: '',
       check: false,
       bouquetCount: 1,
       orderBouquet: null,
@@ -470,9 +459,7 @@ export default {
       let prePayment = 0;
 
       if (this.order > 0 && this.clientOrdersList.length) {
-        const order = this.clientOrdersList.find(
-          item => item.id === this.order
-        );
+        const order = this.clientOrdersList.find(item => item.id === this.order);
 
         prePayment = order ? +order.prePayment : 0;
       }
@@ -480,13 +467,11 @@ export default {
       return prePayment;
     },
     orderBouquets() {
-      const orderSelected = this.clientOrdersList.find(
-        item => item.id === this.order
-      );
+      const orderSelected = this.clientOrdersList.find(item => item.id === this.order);
       let orderList = [];
 
       if (orderSelected) {
-        orderList = orderSelected.bouquets.map(item => {
+        orderList = orderSelected.bouquets.map((item) => {
           item.fullName = `${item.name} - ${item.count}шт`;
           return item;
         });
@@ -497,25 +482,25 @@ export default {
     selectedClient() {
       return this.clientsList.find(c => c.id === this.client);
     },
-    typePayList: function() {
-      return this.paymentTypesList.filter(item => {
-        if (
-          item.id === PaymentTypes.PRESENT &&
-          (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
-        ) {
-          return false;
-        }
-
-        if (this.client === 0 || this.goods.length === 0) {
-          return item.id !== 5;
-        }
-
-        return item.id !== 7;
-      });
+    typePayList() {
+      // return this.paymentTypesList.filter(item => {
+      //   if (
+      //     item.id === PaymentTypes.PRESENT &&
+      //     (this.selectedClient.type !== ClientTypes.LEGAL || this.goods.length)
+      //   ) {
+      //     return false;
+      //   }
+      //
+      //   if (this.client === 0) {
+      //     return item.id !== 5;
+      //   }
+      //
+      //   return item.id !== 7;
+      // });
     },
     sumDecor: function decorSum() {
       let sum = 0;
-      if (this.sumDecorCustom !== "") {
+      if (this.sumDecorCustom !== '') {
         sum = this.sumDecorCustom;
       } else {
         sum = Math.ceil(this.sumFlowers * (this.decorPercent / 100));
@@ -523,10 +508,8 @@ export default {
       return this.priceRound(sum);
     },
     sumSale: function sumSale() {
-      const sum = Math.ceil(
-        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
-          (this.clientSale / 100)
-      );
+      const sum = Math.ceil((this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
+          (this.clientSale / 100));
       return this.priceRound(sum);
     },
     sumOrder: function sumPay() {
@@ -564,7 +547,7 @@ export default {
       return sum > 0 ? sum : 0;
     },
     activePayBtn: function activePayBtn() {
-      const active = this.florist !== "" ? 1 : 0;
+      const active = this.florist !== '' ? 1 : 0;
       return active;
     },
     clientSale: function clientSale() {
@@ -573,11 +556,14 @@ export default {
       let salePersent = 0;
 
       if (client) {
-        if (this.clientSaleCustom !== "") {
+        if (this.clientSaleCustom !== '') {
           salePersent = this.clientSaleCustom;
         } else if (client !== 0 && client.discountPercent > 0) {
           salePersent = client.discountPercent;
-        } else if (this.sumFlowers + this.sumDecor + this.sumDecorAdditional >= 3000) {
+        } else if (
+          this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
+          3000
+        ) {
           salePersent = 5;
         } else {
           salePersent = null;
@@ -585,9 +571,13 @@ export default {
       }
 
       return salePersent;
-    }
+    },
   },
   methods: {
+    handleLoadMoreClients() {
+      this.$emit('loadMoreClient');
+      console.log(this.clientsList);
+    },
     handleSecondSumChange() {
       this.$refs.firstSum.validate();
     },
@@ -608,23 +598,23 @@ export default {
       if (changeOrder) this.order = 0;
 
       const itemParams = {
-        type: "orders",
+        type: 'orders',
         filter: {
           client: this.client,
-          orderStatus: 1
-        }
+          orderStatus: 1,
+        },
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.clientOrdersList = response.orders.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.clientOrdersList = response.orders.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     clearProps() {
@@ -640,7 +630,7 @@ export default {
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, "");
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
       return (
@@ -669,15 +659,15 @@ export default {
               ? this.sumPay - this.secondSumClient
               : this.sumPay,
             clientId: this.client,
-            description: ""
+            description: '',
           },
           secondPayment: this.partlyPayment
             ? {
-                paymentTypeId: this.secondTypePay,
-                amount: this.secondSumClient,
-                clientId: this.client,
-                description: ""
-              }
+              paymentTypeId: this.secondTypePay,
+              amount: this.secondSumClient,
+              clientId: this.client,
+              description: '',
+            }
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,
@@ -690,7 +680,7 @@ export default {
 
         setTimeout(() => {
           this.dialogPay = false;
-          this.$emit("saveProps", props);
+          this.$emit('saveProps', props);
         }, 1000);
       }
     },
@@ -709,7 +699,7 @@ export default {
           paymentTypeId: 1,
           amount: this.sumPay,
           clientId: this.client,
-          description: ""
+          description: '',
         },
         comment: this.comment,
         orderBouquet: this.orderBouquet,
@@ -717,11 +707,11 @@ export default {
         bouquetCount: +this.bouquetCount,
       };
 
-      this.$emit("updateProps", props);
+      this.$emit('updateProps', props);
     },
     checkCard() {
       this.check = !this.check;
-      this.$emit("checkCard", this.sumPay);
+      this.$emit('checkCard', this.sumPay);
     },
     priceRound: function priceRound(sum) {
       return +sum;
@@ -749,6 +739,6 @@ export default {
   created() {
     this.setValueDefault();
     this.getOrdersClient(false);
-  }
+  },
 };
 </script>

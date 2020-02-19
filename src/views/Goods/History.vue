@@ -154,10 +154,10 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState } from 'vuex';
 
 export default {
-  name: "History",
+  name: 'History',
   data() {
     return {
       typeEdit: [],
@@ -169,78 +169,76 @@ export default {
         endDate: null,
         type: null,
         search: null,
-        goodId: null
+        goodId: null,
       },
       loadingData: [
         {
-          title: "Получение поставок",
+          title: 'Получение поставок',
           error: false,
           loading: true,
-          color: "indigo",
-          id: "purchase"
-        }
+          color: 'indigo',
+          id: 'purchase',
+        },
       ],
-      search: "",
+      search: '',
       headersTable: [
         {
-          text: "Дата",
-          align: "left",
-          value: "date"
+          text: 'Дата',
+          align: 'left',
+          value: 'date',
         },
         {
-          text: "Тип изменения",
-          align: "left",
-          value: "type"
+          text: 'Тип изменения',
+          align: 'left',
+          value: 'type',
         },
         {
-          text: "Закупка",
-          align: "left",
-          value: "purchase"
+          text: 'Закупка',
+          align: 'left',
+          value: 'purchase',
         },
         {
-          text: "Приход",
-          align: "left",
-          value: "arrival"
+          text: 'Приход',
+          align: 'left',
+          value: 'arrival',
         },
         {
-          text: "Наценка",
-          align: "left",
-          value: "markup"
+          text: 'Наценка',
+          align: 'left',
+          value: 'markup',
         },
         {
-          text: "Переоценка",
-          align: "left",
-          value: "revaluation"
+          text: 'Переоценка',
+          align: 'left',
+          value: 'revaluation',
         },
         {
-          text: "Компания",
-          align: "left",
-          value: "company"
+          text: 'Компания',
+          align: 'left',
+          value: 'company',
         },
         {
-          text: "Менеджер",
-          align: "left",
-          value: "createdBy.name"
+          text: 'Менеджер',
+          align: 'left',
+          value: 'createdBy.name',
         },
         {
-          text: "",
-          align: "right",
+          text: '',
+          align: 'right',
           sortable: false,
-          value: "action"
-        }
+          value: 'action',
+        },
       ],
       usersList: [],
-      purchaseList: []
+      purchaseList: [],
     };
   },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    ...mapState(["purchaseFilter"])
+    ...mapState(['purchaseFilter']),
   },
   methods: {
     markup(item) {
@@ -253,14 +251,14 @@ export default {
     },
     getGoods() {
       const itemParams = {
-        type: "goods",
+        type: 'goods',
         sort: {
-          sortIndex: "asc"
-        }
+          sortIndex: 'asc',
+        },
       };
 
-      return this.$store.dispatch("getItemsList", itemParams).then(resp => {
-        this.goods = resp.map(item => {
+      return this.$store.dispatch('getItemsList', itemParams).then((resp) => {
+        this.goods = resp.map((item) => {
           item.id = +item.id;
           return item;
         });
@@ -268,33 +266,35 @@ export default {
     },
     getPurchaseTypesList() {
       const itemParams = {
-        type: "purchase-types"
+        type: 'purchase-types',
       };
 
       return this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.typeEdit = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.typeEdit = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     setPurchaseFilter(filterProp) {
-      return value => {
-        this.$store.commit("setPurchaseFilter", {
+      return (value) => {
+        this.$store.commit('setPurchaseFilter', {
           filterProp,
-          value
+          value,
         });
 
         this.getPurchaseList();
       };
     },
     getPurchaseList() {
-      const { startDate, endDate, goodId, type } = this.purchaseFilter;
+      const {
+        startDate, endDate, goodId, type,
+      } = this.purchaseFilter;
       let search = null;
 
       if (goodId) {
@@ -304,57 +304,51 @@ export default {
       }
 
       const itemParams = {
-        type: "purchase",
+        type: 'purchase',
         filter: {
           type,
-          search
-        }
+          search,
+        },
       };
 
       if (startDate && endDate) {
-        itemParams["filter"] = {
-          ...itemParams["filter"],
-          purchaseDate: [startDate, endDate]
+        itemParams.filter = {
+          ...itemParams.filter,
+          purchaseDate: [startDate, endDate],
         };
       }
 
-      Object.keys(itemParams.filter).forEach(
-        key => itemParams.filter[key] == null && delete itemParams.filter[key]
-      );
+      Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
 
-      const successData = "Закупки получены!";
-      const errorData = "Ошибка получения закупок!";
+      const successData = 'Закупки получены!';
+      const errorData = 'Ошибка получения закупок!';
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.purchaseList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.purchaseList = response.map((item) => {
             const purchase = item;
             // const dateCreated = purchase.date.split('T')[0];
             // purchase.date = dateCreated;
             return purchase;
           });
 
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
           loadData.title = successData;
           loadData.loading = false;
         })
         .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
           loadData.title = errorData;
           loadData.error = true;
         });
-    }
+    },
   },
   mounted() {
     Promise.all([this.getGoods(), this.getPurchaseTypesList()]).then(() => {
       this.getPurchaseList();
     });
-  }
+  },
 };
 </script>
 

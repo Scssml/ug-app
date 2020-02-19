@@ -35,7 +35,7 @@ export default {
     };
   },
   watch: {
-    value: function(val, oldVal) {
+    value(val, oldVal) {
       this.address = (val.length > 0) ? val : '';
     },
   },

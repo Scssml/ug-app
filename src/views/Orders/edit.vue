@@ -804,13 +804,13 @@ export default {
 
         findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.clientName = "";
-        this.editedItem.clientPhone = "";
-        this.editedItem.clientType = "";
-        this.editedItem.address = "";
-        this.editedItem.entrance = "";
-        this.editedItem.flat = "";
-        this.editedItem.floor = "";
+        this.editedItem.clientName = '';
+        this.editedItem.clientPhone = '';
+        this.editedItem.clientType = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setDataAddressee() {
@@ -881,21 +881,21 @@ export default {
     },
     setPointByClientAddress(address) {
       geocoder.geocode(
-              address,
-              (
-                      _,
-                      {
-                        results: [
-                          { geometry: { location: { lat, lng } = {} } = {} } = {}
-                        ] = []
-                      } = {}
-              ) => {
-                this.updateAddress({
-                  geo: [lat, lng],
-                  address
-                });
-              },
-              { language: "ru", key: window.GOOGLE_API_KEY }
+        address,
+        (
+          _,
+          {
+            results: [
+              { geometry: { location: { lat, lng } = {} } = {} } = {},
+            ] = [],
+          } = {},
+        ) => {
+          this.updateAddress({
+            geo: [lat, lng],
+            address,
+          });
+        },
+        { language: 'ru', key: window.GOOGLE_API_KEY },
       );
     },
     getItem() {

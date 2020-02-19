@@ -1,25 +1,18 @@
 <template>
-  <v-container
-    fluid
-    class="pa-0"
-  >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
+  <v-container fluid class="pa-0">
+    <v-dialog :value="loadingDialog" persistent max-width="320px">
       <v-list>
         <v-list-tile
           v-for="(item, index) in loadingData"
           :key="index"
           avatar
-          :color="(item.error) ? 'red' : item.color"
+          :color="item.error ? 'red' : item.color"
         >
           <v-list-tile-avatar>
             <v-progress-circular
               :value="100"
               :size="30"
-              :color="(item.error) ? 'red' : item.color"
+              :color="item.error ? 'red' : item.color"
               :indeterminate="item.loading"
             ></v-progress-circular>
           </v-list-tile-avatar>
@@ -45,7 +38,8 @@
           :to="`/print/orders/delivery/${printOrdersIds}/`"
           target="_blank"
           class="ml-0"
-        >Печать бланков на доставку</v-btn>
+          >Печать бланков на доставку</v-btn
+        >
 
         <v-btn
           dark
@@ -53,19 +47,20 @@
           depressed
           :to="`/print/orders/florist/${printOrdersIds}/`"
           target="_blank"
-        >Печать бланков флористов</v-btn>
+          >Печать бланков флористов</v-btn
+        >
       </v-snackbar>
       <v-card>
         <v-card-title>
           <v-dialog
             v-model="dialogForm"
-            :max-width="(editStatus || editDescription) ? '420px' : '1200px'"
-            :fullscreen="(editStatus || editDescription) ? false : true"
+            :max-width="editStatus || editDescription ? '420px' : '1200px'"
+            :fullscreen="editStatus || editDescription ? false : true"
           >
-            <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <template
-              v-if="dialogForm"
+            <v-btn slot="activator" color="primary" dark class="mb-2"
+              >Добавить</v-btn
             >
+            <template v-if="dialogForm">
               <change-status
                 v-if="editStatus"
                 :id="editedId"
@@ -86,7 +81,9 @@
                 @cancel="closeDialog()"
               ></order-edit>
               <order-add
-                v-if="!editedId && !editStatus && !editDescription && !editSettings"
+                v-if="
+                  !editedId && !editStatus && !editDescription && !editSettings
+                "
                 @cancel="closeDialog()"
               ></order-add>
               <user-settings
@@ -97,29 +94,11 @@
             </template>
           </v-dialog>
           <v-spacer></v-spacer>
-          <v-layout
-            row
-            wrap
-            justify-space-around
-          >
-            <!-- <v-flex
-              xs2
-              class="px-3"
-            >
-              <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                hide-details
-              ></v-text-field>
-            </v-flex> -->
-            <v-flex
-              xs2
-              class="px-2"
-            >
+          <v-layout row wrap justify-space-around>
+            <v-flex xs2 class="px-2">
               <v-select
                 label="Статус"
-                :items="[{id: '', name: 'Все'}].concat(statusList)"
+                :items="[{ id: '', name: 'Все' }].concat(statusList)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.orderStatus"
@@ -127,13 +106,12 @@
                 @change="customFilter()"
               ></v-select>
             </v-flex>
-            <v-flex
-              xs2
-              class="px-2"
-            >
+            <v-flex xs2 class="px-2">
               <v-autocomplete
                 label="Клиент"
-                :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
+                :items="
+                  [{ id: '', name: 'Все', phone: '' }].concat(clientsList)
+                "
                 :filter="clientsFilter"
                 item-text="name"
                 item-value="id"
@@ -152,7 +130,7 @@
             >
               <v-select
                 label="Менеджер"
-                :items="[{id: '', name: 'Все'}].concat(usersList)"
+                :items="[{ id: '', name: 'Все' }].concat(usersList)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.createdBy"
@@ -161,13 +139,12 @@
               ></v-select>
             </v-flex>
 
-            <v-flex
-              xs2
-              class="px-2"
-            >
+            <v-flex xs2 class="px-2">
               <v-select
                 label="Время суток"
-                :items="[{id: '', name: 'Все'}].concat(deliveryTimeOfDayFilter)"
+                :items="
+                  [{ id: '', name: 'Все' }].concat(deliveryTimeOfDayFilter)
+                "
                 item-text="name"
                 item-value="id"
                 v-model="filter.deliveryTimeOfDay"
@@ -175,10 +152,7 @@
                 @change="customFilter()"
               ></v-select>
             </v-flex>
-            <v-flex
-              xs2
-              class="pl-2"
-            >
+            <v-flex xs2 class="pl-2">
               <v-menu
                 :close-on-content-click="false"
                 v-model="dataStartPicker"
@@ -205,15 +179,12 @@
                   scrollable
                   locale="ru-ru"
                   first-day-of-week="1"
-                  :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                  :max="!!filter.dateEnd ? filter.dateEnd : undefined"
                   @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-flex
-              xs2
-              class="pl-2"
-            >
+            <v-flex xs2 class="pl-2">
               <v-menu
                 :close-on-content-click="false"
                 v-model="dataEndPicker"
@@ -240,7 +211,7 @@
                   locale="ru-ru"
                   scrollable
                   first-day-of-week="1"
-                  :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                  :min="!!filter.dateStart ? filter.dateStart : undefined"
                   @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
@@ -253,65 +224,42 @@
             class="mb-2"
             :to="`/print/order/day-orders/${dateNowStr}/`"
             target="_blank"
-          >Заказы за день</v-btn>
+            >Заказы за день</v-btn
+          >
         </v-card-title>
 
-        <v-layout
-          row
-          wrap
-          align-center
-        >
-          <v-flex
-            xs3
-            class="px-1"
-          >
+        <v-layout row wrap align-center>
+          <v-flex xs3 class="px-1">
             Доставок на сегодня: {{ deliveryNow }}
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="changeSettings()"
-            >Настройки</v-btn>
+            <v-btn color="primary" dark @click.prevent="changeSettings()"
+              >Настройки</v-btn
+            >
           </v-flex>
-          <v-flex
-            xs9
-            class="px-1 text-xs-right"
-          >
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilterNewOrderSite()"
-            >Новые заказы с сайта</v-btn>
+          <v-flex xs9 class="px-1 text-xs-right">
+            <v-btn color="primary" dark @click.prevent="setFilterNewOrderSite()"
+              >Новые заказы с сайта</v-btn
+            >
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilter14February()"
-            >14 февраля</v-btn>
+            <v-btn color="primary" dark @click.prevent="setFilter14February()"
+              >14 февраля</v-btn
+            >
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilter8March()"
-            >8 марта</v-btn>
+            <v-btn color="primary" dark @click.prevent="setFilter8March()"
+              >8 марта</v-btn
+            >
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilterDateNow()"
-            >За сегодня</v-btn>
+            <v-btn color="primary" dark @click.prevent="setFilterDateNow()"
+              >За сегодня</v-btn
+            >
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilterDateWeek()"
-            >За неделю</v-btn>
+            <v-btn color="primary" dark @click.prevent="setFilterDateWeek()"
+              >За неделю</v-btn
+            >
 
-            <v-btn
-              color="primary"
-              dark
-              @click.prevent="setFilterDateMonth()"
-            >За месяц</v-btn>
+            <v-btn color="primary" dark @click.prevent="setFilterDateMonth()"
+              >За месяц</v-btn
+            >
           </v-flex>
         </v-layout>
 
@@ -326,7 +274,7 @@
           select-all
           v-model="selectedOrders"
           item-key="id"
-          :loading="tableLoading"
+          :loading="$apollo.queries.ordersList.loading"
         >
           <template slot="headers" slot-scope="props">
             <tr>
@@ -344,7 +292,8 @@
                 class="px-1 text-xs-left"
                 :key="header.text"
                 :class="[
-                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
                   header.value === pagination.sortBy ? 'active' : ''
                 ]"
                 :style="{
@@ -361,7 +310,10 @@
           </template>
           <template slot="items" slot-scope="props">
             <tr
-              :class="[props.item.orderStatus.color, (props.item.topLine) ? 'top-line' : '']"
+              :class="[
+                props.item.orderStatus.color,
+                props.item.topLine ? 'top-line' : ''
+              ]"
             >
               <td
                 style="width: 30px; max-width: 30px; min-width: 30px;"
@@ -388,27 +340,32 @@
                       <template v-if="prop.displayName">
                         {{ prop.displayName }}:
                       </template>
-                      <template v-if="
-                        props.item[prop.field]
-                        || prop.field === 'incognito'
-                        || prop.field === 'description'
-                        || prop.field === 'alreadyPaid'
-                      ">
+                      <template
+                        v-if="
+                          props.item[prop.field] ||
+                            prop.field === 'incognito' ||
+                            prop.field === 'description' ||
+                            prop.field === 'alreadyPaid'
+                        "
+                      >
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
                         <template v-else-if="prop.field === 'createdBy'">
                           {{ props.item[prop.field].name }}
                         </template>
-                        <template v-else-if="prop.field === 'orderSourceType'">
-                          <template v-for="(item, index) in props.item[prop.field]">
-                            <template v-if="item">
-                              <br :key="index" v-if="index">{{ item.name }}
-                            </template>
-                          </template>
-                        </template>
+                        <!-- TODO: restore -->
+                        <!--                        <template v-else-if="prop.field === 'orderSourceType'">-->
+                        <!--                          <template-->
+                        <!--                            v-for="(item, index) in props.item[prop.field]"-->
+                        <!--                          >-->
+                        <!--                            <template v-if="item">-->
+                        <!--                              <br :key="index" v-if="index" />{{ item.name }}-->
+                        <!--                            </template>-->
+                        <!--                          </template>-->
+                        <!--                        </template>-->
                         <template v-else-if="prop.field === 'incognito'">
-                          {{ (props.item[prop.field]) ? 'Да' : 'Нет' }}
+                          {{ props.item[prop.field] ? "Да" : "Нет" }}
                         </template>
                         <template v-else-if="prop.field === 'alreadyPaid'">
                           <change-already-paid
@@ -420,27 +377,32 @@
                           <div
                             @click="changeDescription(props.item.id)"
                             :style="
-                              (!props.item[prop.field])
-                              ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
-                              : ''
+                              !props.item[prop.field]
+                                ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
+                                : ''
                             "
                           >
                             {{ props.item[prop.field] }}
                           </div>
                         </template>
                         <template v-else-if="prop.field === 'bouquets'">
-                          <template v-for="(item, key) in props.item[prop.field]">
+                          <template
+                            v-for="(item, key) in props.item[prop.field]"
+                          >
                             <div :class="item.isReady ? 'green' : ''">
                               {{ item.name }} - {{ item.count }}
                               <template v-if="item.place">
                                 ({{ item.place }})
                               </template>
                             </div>
-                            <br :key="key">
+                            <br :key="key" />
                           </template>
                         </template>
                         <template v-else-if="prop.field === 'orderStatus'">
-                          <div @click="changeStatus(props.item.id)" style="display: inline">
+                          <div
+                            @click="changeStatus(props.item.id)"
+                            style="display: inline"
+                          >
                             {{ props.item[prop.field].name }}
                           </div>
                         </template>
@@ -455,18 +417,25 @@
                         </template>
                         <template v-else-if="prop.field === 'responsible'">
                           {{ props.item[prop.field].name }}
-                          <br>{{ props.item[prop.field].phone }}
+                          <br />{{ props.item[prop.field].phone }}
                         </template>
                         <template v-else-if="prop.field === 'clientType'">
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'orderCost'">
-                          <div :class="(props.item.alreadyPaid) ? 'green' : ''">
+                          <div :class="props.item.alreadyPaid ? 'green' : ''">
                             {{ props.item[prop.field] }}
                           </div>
                         </template>
                         <template v-else-if="prop.field === 'prePayment'">
-                          <div :class="(!props.item.alreadyPaid && props.item.prePayment > 0) ? 'orange' : ''">
+                          <div
+                            :class="
+                              !props.item.alreadyPaid &&
+                              props.item.prePayment > 0
+                                ? 'orange'
+                                : ''
+                            "
+                          >
                             {{ props.item[prop.field] }}
                           </div>
                         </template>
@@ -478,76 +447,6 @@
                   </template>
                 </td>
               </template>
-              <!-- <td class="px-1">
-                <b>{{ props.item.deliveryDateStr }}</b>
-                <template v-if="props.item.deliveryTime">
-                  <br>
-                  <b>
-                    {{ props.item.deliveryTime }}
-                    <template v-if="props.item.deliveryTimeOfDay">
-                      ({{ deliveryTimeOfDayList[props.item.deliveryTimeOfDay] }})
-                    </template>
-                  </b>
-                </template>
-                <template v-if="props.item.addresseeName">
-                  <br>{{ props.item.addresseeName }}
-                </template>
-                <template v-if="props.item.addresseePhone">
-                  <br>{{ props.item.addresseePhone }}
-                </template>
-                <template v-if="!props.item.addresseeName && !props.item.addresseePhone">
-                  <br>{{ props.item.clientName }}
-                  <br>{{ props.item.clientPhone }}
-                </template>
-                <template v-if="props.item.address">
-                  <br>{{ props.item.address }}
-                </template>
-                <template v-if="props.item.flat">
-                  , кв. {{ props.item.flat }}
-                </template>
-                <template v-if="props.item.entrance">
-                  <br>Подъезд: {{ props.item.entrance }}
-                </template>
-                <template v-if="props.item.floor">
-                  <br>Этаж: {{ props.item.floor }}
-                </template>
-              </td>
-              <td class="px-1">
-                {{ props.item.createdAt }}
-                <br>{{ props.item.createdBy.name }}
-                <template v-for="(item, index) in props.item.orderSourceType">
-                  <template v-if="item">
-                    <br :key="index">{{ item.name }}
-                  </template>
-                </template>
-              </td>
-              <td style="width: 30px;" class="px-1">{{ props.item.id }}</td>
-              <td class="px-1">
-                {{ props.item.clientName }}
-                <br>{{ props.item.clientPhone }}
-                <br>Инкогнито : {{ (props.item.incognito) ? 'Да' : 'Нет' }}
-              </td>
-              <td
-                class="px-1"
-                style="cursor: pointer; width: 30%;"
-                @click="changeDescription(props.item.id)"
-              >{{ props.item.description }}</td>
-              <td class="px-1">
-                <template v-for="(item, key) in props.item.bouquets">
-                  {{ item.name }} - {{ item.count }}
-                  <br :key="key">
-                </template>
-              </td>
-              <td class="px-1">{{ props.item.deliveryType.name }}</td>
-              <td class="px-1">{{ props.item.orderCost }}</td>
-              <td
-                @click="changeStatus(props.item.id)"
-                style="cursor: pointer"
-                class="px-1"
-              >
-                {{ props.item.orderStatus.name }}
-                <br>{{ (props.item.courier) ? props.item.courier.name : '' }}
-              </td> -->
               <td
                 class="text-xs-right px-1"
                 style="width: 100px; max-width: 100px; min-width: 100px;"
@@ -555,7 +454,10 @@
                 <v-icon
                   left
                   @click="createdBouquet(props.item)"
-                  v-if="props.item.orderStatus.id === 1 || props.item.orderStatus.id === 7"
+                  v-if="
+                    props.item.orderStatus.id === 1 ||
+                      props.item.orderStatus.id === 7
+                  "
                   title="Собрать"
                 >
                   playlist_add
@@ -569,24 +471,20 @@
                   add_to_photos
                 </v-icon>
 
-                <br>
+                <br />
 
-                <v-icon
-                  left
-                  @click="editItem(props.item.id)"
-                  title="Изменить"
-                >
+                <v-icon left @click="editItem(props.item.id)" title="Изменить">
                   edit
                 </v-icon>
 
-                <v-menu
-                  style="vertical-align: top;"
-                >
+                <v-menu style="vertical-align: top;">
                   <v-icon
                     left
                     slot="activator"
                     title="Печать"
-                    :color="(props.item.isAlreadyPrinted) ? 'teal darken-3' : '123'"
+                    :color="
+                      props.item.isAlreadyPrinted ? 'teal darken-3' : '123'
+                    "
                   >
                     insert_drive_file
                   </v-icon>
@@ -597,106 +495,26 @@
                       v-if="props.item.deliveryType.id === 2"
                       target="_blank"
                     >
-                      <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
+                      <v-list-tile-title
+                        >Печать бланка заказа на доставку</v-list-tile-title
+                      >
                     </v-list-tile>
                     <v-list-tile
                       :to="`/print/order/florist/${props.item.id}/`"
                       target="_blank"
                     >
-                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
+                      <v-list-tile-title
+                        >Печать бланка флориста</v-list-tile-title
+                      >
                     </v-list-tile>
                   </v-list>
                 </v-menu>
-                <!-- <v-btn
-                  small
-                  outline
-                  color="grey darken-3"
-                  @click="createdBouquet(props.item)"
-                  v-if="props.item.orderStatus.id === 1"
-                >
-                  <v-icon
-                    left
-                  >
-                    playlist_add
-                  </v-icon>
-                  Собрать
-                </v-btn>
-
-                <v-btn
-                  small
-                  outline
-                  color="grey darken-3"
-                  @click="editItem(props.item.id, true)"
-                >
-                  <v-icon
-                    left
-                  >
-                    add_to_photos
-                  </v-icon>
-                  Скопировать
-                </v-btn>
-
-                <v-btn
-                  small
-                  outline
-                  color="grey darken-3"
-                  @click="editItem(props.item.id)"
-                >
-                  <v-icon
-                    left
-                  >
-                    edit
-                  </v-icon>
-                  Изменить
-                </v-btn>
-
-                <v-menu
-                  style="vertical-align: top;"
-                >
-                  <v-btn
-                    small
-                    outline
-                    color="grey darken-3"
-                    slot="activator"
-                  >
-                    <v-icon
-                      left
-                    >
-                      insert_drive_file
-                    </v-icon>
-                    Печать
-                  </v-btn>
-
-                  <v-list>
-                    <v-list-tile
-                      @click.prevent="printDoc(props.item.id, 'florist')"
-                      target="_blank"
-                    >
-                      <v-list-tile-title>Печать бланка флориста</v-list-tile-title>
-                    </v-list-tile>
-                    <v-list-tile
-                      @click.prevent="printDoc(props.item.id, 'delivery')"
-                      target="_blank"
-                      v-if="props.item.deliveryType.id === 2"
-                    >
-                      <v-list-tile-title>Печать бланка заказа на доставку</v-list-tile-title>
-                    </v-list-tile>
-                  </v-list>
-                </v-menu> -->
               </td>
             </tr>
           </template>
         </v-data-table>
-        <v-layout
-          row
-          wrap
-          justify-space-around
-          class="py-2"
-        >
-          <v-flex
-            xs2
-            class="px-3"
-          >
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
             <v-text-field
               label="Количество на странице"
               v-model.number="take"
@@ -704,10 +522,7 @@
               @change="changeShowElem()"
             ></v-text-field>
           </v-flex>
-          <v-flex
-            xs10
-            class="text-xs-right px-3"
-          >
+          <v-flex xs10 class="text-xs-right px-3">
             <v-btn
               small
               color="info"
@@ -729,12 +544,7 @@
           </v-flex>
         </v-layout>
       </v-card>
-      <v-btn
-        fab
-        color="info"
-        class="mx-4"
-        @click="dialogForm = true"
-      >
+      <v-btn fab color="info" class="mx-4" @click="dialogForm = true">
         <v-icon dark>add</v-icon>
       </v-btn>
     </template>
@@ -742,6 +552,7 @@
 </template>
 
 <script>
+import gql from 'graphql-tag';
 import OrderEdit from './edit.vue';
 import OrderAdd from './add.vue';
 import ChangeStatus from './changeStatus.vue';
@@ -773,11 +584,12 @@ export default {
         {
           title: 'Получение заказов',
           error: false,
-          loading: true,
+          loading: false,
           color: 'amber',
           id: 'orders',
         },
       ],
+      dateNowStr: '',
       dataStartPicker: false,
       dataEndPicker: false,
       search: '',
@@ -804,7 +616,7 @@ export default {
       },
       userSettings: [],
       pagination: {
-        sortBy: "id",
+        sortBy: 'id',
         rowsPerPage: -1,
         descending: false,
       },
@@ -826,7 +638,64 @@ export default {
       page: 0,
       tableLoading: false,
       tsList: [],
+      skipQuery: true,
     };
+  },
+  apollo: {
+    ordersList: {
+      query: gql`
+        query OrderList($limit: Int, $offset: Int) {
+          ordersList: orders(limit: $limit, offset: $offset) {
+            id
+            deliveryTimeOfDay
+            orderSourceTypeIds
+            incognito
+            alreadyPaid
+            prePayment
+            description
+            deliveryType {
+              name
+            }
+            deliveryDate
+            clientType {
+              name
+            }
+            orderCost
+            responsible {
+              name
+              phone
+            }
+            clientTypeId
+            courier {
+              name
+            }
+            bouquets: orderBouquets {
+              name
+              count
+              place
+            }
+            createdBy {
+              name
+            }
+            orderStatus {
+              name
+              color
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          offset: +this.page * +this.take,
+          limit: +this.take,
+          startDate: this.filter.dateStart,
+          endDate: this.filter.dateEnd,
+        };
+      },
+      skip() {
+        return this.skipQuery;
+      },
+    },
   },
   watch: {
     dialogForm(newValue) {
@@ -847,11 +716,11 @@ export default {
     },
     loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
+      return loadData.length === this.loadingData.length ? 0 : 1;
     },
     orderSourceTypeEditElem() {
       const editElem = this.ordersList.find(item => item.id === this.editedId);
-      return (editElem) ? editElem.orderSourceType : [];
+      return editElem ? editElem.orderSourceType : [];
     },
     headersTable() {
       const cols = this.userSettings.map((item) => {
@@ -983,8 +852,9 @@ export default {
       const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
+      return (
+        textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
+      );
     },
     getOrdersList(loading = true) {
       if (loading) {
@@ -996,6 +866,8 @@ export default {
         deliveryDate: [],
       };
 
+      console.log(this.filter);
+      this.skipQuery = false;
       Object.keys(this.filter).forEach((key) => {
         const val = this.filter[key];
 
@@ -1011,7 +883,9 @@ export default {
       });
 
       const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+      sortSettings[this.pagination.sortBy] = this.pagination.descending
+        ? 'desc'
+        : 'asc';
       sortSettings.deliveryDate = 'asc';
       sortSettings.deliveryTimeOfDay = 'asc';
 
@@ -1026,62 +900,62 @@ export default {
       const successData = 'Заказы получены!';
       const errorData = 'Ошибка получения заказов!';
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        let deliveryDay = '';
-
-        this.ordersList = response.orders.map((item) => {
-          const elem = item;
-
-          if (deliveryDay !== elem.deliveryDate) {
-            elem.topLine = true;
-            deliveryDay = elem.deliveryDate;
-          } else {
-            elem.topLine = false;
-          }
-
-          if (elem.createdAt) {
-            const date = new Date(elem.createdAt);
-            elem.createdAt = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'numeric',
-              // year: 'numeric',
-            });
-          }
-
-          if (elem.deliveryDate) {
-            const date = new Date(elem.deliveryDate);
-            elem.deliveryDateStr = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'numeric',
-              // year: 'numeric',
-              weekday: 'long',
-            });
-          }
-
-          if (elem.orderSourceType) {
-            elem.orderSourceType = elem.orderSourceType.map((tsId) => {
-              const findElem = this.tsList.find(tsElem => tsElem.id === tsId);
-              return findElem;
-            });
-          }
-
-          elem.deliveryTimeOfDay = +elem.deliveryTimeOfDay;
-
-          return elem;
-        });
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-
-        this.tableLoading = false;
-
-        this.getDeliveryNow();
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
+      // this.$store.dispatch('getItemsList', itemParams).then((response) => {
+      //   let deliveryDay = '';
+      //
+      //   this.ordersList = response.orders.map((item) => {
+      //     const elem = item;
+      //
+      //     if (deliveryDay !== elem.deliveryDate) {
+      //       elem.topLine = true;
+      //       deliveryDay = elem.deliveryDate;
+      //     } else {
+      //       elem.topLine = false;
+      //     }
+      //
+      //     if (elem.createdAt) {
+      //       const date = new Date(elem.createdAt);
+      //       elem.createdAt = date.toLocaleString('ru', {
+      //         day: 'numeric',
+      //         month: 'numeric',
+      //         // year: 'numeric',
+      //       });
+      //     }
+      //
+      //     if (elem.deliveryDate) {
+      //       const date = new Date(elem.deliveryDate);
+      //       elem.deliveryDateStr = date.toLocaleString('ru', {
+      //         day: 'numeric',
+      //         month: 'numeric',
+      //         // year: 'numeric',
+      //         weekday: 'long',
+      //       });
+      //     }
+      //
+      //     if (elem.orderSourceType) {
+      //       elem.orderSourceType = elem.orderSourceType.map((tsId) => {
+      //         const findElem = this.tsList.find(tsElem => tsElem.id === tsId);
+      //         return findElem;
+      //       });
+      //     }
+      //
+      //     elem.deliveryTimeOfDay = +elem.deliveryTimeOfDay;
+      //
+      //     return elem;
+      //   });
+      //
+      //   const loadData = this.loadingData.find(item => item.id === itemParams.type);
+      //   loadData.title = successData;
+      //   loadData.loading = false;
+      //
+      //   this.tableLoading = false;
+      //
+      //   this.getDeliveryNow();
+      // }).catch(() => {
+      //   const loadData = this.loadingData.find(item => item.id === itemParams.type);
+      //   loadData.title = errorData;
+      //   loadData.error = true;
+      // });
     },
     getUserSettings() {
       const userSort = this.$store.getters.getOrderSort;
@@ -1091,35 +965,38 @@ export default {
         id: this.$store.getters.getAuthUser,
       };
 
-      this.$store.dispatch('getItem', itemParams).then((response) => {
-        const settings = response.settings.orderSettings;
+      this.$store
+        .dispatch('getItem', itemParams)
+        .then((response) => {
+          const settings = response.settings.orderSettings;
 
-        this.userSettings = (settings) || [];
+          this.userSettings = settings || [];
 
-        if (userSort.sortBy) {
-          this.pagination.sortBy = userSort.sortBy;
-          this.pagination.descending = userSort.descending;
-          this.getOrdersList();
-        } else if (settings) {
-          const colSort = this.userSettings.find(item => item.sortOrder);
+          if (userSort.sortBy) {
+            this.pagination.sortBy = userSort.sortBy;
+            this.pagination.descending = userSort.descending;
+            this.getOrdersList();
+          } else if (settings) {
+            const colSort = this.userSettings.find(item => item.sortOrder);
 
-          if (colSort) {
-            this.pagination.sortBy = colSort.sortField;
-            this.pagination.descending = (colSort.sortOrder === 'desc');
+            if (colSort) {
+              this.pagination.sortBy = colSort.sortField;
+              this.pagination.descending = colSort.sortOrder === 'desc';
 
-            const sort = {
-              sortBy: this.pagination.sortBy,
-              descending: this.pagination.descending,
-            };
+              const sort = {
+                sortBy: this.pagination.sortBy,
+                descending: this.pagination.descending,
+              };
 
-            this.$store.commit('setOrderSort', sort);
+              this.$store.commit('setOrderSort', sort);
+            }
           }
-        }
 
-        this.getOrdersList();
-      }).catch(() => {
-        console.log('error');
-      });
+          this.getOrdersList();
+        })
+        .catch(() => {
+          console.log('error');
+        });
     },
     getDeliveryNow() {
       const orderFilter = {
@@ -1135,25 +1012,31 @@ export default {
         filter: orderFilter,
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.deliveryNow = response.orders.length;
-      }).catch(() => {
-        console.log('error');
-      });
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.deliveryNow = response.orders.length;
+        })
+        .catch(() => {
+          console.log('error');
+        });
     },
     getStatusList() {
       const itemParams = {
         type: 'order-status',
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.statusList = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.statusList = response.map((item) => {
+            item.id = +item.id;
+            return item;
+          });
+        })
+        .catch(() => {
+          console.log('error');
         });
-      }).catch(() => {
-        console.log('error');
-      });
     },
     getClientsList() {
       const itemParams = {
@@ -1163,28 +1046,34 @@ export default {
         },
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.clientsList = response.map((item) => {
+            item.id = +item.id;
+            return item;
+          });
+        })
+        .catch(() => {
+          console.log('error');
         });
-      }).catch(() => {
-        console.log('error');
-      });
     },
     getClientTypeList() {
       const itemParams = {
         type: 'client-type',
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.typeClient = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.typeClient = response.map((item) => {
+            item.id = +item.id;
+            return item;
+          });
+        })
+        .catch(() => {
+          console.log('error');
         });
-      }).catch(() => {
-        console.log('error');
-      });
     },
     getUsersList() {
       const itemParams = {
@@ -1195,11 +1084,14 @@ export default {
         },
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
-      }).catch(() => {
-        console.log('error');
-      });
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.usersList = response;
+        })
+        .catch(() => {
+          console.log('error');
+        });
     },
     getTsList() {
       const itemParams = {
@@ -1250,7 +1142,7 @@ export default {
     },
     createdBouquet: function createdBouquet(item) {
       let cardsList = JSON.parse(localStorage.getItem('cardsList'));
-      cardsList = (cardsList !== null) ? cardsList : [];
+      cardsList = cardsList !== null ? cardsList : [];
 
       const index = cardsList.findIndex(card => card.props.order === item.id);
       if (index === -1) {
@@ -1280,7 +1172,7 @@ export default {
       if (diff < 0) {
         diff += 6;
       }
-      date.setDate(date.getDate() + (1 * diff));
+      date.setDate(date.getDate() + 1 * diff);
       return date.toISOString().split('T')[0];
     },
     getWeekStartDate() {
@@ -1289,7 +1181,7 @@ export default {
       if (diff < 0) {
         diff += 7;
       }
-      date.setDate(date.getDate() + (-1 * diff));
+      date.setDate(date.getDate() + -1 * diff);
       return date.toISOString().split('T')[0];
     },
     setFilterDateNow() {
@@ -1306,8 +1198,20 @@ export default {
     },
     setFilterDateMonth() {
       const date = new Date();
-      const firstDay = new Date(date.getUTCFullYear(), date.getUTCMonth(), 1, date.getUTCHours());
-      const lastDay = new Date(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59);
+      const firstDay = new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        1,
+        date.getUTCHours(),
+      );
+      const lastDay = new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+      );
       const dateStart = firstDay.toISOString().split('T')[0];
       const dateEnd = lastDay.toISOString().split('T')[0];
 
@@ -1396,34 +1300,34 @@ export default {
 </script>
 
 <style land="scss">
-  .orders-table .theme--light.v-table tbody tr:not(:last-child).top-line {
-    border-top: 4px solid #404040!important;
-  }
-  .orders-table .theme--light.v-table tbody tr:not(:last-child) {
-    border-bottom: none;
-    border-top: 1px solid #9c9c9c!important;
-  }
-  .orders-table table.v-table thead th:first-child,
-  .orders-table table.v-table thead th:not(:first-child) {
-    padding: 0 4px;
-  }
-  .orders-table table.v-table tbody td:first-child,
-  .orders-table table.v-table tbody td:not(:first-child),
-  .orders-table table.v-table tbody th:first-child,
-  .orders-table table.v-table tbody th:not(:first-child),
-  .orders-table table.v-table thead td:first-child,
-  .orders-table table.v-table thead td:not(:first-child),
-  .orders-table table.v-table thead th:first-child,
-  .orders-table table.v-table thead th:not(:first-child) {
-    border-right: 1px solid rgba(0,0,0,.12);
-  }
+.orders-table .theme--light.v-table tbody tr:not(:last-child).top-line {
+  border-top: 4px solid #404040 !important;
+}
+.orders-table .theme--light.v-table tbody tr:not(:last-child) {
+  border-bottom: none;
+  border-top: 1px solid #9c9c9c !important;
+}
+.orders-table table.v-table thead th:first-child,
+.orders-table table.v-table thead th:not(:first-child) {
+  padding: 0 4px;
+}
+.orders-table table.v-table tbody td:first-child,
+.orders-table table.v-table tbody td:not(:first-child),
+.orders-table table.v-table tbody th:first-child,
+.orders-table table.v-table tbody th:not(:first-child),
+.orders-table table.v-table thead td:first-child,
+.orders-table table.v-table thead td:not(:first-child),
+.orders-table table.v-table thead th:first-child,
+.orders-table table.v-table thead th:not(:first-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
 
-  .theme--light.v-table thead tr:first-child {
-    border-top: 1px solid rgba(0,0,0,.12);
-  }
+.theme--light.v-table thead tr:first-child {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
 
-  .orders-table .v-datatable thead th.column.sortable .v-icon {
-    display: block;
-    width: 16px;
-  }
+.orders-table .v-datatable thead th.column.sortable .v-icon {
+  display: block;
+  width: 16px;
+}
 </style>

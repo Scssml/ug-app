@@ -231,7 +231,6 @@
 
 <script>
 import { PaymentTypes } from '../../constants';
-
 const datesAreOnSameDay = (first, second) => {
   return (
     first.getFullYear() === second.getFullYear() &&
@@ -239,7 +238,6 @@ const datesAreOnSameDay = (first, second) => {
     first.getDate() === second.getDate()
   );
 };
-
 export default {
   props: {
     // bouquetsList: {
@@ -272,7 +270,6 @@ export default {
         }))
         .filter(item => {
           const paymentDate = new Date(Date.parse(item.creationDate));
-
           return datesAreOnSameDay(paymentDate, this.dateNow);
         });
     },
@@ -523,11 +520,9 @@ export default {
             amount: this.sumEncashment
           }
         };
-
         this.$store.dispatch("addItem", itemParams).then(() => {
           this.createdSuccess = true;
           this.$emit("input");
-
           setTimeout(() => {
             this.dialog = false;
             this.createdSuccess = false;

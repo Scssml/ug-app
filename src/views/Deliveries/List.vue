@@ -49,6 +49,11 @@
               :order="orderSelect"
               @cancel="closeDialog()"
             ></order-show>
+            <edit-bouquets
+              v-if="editOrderBouquets"
+              :order="orderSelect"
+              @cancel="closeDialog()"
+            ></edit-bouquets>
             <map-show
               v-if="showMap"
               :order="orderSelect"
@@ -548,6 +553,19 @@
               class="px-1"
               @click.prevent="viewOrder(props.item.id)"
             >
+              <template v-for="(elem, index) in props.item.bouquets">
+                <div
+                  :class="elem.isReady ? 'green' : ''"
+                  :key="index"
+                >
+                  {{ elem.name }} - {{ elem.count }}
+                </div>
+              </template>
+            </td>
+            <td
+              class="px-1"
+              @click.prevent="editBouquets(props.item.id)"
+            >
               <template v-for="(item, key) in props.item.bouquets">
                 <!-- {{ item.name }} - {{ item.count }} -->
                 <template v-if="item.place">
@@ -578,6 +596,7 @@ import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import userSettings from './userSettings.vue';
 import orderShow from './showOrder.vue';
 import mapShow from './showMap.vue';
+import editBouquets from './editOrderBouquets.vue';
 
 export default {
   name: 'Deliveries',
@@ -587,6 +606,7 @@ export default {
     userSettings,
     orderShow,
     mapShow,
+    editBouquets,
   },
   data() {
     return {
@@ -655,6 +675,10 @@ export default {
           value: 'deliveryTime',
         },
         {
+          text: 'Букеты',
+          value: 'bouquets',
+        },
+        {
           text: 'Место',
           value: 'place',
         },
@@ -668,6 +692,8 @@ export default {
       zoomMap: 10,
       widthWindow: 0,
       showOrderMap: false,
+      showMap: false,
+      editOrderBouquets: false,
     };
   },
   watch: {
@@ -945,6 +971,7 @@ export default {
         this.editSettings = false;
         this.showOrder = false;
         this.showMap = false;
+        this.editOrderBouquets = false;
         this.orderSelect = {};
       }, 300);
     },
@@ -955,6 +982,11 @@ export default {
     viewOrder(id) {
       this.orderSelect = this.ordersList.find(item => item.id === id);
       this.showOrder = true;
+      this.dialogForm = true;
+    },
+    editBouquets(id) {
+      this.orderSelect = this.ordersList.find(item => item.id === id);
+      this.editOrderBouquets = true;
       this.dialogForm = true;
     },
     viewMap(id) {

@@ -559,12 +559,8 @@ export default {
       return emptySum;
     },
     sumChange: function sumChange() {
-      const sumClient =
-        !this.partlyPayment && this.typePay === PaymentTypes.CASH
-          ? +this.sumPay
-          : +this.sumClient;
+      const sum = +this.sumClient + +this.secondSumClient - +this.sumPay;
 
-      const sum = sumClient + +this.secondSumClient - this.sumPay;
       return sum > 0 ? sum : 0;
     },
     activePayBtn: function activePayBtn() {
@@ -611,7 +607,7 @@ export default {
       this.$refs.firstSum.validate();
     },
     handleFirstSumChange() {
-      this.$refs.secondSum.validate();
+      this.$refs.secondSum && this.$refs.secondSum.validate();
     },
     validateTotalSum(v) {
       return +this.sumClient + +this.secondSumClient >= this.sumPay;

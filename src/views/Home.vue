@@ -106,7 +106,7 @@
                 Остаток
               </div>
               <v-divider></v-divider>
-              <template v-for="(item, index) in goodsList">
+              <template v-for="(item, index) in goods">
                 <template v-if="showGoodsList.indexOf(item.id) !== -1">
                   <div
                     class="py-1 px-1 text-xs-center"
@@ -359,6 +359,21 @@ export default {
     }
   },
   computed: {
+    goods() {
+      for (let good of this.goodsList.filter(g => g.originalBalance)) {
+        good.stockBalance = good.originalBalance;
+      }
+
+      for (let card of this.cardsList) {
+        for (let good of card.goods) {
+          const currentGoods = this.goodsList.find(g => g.id === good.id);
+          currentGoods.originalBalance = currentGoods.stockBalance;
+          currentGoods.stockBalance = good.stockBalance - good.value;
+        }
+      }
+
+      return this.goodsList;
+    },
     typePayList() {
       return this.paymentTypesList.filter(item => {
         if (this.client) {

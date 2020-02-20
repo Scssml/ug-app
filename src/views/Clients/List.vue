@@ -52,13 +52,17 @@
           </v-layout>
           <v-spacer></v-spacer>
 
-          <v-dialog v-model="dialogForm" persistent max-width="420px">
+          <v-dialog
+            v-model="dialogForm"
+            persistent max-width="420px"
+            :fullscreen="(printedId >= 0 && printedId !== null) ? true : false"
+          >
             <v-btn slot="activator" color="primary" dark class="mb-2"
               >Добавить</v-btn
             >
             <template v-if="dialogForm">
               <client-print
-                v-if="printedId >= 0"
+                v-if="printedId >= 0 && printedId !== null"
                 :id="printedId"
                 :name="clientsList.find(item => item.id === printedId)['name']"
                 @cancel="closeDialog()"

@@ -395,7 +395,6 @@ export default {
   },
   methods: {
     refreshPayments() {
-      console.log(this.$refs.paymentDayRef);
       this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
     },
     handleLoadingSuccess(loadingBarId, msg) {

@@ -95,7 +95,7 @@
           </v-dialog>
           <v-spacer></v-spacer>
           <v-layout row wrap justify-space-around>
-            <v-flex xs2 class="px-2">
+            <v-flex xs2 class="px-2 py-3">
               <v-select
                 label="Статус"
                 :items="[{ id: 0, name: 'Все' }].concat(statusList)"
@@ -106,21 +106,14 @@
                 @change="customFilter()"
               ></v-select>
             </v-flex>
-            <v-flex xs2 class="px-2">
-              <v-autocomplete
-                label="Клиент"
-                :items="
-                  [{ id: '', name: 'Все', phone: '' }].concat(clientsList)
-                "
-                :filter="clientsFilter"
-                item-text="name"
-                item-value="id"
-                v-model="filter.client"
-                hide-details
-                class="mb-4"
-                no-data-text="Не надено"
-                @change="customFilter()"
-              ></v-autocomplete>
+            <v-flex class="px-2 py-3">
+              <autosuggest
+                :suggestions="clientSuggestions"
+                placeholder="Клиенты"
+                :value="filter.client"
+                @onChange="onClientsInputChange"
+                @onSelect="onClientSelect"
+              />
             </v-flex>
 
             <v-flex
@@ -230,7 +223,7 @@
 
         <v-layout row wrap align-center>
           <v-flex xs3 class="px-1">
-            Доставок на сегодня: {{ deliveryNow }}
+            Доставок на сегодня: {{ todayDeliveriesCount }}
 
             <v-btn color="primary" dark @click.prevent="changeSettings()"
               >Настройки</v-btn
@@ -564,10 +557,12 @@ import ChangeStatus from "./changeStatus.vue";
 import changeDescription from "./changeDescription.vue";
 import changeAlreadyPaid from "./changeAlreadyPaid.vue";
 import userSettings from "./userSettings.vue";
+import Autosuggest from "../../components/Autosuggest";
 
 export default {
   name: "Orders",
   components: {
+    autosuggest: Autosuggest,
     OrderEdit,
     OrderAdd,
     ChangeStatus,
@@ -579,7 +574,8 @@ export default {
     return {
       filter: {
         orderStatus: 0,
-        client: "",
+        client: null,
+        clientItem: null,
         deliveryTimeOfDay: 0,
         dateStart: null,
         dateEnd: null,
@@ -603,14 +599,13 @@ export default {
       statusList: [],
       clientsList: [],
       usersList: [],
-      typeClient: [],
       editedId: 0,
       copyElem: false,
       editStatus: false,
       editDescription: false,
       editSettings: false,
       dataNowStr: "",
-      deliveryNow: 0,
+      todayDeliveriesCount: 0,
       deliveryPrinted: [],
       floristPrinted: [],
       selectedOrders: [],
@@ -642,14 +637,17 @@ export default {
       take: 20,
       page: 0,
       tableLoading: false,
-      tsList: [],
-      skipQuery: true,
-      orderSourceTypeIds: []
+      skipQuery: false,
+      orderSourceTypeIds: [],
+      clientSuggestions: [],
+      skipClientsQuery: true,
+      clientsQueryName: ""
     };
   },
   apollo: {
     ordersList: {
-      query: gql`
+      query: function() {
+        return gql`
         query OrderList(
           $limit: Int
           $offset: Int
@@ -658,6 +656,7 @@ export default {
           $orderStatus: bigint
           $createdBy: bigint
           $deliveryTimeOfDay: bigint
+          $clientId: bigint
         ) {
           ordersList: orders(
             limit: $limit
@@ -669,8 +668,12 @@ export default {
                 { orderStatusId: { _eq: $orderStatus } }
                 { createdById: { _eq: $createdBy } }
                 { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
+                { clientId: { _eq: $clientId } }
               ]
             }
+            order_by: { deliveryDate: asc, deliveryTime: asc, ${
+              this.pagination.sortBy
+            }: ${this.pagination.descending ? "desc" : "asc"} }
           ) {
             id
             deliveryTimeOfDay
@@ -681,6 +684,7 @@ export default {
             description
             clientName
             clientPhone
+            coordinates
             addresseeName
             addresseePhone
             deliveryType {
@@ -714,13 +718,17 @@ export default {
             }
           }
         }
-      `,
+      `;
+      },
       variables() {
         return {
           offset: +this.page * +this.take,
           limit: +this.take,
           startDate: this.filter.dateStart,
           endDate: this.filter.dateEnd,
+          clientId: this.filter.clientItem
+            ? this.filter.clientItem.id
+            : undefined,
           orderStatus:
             this.filter.orderStatus !== 0 ? this.filter.orderStatus : undefined,
           createdBy:
@@ -771,6 +779,99 @@ export default {
           }
         }
       `
+    },
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+            id
+            name
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.clientSuggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.clientsQueryName
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      }
+    },
+    userSettings: {
+      query: gql`
+        query UserSettings($userId: bigint) {
+          userSettings: users(where: { id: { _eq: $userId } }) {
+            userSettings: settings
+          }
+        }
+      `,
+      variables() {
+        return {
+          userId: this.$store.getters.getAuthUser
+        };
+      },
+      update({ userSettings: [{ userSettings: { orderSettings } = {} }] }) {
+        const userSort = this.$store.getters.getOrderSort;
+
+        this.userSettings = orderSettings || [];
+
+        if (userSort.sortBy) {
+          this.pagination.sortBy = userSort.sortBy;
+          this.pagination.descending = userSort.descending;
+          this.getOrdersList();
+        } else if (orderSettings) {
+          const colSort = this.userSettings.find(item => item.sortOrder);
+
+          if (colSort) {
+            this.pagination.sortBy = colSort.sortField;
+            this.pagination.descending = colSort.sortOrder === "desc";
+
+            const sort = {
+              sortBy: this.pagination.sortBy,
+              descending: this.pagination.descending
+            };
+
+            this.$store.commit("setOrderSort", sort);
+          }
+        }
+
+        return orderSettings;
+      }
+    },
+    todayDeliveriesCount: {
+      query: gql`
+        query TodayDeliveriesCount($currentDate: date) {
+          orders_aggregate(where: { deliveryDate: { _eq: $currentDate } }) {
+            aggregate {
+              count
+            }
+          }
+        }
+      `,
+      variables() {
+        const today = new Date();
+
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const date = today.getDate();
+
+        return {
+          currentDate: `${year}-${month}-${date}`
+        };
+      },
+      update({
+        orders_aggregate: {
+          aggregate: { count }
+        }
+      }) {
+        return count;
+      }
     }
   },
   watch: {
@@ -840,6 +941,13 @@ export default {
     }
   },
   methods: {
+    onClientSelect(item) {
+      this.filter.clientItem = item;
+    },
+    onClientsInputChange(text) {
+      this.clientsQueryName = `%${text}%`;
+      this.skipClientsQuery = false;
+    },
     printOrders(type) {
       const arId = this.selectedOrders.map(item => item.id);
       if (type === "delivery") {
@@ -861,49 +969,6 @@ export default {
       window.open(url, "_blank");
     },
     customFilter() {
-      // const filterProps = this.filter;
-      // let itemsFind = [];
-
-      // itemsFind = items.filter((item) => {
-      //   let find = false;
-      //   if (+item.orderStatus.id === filterProps.status || filterProps.status === '') {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // itemsFind = itemsFind.filter((item) => {
-      //   let find = false;
-      //   if (+item.clientType.id === filterProps.typeClient || filterProps.typeClient === '') {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // itemsFind = itemsFind.filter((item) => {
-      //   let find = false;
-      //   if (+item.client.id === filterProps.client || filterProps.client === '') {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // itemsFind = itemsFind.filter((item) => {
-      //   let find = false;
-      //   if (
-      //     (item.createdAt >= filterProps.dateStart || filterProps.dateStart === null)
-      //     && (item.createdAt <= filterProps.dateEnd || filterProps.dateEnd === null)
-      //   ) {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // return itemsFind;
       this.page = 0;
 
       if (this.$route.query.client === undefined) {
@@ -919,11 +984,9 @@ export default {
     },
     prevPage() {
       this.page -= 1;
-      this.getOrdersList();
     },
     nextPage() {
       this.page += 1;
-      this.getOrdersList();
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
@@ -943,7 +1006,7 @@ export default {
       const orderFilter = {
         deliveryDate: []
       };
-      
+
       this.skipQuery = false;
       Object.keys(this.filter).forEach(key => {
         const val = this.filter[key];
@@ -1034,124 +1097,6 @@ export default {
       //   loadData.error = true;
       // });
     },
-    getUserSettings() {
-      const userSort = this.$store.getters.getOrderSort;
-
-      const itemParams = {
-        type: "users",
-        id: this.$store.getters.getAuthUser
-      };
-
-      this.$store
-        .dispatch("getItem", itemParams)
-        .then(response => {
-          const settings = response.settings.orderSettings;
-
-          this.userSettings = settings || [];
-
-          if (userSort.sortBy) {
-            this.pagination.sortBy = userSort.sortBy;
-            this.pagination.descending = userSort.descending;
-            this.getOrdersList();
-          } else if (settings) {
-            const colSort = this.userSettings.find(item => item.sortOrder);
-
-            if (colSort) {
-              this.pagination.sortBy = colSort.sortField;
-              this.pagination.descending = colSort.sortOrder === "desc";
-
-              const sort = {
-                sortBy: this.pagination.sortBy,
-                descending: this.pagination.descending
-              };
-
-              this.$store.commit("setOrderSort", sort);
-            }
-          }
-
-          this.getOrdersList();
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getDeliveryNow() {
-      const orderFilter = {
-        deliveryDate: [this.dateNowStr, this.dateNowStr],
-        deliveryType: 2
-      };
-
-      const itemParams = {
-        type: "orders",
-        sort: {
-          deliveryDate: "desc"
-        },
-        filter: orderFilter
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.deliveryNow = response.orders.length;
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: "clients",
-        filter: {
-          active: true
-        }
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.clientsList = response.map(item => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: "client-type"
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.typeClient = response.map(item => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
-    getTsList() {
-      const itemParams = {
-        type: "order-source"
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.tsList = response.map(item => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log("error");
-        });
-    },
     closeDialog() {
       this.getOrdersList();
       this.dialogForm = false;
@@ -1230,13 +1175,11 @@ export default {
       this.filter.dateStart = this.dateNowStr;
       this.filter.dateEnd = this.dateNowStr;
       this.page = 0;
-      this.getOrdersList();
     },
     setFilterDateWeek() {
       this.filter.dateStart = this.getWeekStartDate();
       this.filter.dateEnd = this.getWeekEndDate();
       this.page = 0;
-      this.getOrdersList();
     },
     setFilterDateMonth() {
       const date = new Date();
@@ -1260,21 +1203,18 @@ export default {
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
       this.page = 0;
-      this.getOrdersList();
     },
     setFilter14February() {
       const date = new Date();
       this.filter.dateStart = `${date.getFullYear()}-02-14`;
       this.filter.dateEnd = `${date.getFullYear()}-02-14`;
       this.page = 0;
-      this.getOrdersList();
     },
     setFilter8March() {
       const date = new Date();
       this.filter.dateStart = `${date.getFullYear()}-03-08`;
       this.filter.dateEnd = `${date.getFullYear()}-03-08`;
       this.page = 0;
-      this.getOrdersList();
     },
     setFilterNewOrderSite() {
       this.filter.dateStart = "";
@@ -1282,7 +1222,6 @@ export default {
       this.filter.orderSourceType = 2;
       this.filter.orderStatus = 1;
       this.page = 0;
-      this.getOrdersList();
     },
     toggleAll() {
       if (this.selectedOrders.length) {
@@ -1305,7 +1244,6 @@ export default {
       };
 
       this.$store.commit("setOrderSort", sort);
-      this.getOrdersList();
     }
   },
   mounted() {
@@ -1330,11 +1268,6 @@ export default {
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
     }
-
-    this.getUserSettings();
-    this.getTsList();
-    this.getClientsList();
-    this.getClientTypeList();
   }
 };
 </script>

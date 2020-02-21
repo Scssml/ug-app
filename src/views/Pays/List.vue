@@ -28,22 +28,14 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <!-- <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                single-line
-                hide-details
-              ></v-text-field> -->
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Тип"
-                  :items="[{id: '', name: 'Все'}].concat(paymentTypes)"
+                  :items="[{id: 0, name: 'Все'}].concat(paymentTypes)"
                   item-text="name"
                   item-value="id"
                   v-model="filter.paymentType"
                   hide-details
-                  @change="customFilter()"
                 ></v-select>
               </v-flex>
               <v-flex
@@ -76,7 +68,6 @@
                     locale="ru-ru"
                     first-day-of-week="1"
                     :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -110,7 +101,6 @@
                     scrollable
                     first-day-of-week="1"
                     :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -126,7 +116,16 @@
                 ></v-select>
               </v-flex>
               <v-flex xs3 class="px-2">
-                <v-autocomplete
+                <autosuggest
+                  :suggestions="suggestions"
+                  placeholder="Клиенты"
+                  :value="client.name"
+                  @onChange="onInputChange"
+                  @onSelect="onSelected"
+                  class="mt-3"
+                />
+
+                <!-- <v-autocomplete
                   label="Клиент"
                   :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
                   :filter="clientsFilter"
@@ -137,7 +136,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   @change="customFilter()"
-                ></v-autocomplete>
+                ></v-autocomplete> -->
               </v-flex>
             </v-layout>
           </v-flex>
@@ -241,12 +240,14 @@
 
 <script>
 import PaymentEdit from './edit.vue';
+import Autosuggest from '../../components/Autosuggest';
 import gql from 'graphql-tag';
 
 export default {
   name: 'Payments',
   components: {
     PaymentEdit,
+    Autosuggest,
   },
   data() {
     return {
@@ -262,6 +263,10 @@ export default {
       ],
       filter: {
         createdBy: '',
+        paymentType: 0,
+        dateStart: undefined,
+        dateEnd: undefined,
+        clientId: null,
       },
       dataStartPicker: false,
       dataEndPicker: false,
@@ -323,15 +328,35 @@ export default {
       tableLoading: false,
       paymentsList: [],
       selectedManagerId: null,
+      client: {},
+      queryName: '',
+      skipClientsQuery: true,
+      suggestions: [],
     };
   },
   apollo: {
     paymentsList: {
       query: gql`
-        query PaymentsList($managerId: bigint_comparison_exp, $limit: Int, $offset: Int) {
+        query PaymentsList(
+          $managerId: bigint_comparison_exp,
+          $paymentTypeId: bigint_comparison_exp,
+          $clientId: bigint,
+          $startDate: timestamptz,
+          $endDate: timestamptz,
+          $limit: Int,
+          $offset: Int
+        ) {
           paymentsList: payments(
             order_by: { id: desc }
-            where: { managerId: $managerId }
+            where: {
+              _and: [
+                { managerId: $managerId },
+                { paymentTypeId: $paymentTypeId },
+                { clientId: { _eq: $clientId } },
+                { creation_date: { _gte: $startDate } },
+                { creation_date: { _lte: $endDate } },
+              ]
+            }
             limit: $limit,
             offset: $offset
           ) {
@@ -357,6 +382,16 @@ export default {
               _eq: this.selectedManagerId,
             }
             : undefined,
+          paymentTypeId: this.filter.paymentType
+            ? {
+              _eq: this.filter.paymentType,
+            }
+            : undefined,
+          clientId: this.filter.clientId >= 0 && this.filter.clientId !== ''
+            ? this.filter.clientId
+            : undefined,
+          startDate: `${this.filter.dateStart} 00:00:00`,
+          endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
         };
@@ -374,6 +409,45 @@ export default {
         }
       `,
     },
+    paymentTypes: {
+      query: gql`
+        query {
+          paymentTypes: paymentTypes(
+            where: { active: { _eq: true } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+            id
+            name
+            type: clientType {
+              id
+            }
+            discountPercent: sale
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.suggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.queryName,
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      },
+    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
@@ -385,6 +459,18 @@ export default {
     // filterByManager(filter) {
     //   this.filterManagerStatus = filter;
     // },
+    onSelected(item) {
+      this.client = item;
+      this.filter.clientId = item.id;
+    },
+    onInputChange(text) {
+      this.queryName = `%${text}%`;
+      this.skipClientsQuery = false;
+
+      if (text === '') {
+        this.filter.clientId = '';
+      }
+    },
     handleSelectedManagerChange(selectedId) {
       this.selectedManagerId = selectedId !== 0 ? selectedId : undefined;
       this.page = 0;
@@ -474,6 +560,14 @@ export default {
     },
   },
   mounted() {
+    const date = new Date();
+    const dateEnd = date.toISOString().split('T')[0];
+
+    date.setDate(date.getDate() - 30);
+    const dateStart = date.toISOString().split('T')[0];
+
+    this.filter.dateStart = dateStart;
+    this.filter.dateEnd = dateEnd;
   },
 };
 </script>

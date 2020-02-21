@@ -352,7 +352,7 @@
 </template>
 
 <script>
-import Autosuggest from './Autosuggest'
+import Autosuggest from "./Autosuggest";
 import gql from "graphql-tag";
 
 import { ClientTypes, PaymentTypes } from "../constants";
@@ -361,7 +361,7 @@ import InfiniteAutocomplete from "../components/InfiniteAutocomplete";
 export default {
   name: "CreatedBouquetCard",
   components: {
-    'autosuggest': Autosuggest
+    autosuggest: Autosuggest
   },
   props: {
     goods: {
@@ -661,16 +661,21 @@ export default {
           sumSale: this.sumSale,
           payment: {
             paymentTypeId: this.typePay,
-            amount: this.partlyPayment
-              ? this.sumPay - this.secondSumClient
-              : this.sumPay,
+            amount:
+              this.secondTypePay !== PaymentTypes.CASH &&
+              this.typePay === PaymentTypes.CASH
+                ? +this.sumClient - +this.sumChange
+                : +this.sumClient,
             clientId: this.clientId,
             description: ""
           },
           secondPayment: this.partlyPayment
             ? {
                 paymentTypeId: this.secondTypePay,
-                amount: this.secondSumClient,
+                amount:
+                  this.secondTypePay === PaymentTypes.CASH
+                    ? +this.secondSumClient - +this.sumChange
+                    : +this.secondSumClient,
                 clientId: this.clientId,
                 description: ""
               }

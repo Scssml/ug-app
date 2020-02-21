@@ -25,6 +25,7 @@
                   v-model.number="editedItem.createdBy"
                   hide-details
                   readonly
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-select
@@ -38,6 +39,7 @@
                   class="mb-4"
                   chips
                   multiple
+                  @change="handleDirty"
                 ></v-select>
 
                 <!-- <v-text-field
@@ -65,7 +67,7 @@
                   v-model.number="editedItem.deliveryType"
                   hide-details
                   class="mb-4"
-                  @change="editedItem.delivery = $event === 2"
+                  @change="editedItem.delivery = $event === 2; handleDirty()"
                 ></v-select>
 
                 <v-menu
@@ -79,6 +81,7 @@
                   min-width="290px"
                   class="mb-2"
                   v-if="editedItem.deliveryType !== 2"
+                  @change="handleDirty"
                 >
                   <v-text-field
                     slot="activator"
@@ -88,6 +91,7 @@
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
@@ -96,6 +100,7 @@
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
+                    @change="handleDirty"
                   ></v-date-picker>
                 </v-menu>
 
@@ -108,6 +113,7 @@
                       hide-details
                       class="mb-4"
                       v-if="editedItem.deliveryType !== 2"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
@@ -122,6 +128,7 @@
                       hide-details
                       class="mb-4"
                       v-if="editedItem.deliveryType !== 2"
+                      @change="handleDirty"
                     ></v-select>
                   </v-flex>
                 </v-layout>
@@ -135,6 +142,7 @@
                   v-model.number="editedItem.orderStatus"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-autocomplete
@@ -148,7 +156,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataClient()"
+                  @change="setDataClient(); handleDirty()"
                   :search-input.sync="clientName"
                 ></v-autocomplete>
 
@@ -161,6 +169,7 @@
                   v-model.number="editedItem.clientType"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-text-field
@@ -169,6 +178,7 @@
                   v-model="editedItem.clientName"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -177,6 +187,7 @@
                   v-model="editedItem.clientPhone"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-autocomplete
@@ -190,7 +201,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataResponsible()"
+                  @change="setDataResponsible(); handleDirty()"
                   v-if="editedItem.clientType === 2"
                 ></v-autocomplete>
 
@@ -205,6 +216,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-text-field
@@ -215,6 +227,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -225,6 +238,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -233,6 +247,7 @@
                   hide-details
                   placeholder="0"
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -242,6 +257,7 @@
                   placeholder="0"
                   class="mb-4"
                   v-if="editedItem.deliveryType !== 1"
+                  @change="handleDirty"
                 />
 
                 <v-text-field
@@ -250,6 +266,7 @@
                   hide-details
                   class="mb-4"
                   type="text"
+                  @change="handleDirty"
                 />
 
                 <v-select
@@ -265,7 +282,7 @@
                         ? 'Заполните поле'
                         : false
                   ]"
-                  @change="handlePrePaymentSource"
+                  @change="handlePrePaymentSource; handleDirty()"
                 />
 
                 <v-checkbox
@@ -274,6 +291,7 @@
                   color="primary"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty()"
                 ></v-checkbox>
               </v-flex>
 
@@ -293,6 +311,7 @@
                   hide-details
                   class="mb-4"
                   v-if="editedItem.orderStatus === 3"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-menu
@@ -314,11 +333,12 @@
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
-                    @change="getOrdersList()"
+                    @change="getOrdersList(); handleDirty()"
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -334,6 +354,7 @@
                       v-model="editedItem.deliveryTime"
                       hide-details
                       class="mb-4"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
@@ -345,7 +366,7 @@
                       item-text="name"
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
-                      @change="getOrdersList()"
+                      @change="getOrdersList(); handleDirty()"
                       hide-details
                       class="mb-4"
                     ></v-select>
@@ -379,7 +400,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataAddressee()"
+                  @change="setDataAddressee(); handleDirty()"
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
                 ></v-autocomplete>
@@ -390,6 +411,7 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.isCustomerRecipient"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -398,11 +420,12 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.isCustomerRecipient"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <autocomplete-address
                   :value="editedItem.address"
-                  @change="updateAddress($event)"
+                  @change="updateAddress($event); handleDirty()"
                   :readonly="false"
                 ></autocomplete-address>
 
@@ -412,6 +435,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -420,6 +444,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -428,6 +453,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
             </v-layout>
@@ -457,6 +483,7 @@
                   row-height="6"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-textarea>
               </v-flex>
               <v-flex xs2 class="pr-3">
@@ -466,18 +493,17 @@
                   v-model="bouquet.count"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
-              <v-flex
-                xs2
-                class="pr-3"
-              >
+              <v-flex xs2 class="pr-3">
                 <v-text-field
                   label="Место"
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
                   readonly
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
               <v-flex xs1>
@@ -497,6 +523,7 @@
               row-height="12"
               hide-details
               class="my-4"
+              @change="handleDirty"
             ></v-textarea>
           </v-flex>
 
@@ -528,7 +555,7 @@ import inside from "point-in-geopolygon";
 import DeliveryMap from "./deliveryMap.vue";
 import { getDistance } from "geolib";
 import geocoder from "geocoder";
-import { PaymentTypes } from '../../constants'
+import { PaymentTypes } from "../../constants";
 
 const baseCoordinates = [53.186104, 50.1602];
 
@@ -577,13 +604,13 @@ export default {
           {
             count: null,
             name: null,
-            place: '',
-            isReady: false,
-          },
+            place: "",
+            isReady: false
+          }
         ],
         responsible: null,
         prePaymentSource: null,
-        prePayment: 0,
+        prePayment: 0
       },
       createdSuccess: false,
       userInfo: {},
@@ -596,22 +623,23 @@ export default {
       ordersList: [],
       deliveryTimeOfDayList: [
         {
-          name: 'Утро',
-          id: 1,
+          name: "Утро",
+          id: 1
         },
         {
-          name: 'День',
-          id: 2,
+          name: "День",
+          id: 2
         },
         {
-          name: 'Вечер',
-          id: 3,
-        },
+          name: "Вечер",
+          id: 3
+        }
       ],
       coordsMap: [53.05, 50.101783],
       responsible: undefined,
-      clientName: '',
-      addresseeName: '',
+      clientName: "",
+      addresseeName: "",
+      isDirty: false
     };
   },
   watch: {
@@ -627,14 +655,16 @@ export default {
       if (addresseeId === undefined && val) {
         this.editedItem.addresseePhone = val;
       }
-    },
+    }
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
     },
     responsibleList() {
-      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
+      return this.clientsList.filter(
+        item => +item.referenceId === +this.editedItem.client
+      );
     },
     placemarks() {
       return this.ordersList
@@ -646,6 +676,14 @@ export default {
     }
   },
   methods: {
+    handleBeforeUnload() {
+      return 'На форме есть несохраненные данные. Вы уверены, что хотите закрыть формE?'
+    },
+    handleDirty() {
+      if (!this.isDirty) {
+        this.isDirty = true;
+      }
+    },
     handlePrePaymentSource(id) {
       this.editedItem.prePaymentSource = id;
     },
@@ -714,16 +752,16 @@ export default {
           _,
           {
             results: [
-              { geometry: { location: { lat, lng } = {} } = {} } = {},
-            ] = [],
-          } = {},
+              { geometry: { location: { lat, lng } = {} } = {} } = {}
+            ] = []
+          } = {}
         ) => {
           this.updateAddress({
             geo: [lat, lng],
-            address,
+            address
           });
         },
-        { language: 'ru', key: window.GOOGLE_API_KEY },
+        { language: "ru", key: window.GOOGLE_API_KEY }
       );
     },
     setDataResponsible() {
@@ -768,7 +806,9 @@ export default {
       this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
-          this.paymentTypesList = response.filter(pt => pt.id !== PaymentTypes.BALANCE);
+          this.paymentTypesList = response.filter(
+            pt => pt.id !== PaymentTypes.BALANCE
+          );
         })
         .catch(() => {
           console.log("error");
@@ -852,10 +892,12 @@ export default {
       this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
-          this.clientsList = response.map(item => {
-            item.id = +item.id;
-            return item;
-          }).filter(i => i.id !== 0);
+          this.clientsList = response
+            .map(item => {
+              item.id = +item.id;
+              return item;
+            })
+            .filter(i => i.id !== 0);
         })
         .catch(() => {
           console.log("error");
@@ -924,6 +966,10 @@ export default {
         });
     },
     cancel() {
+      if(this.isDirty) {
+        return
+      }
+
       this.editedItem = {};
       this.createdSuccess = false;
       this.$emit("cancel");
@@ -945,10 +991,10 @@ export default {
       propsItem.delivery = false;
 
       if (propsItem.deliveryType === 1) {
-        propsItem.address = '';
-        propsItem.entrance = '';
-        propsItem.flat = '';
-        propsItem.floor = '';
+        propsItem.address = "";
+        propsItem.entrance = "";
+        propsItem.flat = "";
+        propsItem.floor = "";
       }
 
       if (!propsItem.coordinates) {
@@ -956,27 +1002,27 @@ export default {
       }
 
       if (!propsItem.description) {
-        propsItem.description = '';
+        propsItem.description = "";
       }
 
       const itemParams = {
-        type: 'orders',
-        props: propsItem,
+        type: "orders",
+        props: propsItem
       };
 
-      this.$store.dispatch('addItem', itemParams).then(() => {
+      this.$store.dispatch("addItem", itemParams).then(() => {
         this.createdSuccess = true;
         setTimeout(() => {
-          this.$emit('cancel');
+          this.$emit("cancel");
         }, 1000);
       });
     },
     addClient() {
       const itemParams = {
-        type: 'clients',
+        type: "clients",
         props: {
           name: this.editedItem.clientName,
-          birthDay: '1900-01-01',
+          birthDay: "1900-01-01",
           bill: 0,
           sale: 0,
           phone: this.editedItem.clientPhone,
@@ -985,7 +1031,7 @@ export default {
           address: this.editedItem.address,
           entrance: this.editedItem.entrance,
           flat: this.editedItem.flat,
-          floor: this.editedItem.floor,
+          floor: this.editedItem.floor
         }
       };
 
@@ -998,13 +1044,17 @@ export default {
       this.editedItem.bouquets.push({
         name: null,
         count: null,
-        place: '',
-        isReady: false,
+        place: "",
+        isReady: false
       });
     },
     bouquetDelete(index) {
       this.editedItem.bouquets.splice(index, 1);
     }
+  },
+  created() {
+    console.log('test')
+    window.addEventListener('beforeunload', this.handleBeforeUnload)
   },
   mounted() {
     this.getUsersList();

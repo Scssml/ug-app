@@ -653,7 +653,7 @@ export default {
           floristId: this.florist,
           clientId: this.clientId,
           orderId: this.order,
-          totalCost: this.sumPay,
+          totalCost: this.sumPay / +this.bouquetCount,
           decorPercent: +this.decorPercent,
           decorCost: this.sumDecor + this.sumDecorAdditional,
           deliveryCost: this.delivery,
@@ -665,7 +665,7 @@ export default {
               this.secondTypePay !== PaymentTypes.CASH &&
               this.typePay === PaymentTypes.CASH
                 ? +this.sumClient - +this.sumChange
-                : +this.sumClient,
+                : +this.sumPay,
             clientId: this.clientId,
             description: ""
           },

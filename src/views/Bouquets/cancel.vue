@@ -132,15 +132,15 @@ export default {
         totalCost: item.payments[0].amount,
       };
       const itemGoods = item.goods.map((elem) => {
-        const good = {
+        return {
           id: elem.good.id,
           name: elem.good.name,
           price: elem.good.price,
           sortIndex: elem.good.sortIndex,
-          stockBalance: elem.good.stockBalance,
+          stockBalance: elem.good.stockBalance + elem.count,
+          originalBalance: elem.good.stockBalance + elem.count,
           value: elem.count,
         };
-        return good;
       });
       const itemSum = item.goods.reduce((sum, elem) => {
         const goodSum = elem.good.price * elem.count;

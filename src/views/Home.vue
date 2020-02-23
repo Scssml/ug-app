@@ -345,6 +345,12 @@ export default {
       },
       error() {
         this.handleLoadingFailed("goods", "Ошибка получения товаров!");
+      },
+      update({ goodsList }) {
+        return goodsList.map(g => ({
+          ...g,
+          originalBalance: g.stockBalance
+        }));
       }
     },
     paymentTypesList: {
@@ -364,12 +370,16 @@ export default {
         good.stockBalance = good.originalBalance;
       }
 
-      for (let card of this.cardsList) {
-        for (let good of card.goods) {
-          const currentGoods = this.goodsList.find(g => g.id === good.id);
-          currentGoods.originalBalance = currentGoods.stockBalance;
-          currentGoods.stockBalance = good.stockBalance - good.value;
-        }
+      for (let good of this.goodsList) {
+        const goodCardsSum = this.cardsList.reduce((acc, card) => {
+          const { value } = card.goods.find(g => g.id === good.id) || {
+            value: 0
+          };
+
+          return acc + value;
+        }, 0);
+
+        good.stockBalance = good.stockBalance - goodCardsSum;
       }
 
       return this.goodsList;

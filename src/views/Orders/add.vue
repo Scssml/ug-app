@@ -67,7 +67,10 @@
                   v-model.number="editedItem.deliveryType"
                   hide-details
                   class="mb-4"
-                  @change="editedItem.delivery = $event === 2; handleDirty()"
+                  @change="
+                    editedItem.delivery = $event === 2;
+                    handleDirty();
+                  "
                 ></v-select>
 
                 <v-menu
@@ -156,7 +159,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataClient(); handleDirty()"
+                  @change="
+                    setDataClient();
+                    handleDirty();
+                  "
                   :search-input.sync="clientName"
                 ></v-autocomplete>
 
@@ -201,7 +207,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataResponsible(); handleDirty()"
+                  @change="
+                    setDataResponsible();
+                    handleDirty();
+                  "
                   v-if="editedItem.clientType === 2"
                 ></v-autocomplete>
 
@@ -282,7 +291,10 @@
                         ? 'Заполните поле'
                         : false
                   ]"
-                  @change="handlePrePaymentSource; handleDirty()"
+                  @change="
+                    handlePrePaymentSource;
+                    handleDirty();
+                  "
                 />
 
                 <v-checkbox
@@ -338,7 +350,10 @@
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
-                    @change="getOrdersList(); handleDirty()"
+                    @change="
+                      getOrdersList();
+                      handleDirty();
+                    "
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -366,7 +381,10 @@
                       item-text="name"
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
-                      @change="getOrdersList(); handleDirty()"
+                      @change="
+                        getOrdersList();
+                        handleDirty();
+                      "
                       hide-details
                       class="mb-4"
                     ></v-select>
@@ -400,7 +418,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataAddressee(); handleDirty()"
+                  @change="
+                    setDataAddressee();
+                    handleDirty();
+                  "
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
                 ></v-autocomplete>
@@ -425,7 +446,10 @@
 
                 <autocomplete-address
                   :value="editedItem.address"
-                  @change="updateAddress($event); handleDirty()"
+                  @change="
+                    updateAddress($event);
+                    handleDirty();
+                  "
                   :readonly="false"
                 ></autocomplete-address>
 
@@ -558,6 +582,8 @@ import geocoder from "geocoder";
 import { PaymentTypes } from "../../constants";
 
 const baseCoordinates = [53.186104, 50.1602];
+const unSaveChangesText =
+  "На форме есть несохраненные данные. Вы уверены, что хотите закрыть форму?";
 
 export default {
   components: {
@@ -676,8 +702,10 @@ export default {
     }
   },
   methods: {
-    handleBeforeUnload() {
-      return 'На форме есть несохраненные данные. Вы уверены, что хотите закрыть формE?'
+    handleBeforeUnload(e) {
+      if (this.isDirty) {
+        e.returnValue = unSaveChangesText;
+      }
     },
     handleDirty() {
       if (!this.isDirty) {
@@ -966,8 +994,12 @@ export default {
         });
     },
     cancel() {
-      if(this.isDirty) {
-        return
+      if (this.isDirty) {
+        const exitConfirmation = confirm(unSaveChangesText);
+
+        if (!exitConfirmation) {
+          return;
+        }
       }
 
       this.editedItem = {};
@@ -1053,8 +1085,10 @@ export default {
     }
   },
   created() {
-    console.log('test')
-    window.addEventListener('beforeunload', this.handleBeforeUnload)
+    window.addEventListener("beforeunload", this.handleBeforeUnload);
+  },
+  beforeDestroy() {
+    window.removeEventListener("beforeunload", this.handleBeforeUnload);
   },
   mounted() {
     this.getUsersList();

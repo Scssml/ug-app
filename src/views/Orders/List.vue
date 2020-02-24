@@ -671,9 +671,9 @@ export default {
                 { clientId: { _eq: $clientId } }
               ]
             }
-            order_by: { ${
-              this.pagination.sortBy
-            }: ${this.pagination.descending ? "desc" : "asc"} }
+            order_by: { ${this.pagination.sortBy}: ${
+          this.pagination.descending ? "desc" : "asc"
+        } }
           ) {
             id
             deliveryTimeOfDay
@@ -691,6 +691,7 @@ export default {
             floor
             addresseeName
             addresseePhone
+            deliveryCost
             deliveryType {
               id
               name
@@ -713,12 +714,18 @@ export default {
               name
               count
               place
+              readyBouquetCount: bouquets_aggregate {
+                aggregate {
+                  count
+                }
+              }
             }
             createdAt: created_at
             createdBy {
               name
             }
             orderStatus {
+              id
               name
               color
             }

@@ -332,11 +332,12 @@ export default {
     goodsList: {
       query: gql`
         query {
-          goodsList: goods {
+          goodsList: goods(order_by: { sortIndex: desc }) {
             id
             name
             price
             stockBalance
+            color
           }
         }
       `,

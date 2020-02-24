@@ -305,7 +305,7 @@
             <tr
               :class="[
                 props.item.orderStatus.color,
-                props.item.topLine ? 'top-line' : ''
+                props.item.isTopLine ? 'top-line' : ''
               ]"
             >
               <td
@@ -558,6 +558,8 @@
 import gql from "graphql-tag";
 import format from "date-fns/format";
 import { ru } from "date-fns/locale";
+import isAfter from "date-fns/isAfter";
+import parse from "date-fns/parse";
 import OrderEdit from "./edit.vue";
 import OrderAdd from "./add.vue";
 import ChangeStatus from "./changeStatus.vue";
@@ -762,6 +764,23 @@ export default {
               ? this.filter.deliveryTimeOfDay
               : undefined
         };
+      },
+      update({ ordersList }) {
+        const parseDateFormat = "yyyy-LL-dd";
+        let prevItem = null;
+
+        for (let order of ordersList) {
+          order.isTopLine =
+            prevItem &&
+            isAfter(
+              parse(order.deliveryDate, parseDateFormat, new Date()),
+              parse(prevItem, parseDateFormat, new Date())
+            );
+
+          prevItem = order.deliveryDate;
+        }
+
+        return ordersList;
       },
       skip() {
         return this.skipQuery;

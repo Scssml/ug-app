@@ -351,8 +351,9 @@
                         <template v-else-if="prop.field === 'orderSourceType'">
                           {{
                             props.item["orderSourceTypeIds"]
-                              .map(st =>
-                                orderSourceTypes.find(t => t.id === st).name
+                              .map(
+                                st =>
+                                  orderSourceTypes.find(t => t.id === st).name
                               )
                               .join(", ")
                           }}
@@ -711,6 +712,10 @@ export default {
             courier {
               name
             }
+            client {
+              id
+              name
+            }
             bouquets: orderBouquets {
               name
               count
@@ -1044,6 +1049,7 @@ export default {
           props: {
             floristId: null,
             orderId: item.id,
+            client: item.client,
             clientId: item.client.id,
             decorPercent: 20,
             deliveryCost: item.deliveryCost,

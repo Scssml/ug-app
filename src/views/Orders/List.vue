@@ -671,7 +671,7 @@ export default {
                 { clientId: { _eq: $clientId } }
               ]
             }
-            order_by: { deliveryDate: asc, deliveryTime: asc, ${
+            order_by: { ${
               this.pagination.sortBy
             }: ${this.pagination.descending ? "desc" : "asc"} }
           ) {

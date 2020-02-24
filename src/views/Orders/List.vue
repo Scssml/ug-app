@@ -345,6 +345,9 @@
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
+                        <template v-else-if="prop.field === 'createdAt'">
+                          {{formatDate(props.item[prop.field], 'dd.LL')}}
+                        </template>
                         <template v-else-if="prop.field === 'createdBy'">
                           {{ props.item[prop.field].name }}
                         </template>
@@ -410,7 +413,7 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'deliveryDate'">
-                          {{ props.item[prop.field] }}
+                          {{ formatDate(props.item[prop.field], 'eee dd.MM') }}
                         </template>
                         <template v-else-if="prop.field === 'courier'">
                           {{ props.item[prop.field].name }}
@@ -553,6 +556,7 @@
 
 <script>
 import gql from "graphql-tag";
+import format from 'date-fns/format';
 import OrderEdit from "./edit.vue";
 import OrderAdd from "./add.vue";
 import ChangeStatus from "./changeStatus.vue";
@@ -948,6 +952,9 @@ export default {
     }
   },
   methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat);
+    },
     onClientSelect(item) {
       this.filter.clientItem = item;
     },

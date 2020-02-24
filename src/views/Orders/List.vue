@@ -686,6 +686,9 @@ export default {
             clientPhone
             coordinates
             address
+            entrance
+            flat
+            floor
             addresseeName
             addresseePhone
             deliveryType {

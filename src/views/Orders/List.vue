@@ -1196,7 +1196,7 @@ export default {
     date.setDate(date.getDate() + 7);
     const dateEnd = date.toISOString().split("T")[0];
 
-    this.take = this.$store.getters.getCountElemPage;
+    this.take = localStorage.getItem("countElemPage") || this.$store.getters.getCountElemPage;
 
     if (this.$route.query.client !== undefined) {
       this.filter.client = +this.$route.query.client;

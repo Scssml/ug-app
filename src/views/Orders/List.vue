@@ -318,7 +318,7 @@
                   hide-details
                 ></v-checkbox>
               </td>
-              <template v-for="(col, colIndex) in colsTable">
+              <template v-for="(col, colIndex) in userSettings">
                 <td
                   class="px-1"
                   :style="{
@@ -338,7 +338,8 @@
                           props.item[prop.field] ||
                             prop.field === 'incognito' ||
                             prop.field === 'description' ||
-                            prop.field === 'alreadyPaid'
+                            prop.field === 'alreadyPaid' ||
+                            prop.field === 'orderSourceType'
                         "
                       >
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
@@ -348,19 +349,13 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'orderSourceType'">
-                          <template
-                            v-for="(item, index) in props.item[
-                              'orderSourceTypeIds'
-                            ]"
-                          >
-                            <template v-if="item">
-                              <br :key="index" v-if="index" />{{
-                                this.orderSourceTypes.find(o => {
-                                  return o.id == item;
-                                }).name
-                              }}
-                            </template>
-                          </template>
+                          {{
+                            props.item["orderSourceTypeIds"]
+                              .map(st =>
+                                orderSourceTypes.find(t => t.id === st).name
+                              )
+                              .join(", ")
+                          }}
                         </template>
                         <template v-else-if="prop.field === 'incognito'">
                           {{ props.item[prop.field] ? "Да" : "Нет" }}
@@ -387,7 +382,13 @@
                           <template
                             v-for="(item, key) in props.item[prop.field]"
                           >
-                            <div :class="item.isReady ? 'green' : ''">
+                            <div
+                              :class="
+                                item.readyBouquetCount.aggregate.count !== 0
+                                  ? 'green'
+                                  : ''
+                              "
+                            >
                               {{ item.name }} - {{ item.count }}
                               <template v-if="item.place">
                                 ({{ item.place }})
@@ -934,18 +935,6 @@ export default {
       };
 
       cols.push(colAction);
-
-      return cols;
-    },
-    colsTable() {
-      const cols = this.userSettings.map(item => {
-        const elem = {
-          width: item.width,
-          dataFields: item.dataFields
-        };
-
-        return elem;
-      });
 
       return cols;
     },

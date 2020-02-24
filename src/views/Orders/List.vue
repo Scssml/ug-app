@@ -688,6 +688,7 @@ export default {
             addresseeName
             addresseePhone
             deliveryType {
+              id
               name
             }
             deliveryDate

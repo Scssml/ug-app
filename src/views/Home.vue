@@ -131,9 +131,9 @@
                   <div
                     class="py-1 px-1 text-xs-center"
                     :style="
-                      'height: 30px;' + item.color
-                        ? `background-color: ${item.color}`
-                        : ''
+                      item.color
+                        ? `background-color: ${item.color}; height: 30px;`
+                        : 'height: 30px;'
                     "
                     :key="index"
                   >

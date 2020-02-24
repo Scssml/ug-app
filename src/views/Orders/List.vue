@@ -701,6 +701,7 @@ export default {
             addresseeName
             addresseePhone
             deliveryCost
+            isAlreadyPrinted
             deliveryType {
               id
               name

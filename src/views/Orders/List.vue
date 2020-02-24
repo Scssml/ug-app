@@ -711,6 +711,7 @@ export default {
               count
               place
             }
+            createdAt: created_at
             createdBy {
               name
             }

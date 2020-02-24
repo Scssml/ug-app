@@ -235,7 +235,7 @@
             >
 
             <v-btn color="primary" dark @click.prevent="setFilter14February()"
-              >14 февраля</v-btn
+              >6 марта</v-btn
             >
 
             <v-btn color="primary" dark @click.prevent="setFilter8March()"
@@ -346,7 +346,7 @@
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
                         <template v-else-if="prop.field === 'createdAt'">
-                          {{formatDate(props.item[prop.field], 'dd.LL')}}
+                          {{ formatDate(props.item[prop.field], "dd.LL") }}
                         </template>
                         <template v-else-if="prop.field === 'createdBy'">
                           {{ props.item[prop.field].name }}
@@ -413,7 +413,7 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'deliveryDate'">
-                          {{ formatDate(props.item[prop.field], 'eee dd.MM') }}
+                          {{ formatDate(props.item[prop.field], "eee dd.MM") }}
                         </template>
                         <template v-else-if="prop.field === 'courier'">
                           {{ props.item[prop.field].name }}
@@ -556,7 +556,8 @@
 
 <script>
 import gql from "graphql-tag";
-import format from 'date-fns/format';
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
 import OrderEdit from "./edit.vue";
 import OrderAdd from "./add.vue";
 import ChangeStatus from "./changeStatus.vue";
@@ -953,7 +954,7 @@ export default {
   },
   methods: {
     formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat);
+      return format(new Date(date), dateFormat, { locale: ru });
     },
     onClientSelect(item) {
       this.filter.clientItem = item;
@@ -1124,8 +1125,8 @@ export default {
     },
     setFilter14February() {
       const date = new Date();
-      this.filter.dateStart = `${date.getFullYear()}-02-14`;
-      this.filter.dateEnd = `${date.getFullYear()}-02-14`;
+      this.filter.dateStart = `${date.getFullYear()}-03-06`;
+      this.filter.dateEnd = `${date.getFullYear()}-03-06`;
       this.page = 0;
     },
     setFilter8March() {

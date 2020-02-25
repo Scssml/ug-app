@@ -1,13 +1,12 @@
-FROM hoosin/alpine-nginx-nodejs:latest
-
-COPY nginx.conf /etc/nginx/nginx.conf
-
-WORKDIR /opt/node_app/app
-
-COPY . ./
-RUN npm install --no-optional && npm cache clean --force
+FROM node:lts-alpine as build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
 COPY . .
-
-EXPOSE 3000
-
 RUN npm run build
+
+FROM nginx:stable-alpine as production-stage
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

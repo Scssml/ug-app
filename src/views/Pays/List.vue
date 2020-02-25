@@ -277,38 +277,38 @@ export default {
           align: 'right',
           value: 'id',
           filterable: false,
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Дата',
           align: 'left',
-          value: 'creationDate',
+          value: 'creation_date',
           filterable: false,
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'client.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Стоимость',
           align: 'left',
           value: 'amount',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Тип',
           align: 'left',
           value: 'paymentType.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Комментарий',
           align: 'left',
           value: 'description',
-          sortable: false,
+          sortable: true,
         },
         {
           text: '',
@@ -321,7 +321,9 @@ export default {
       dialogForm: false,
       editedId: 0,
       pagination: {
+        sortBy: 'id',
         rowsPerPage: -1,
+        descending: true,
       },
       take: 20,
       page: 0,
@@ -344,10 +346,11 @@ export default {
           $startDate: timestamptz,
           $endDate: timestamptz,
           $limit: Int,
-          $offset: Int
+          $offset: Int,
+          $orderBy: [payments_order_by!],
         ) {
           paymentsList: payments(
-            order_by: { id: desc }
+            order_by: $orderBy
             where: {
               _and: [
                 { managerId: $managerId },
@@ -394,6 +397,7 @@ export default {
           endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
+          orderBy: this.orderBy,
         };
       },
     },
@@ -454,8 +458,42 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split('.');
+      let sortObject = {};
+      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder,
+            },
+          },
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder,
+          },
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
+    },
   },
   methods: {
+    changeSort(column) {
+      this.paymentsList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
     // filterByManager(filter) {
     //   this.filterManagerStatus = filter;
     // },

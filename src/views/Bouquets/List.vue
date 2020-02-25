@@ -116,7 +116,7 @@
                 ></v-select>
               </v-flex>
 
-<v-flex
+              <v-flex
                 xs2
                 class="px-2"
               >
@@ -408,30 +408,30 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'client.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Флорист',
           align: 'left',
-          value: 'florist',
-          sortable: false,
+          value: 'florist.name',
+          sortable: true,
         },
         {
           text: 'Менеджер',
           align: 'left',
           value: 'user.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Оплата',
           align: 'left',
-          value: 'payments[0].amount',
+          value: 'payments.amount',
           sortable: false,
         },
         {
@@ -449,7 +449,9 @@ export default {
       usersList: [],
       clientsList: [],
       pagination: {
+        sortBy: 'id',
         rowsPerPage: -1,
+        descending: true,
       },
       take: 20,
       page: 0,
@@ -475,9 +477,10 @@ export default {
           $endDate: timestamptz
           $limit: Int
           $offset: Int
+          $orderBy: [bouquets_order_by!]
         ) {
           bouquetsList: bouquets(
-            order_by: { id: desc }
+            order_by: $orderBy
             limit: $limit
             offset: $offset
             where: {
@@ -546,6 +549,7 @@ export default {
           endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
+          orderBy: this.orderBy,
         };
       },
     },
@@ -606,8 +610,42 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split('.');
+      let sortObject = {};
+      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder,
+            },
+          },
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder,
+          },
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
+    },
   },
   methods: {
+    changeSort(column) {
+      this.bouquetsList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
     onSelected(item) {
       this.client = item;
       this.filter.clientId = item.id;

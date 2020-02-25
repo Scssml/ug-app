@@ -132,7 +132,7 @@
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.discountPercent }}</td>
             <td class="text-xs-right">
-              {{ !!props.item.isActive ? "Да" : "Нет" }}
+              {{ !!props.item.active ? "Да" : "Нет" }}
             </td>
             <td class="text-xs-right" style="width: 200px;">
               <v-icon
@@ -235,7 +235,7 @@ export default {
         },
       ],
       filter: {
-        typeId: '',
+        typeId: 0,
       },
       typeClient: [],
       search: '',
@@ -244,49 +244,49 @@ export default {
           text: 'ID',
           align: 'right',
           value: 'id',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Клиент',
           align: 'left',
           value: 'name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Телефон',
           align: 'left',
           value: 'phone',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Тип',
           align: 'left',
-          value: 'type',
-          sortable: false,
+          value: 'clientType.name',
+          sortable: true,
         },
         {
           text: 'Ответственный',
           align: 'left',
-          value: 'responsible',
-          sortable: false,
+          value: 'responsible.name',
+          sortable: true,
         },
         {
           text: 'Счет',
           align: 'right',
           value: 'bill',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Скидка',
           align: 'right',
           value: 'sale',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Активность',
           align: 'right',
-          value: 'isActive',
-          sortable: false,
+          value: 'active',
+          sortable: true,
         },
         {
           text: '',
@@ -301,7 +301,9 @@ export default {
       deleteId: 0,
       printedId: null,
       pagination: {
+        sortBy: 'id',
         rowsPerPage: -1,
+        descending: true,
       },
       take: 20,
       page: 0,
@@ -313,9 +315,15 @@ export default {
   apollo: {
     clientsList: {
       query: gql`
-        query ClientsList($clientTypeId: bigint, $clientName: String, $limit: Int, $offset: Int) {
+        query ClientsList(
+          $clientTypeId: bigint,
+          $clientName: String,
+          $limit: Int,
+          $offset: Int,
+          $orderBy: [clients_order_by!],
+        ) {
           clientsList: clients(
-            order_by: { id: desc }
+            order_by: $orderBy
             limit: $limit
             offset: $offset
             where: {
@@ -360,6 +368,7 @@ export default {
             this.selectedClientName !== '' ? `%${this.selectedClientName}%` : undefined,
           offset: this.page * this.take,
           limit: this.take,
+          orderBy: this.orderBy,
         };
       },
     },
@@ -379,8 +388,42 @@ export default {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split('.');
+      let sortObject = {};
+      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder,
+            },
+          },
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder,
+          },
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
+    },
   },
   methods: {
+    changeSort(column) {
+      this.clientsList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
     handleClientTypeChange(clientTypeId) {
       this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
       this.page = 0;

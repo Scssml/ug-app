@@ -9,7 +9,7 @@ services:
     networks:
       - shopbackend_discovery
     ports:
-      - '8080:80'
+      - '80:80'
 
 networks:
   shopbackend_discovery:

@@ -499,7 +499,7 @@ export default {
               },
               amount: props.payment.amount,
               clientId: props.payment.clientId,
-              description: 'На баланс',
+              description: props.comment,
             },
           };
 

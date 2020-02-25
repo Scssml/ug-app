@@ -149,7 +149,7 @@ export default {
       typeClient: [],
       createdSuccess: false,
       clientsList: [],
-      currentUserGroup: null
+      currentUserGroup: null,
     };
   },
   methods: {
@@ -243,8 +243,8 @@ export default {
   },
   computed: {
     isCurrentUserAdmin() {
-      return this.$store.getters.getAuthUserGroup.code === "admin";
-    }
+      return this.$store.getters.getAuthUserGroup.code === 'admin';
+    },
   },
   mounted() {
     this.getItem();

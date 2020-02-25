@@ -73,6 +73,7 @@
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
                   @checkCard="checkCard(index, $event)"
+                  @loadMoreClient="handleLoadMoreClients"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -244,57 +245,57 @@
 </template>
 
 <script>
-import CreatedBouquetCard from "../components/CreatedBouquetCard.vue";
-import SelectCountGoods from "../components/SelectCountGoods.vue";
-import PaymentDay from "./Pays/paymentDay.vue";
-import gql from "graphql-tag";
+import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
+import SelectCountGoods from '../components/SelectCountGoods.vue';
+import PaymentDay from './Pays/paymentDay.vue';
+import gql from 'graphql-tag';
 
 export default {
-  name: "Home",
+  name: 'Home',
   components: {
-    "created-bouquet-card": CreatedBouquetCard,
-    "select-count-goods": SelectCountGoods,
-    PaymentDay
+    'created-bouquet-card': CreatedBouquetCard,
+    'select-count-goods': SelectCountGoods,
+    PaymentDay,
   },
   data() {
     return {
-      dateNow: "",
-      dateYesterday: "",
+      dateNow: '',
+      dateYesterday: '',
       loadingData: [
         {
-          title: "Получение флористов",
+          title: 'Получение флористов',
           error: false,
           loading: true,
-          color: "cyan",
-          id: "florists"
+          color: 'cyan',
+          id: 'florists',
         },
         {
-          title: "Получение товаров",
+          title: 'Получение товаров',
           error: false,
           loading: true,
-          color: "blue-grey",
-          id: "goods"
+          color: 'blue-grey',
+          id: 'goods',
         },
         {
-          title: "Получение оплат",
+          title: 'Получение оплат',
           error: false,
           loading: false,
-          color: "deep-orange",
-          id: "payments"
-        }
+          color: 'deep-orange',
+          id: 'payments',
+        },
       ],
       offsetLeft: 0,
       propsBouquet: [
-        "Флорист",
-        "Клиент",
-        "Заказ | Букет",
-        "Cтавка на оформление, % | Предоплата",
-        "Сумма товара",
-        "Доставка | Комментарий",
-        "Оформление",
-        "Ставка на скидку, % | Сумма скидки",
-        "Всего к оплате | Кол-во",
-        ""
+        'Флорист',
+        'Клиент',
+        'Заказ | Букет',
+        'Cтавка на оформление, % | Предоплата',
+        'Сумма товара',
+        'Доставка | Комментарий',
+        'Оформление',
+        'Ставка на скидку, % | Сумма скидки',
+        'Всего к оплате | Кол-во',
+        '',
       ],
       cardsList: [],
       floristsList: [],
@@ -308,8 +309,8 @@ export default {
       typePay: null,
       paymentsPagination: {
         page: 0,
-        limit: 200
-      }
+        limit: 200,
+      },
     };
   },
   apollo: {
@@ -323,11 +324,11 @@ export default {
         }
       `,
       result() {
-        this.handleLoadingSuccess("florists", "Флористы получены!");
+        this.handleLoadingSuccess('florists', 'Флористы получены!');
       },
       error() {
-        this.handleLoadingFailed("florists", "Ошибка получения флористов!");
-      }
+        this.handleLoadingFailed('florists', 'Ошибка получения флористов!');
+      },
     },
     goodsList: {
       query: gql`
@@ -342,7 +343,7 @@ export default {
         }
       `,
       result() {
-        this.handleLoadingSuccess("goods", "Товары получены!");
+        this.handleLoadingSuccess('goods', 'Товары получены!');
       },
       error() {
         this.handleLoadingFailed("goods", "Ошибка получения товаров!");
@@ -362,8 +363,8 @@ export default {
             name
           }
         }
-      `
-    }
+      `,
+    },
   },
   computed: {
     goods() {
@@ -386,7 +387,7 @@ export default {
       return this.goodsList;
     },
     typePayList() {
-      return this.paymentTypesList.filter(item => {
+      return this.paymentTypesList.filter((item) => {
         if (this.client) {
           return item.id !== 5;
         }
@@ -405,9 +406,7 @@ export default {
       }, 0);
     },
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     showGoodsList() {
@@ -417,7 +416,7 @@ export default {
         goodsList = showGoodsList;
       }
       return goodsList;
-    }
+    },
   },
   methods: {
     refreshPayments() {
@@ -436,8 +435,8 @@ export default {
     onScroll: function onScroll(e) {
       const scroll = e.target.scrollLeft;
 
-      if (e.target.id === "scroll-block-top") {
-        document.getElementById("scroll-block-bottom").scrollLeft = scroll;
+      if (e.target.id === 'scroll-block-top') {
+        document.getElementById('scroll-block-bottom').scrollLeft = scroll;
       } else {
         // document.getElementById('scroll-block-top').scrollLeft = scroll;
       }
@@ -452,32 +451,28 @@ export default {
       item.goods = goods;
       this.$set(this.cardsList, index, item);
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     addCard: function addCard() {
       this.cardsList.push({
         sum: 0,
         success: false,
         props: {},
-        goods: []
+        goods: [],
       });
     },
     checkCard(indexCard, sumPay) {
-      const findIndex = this.checkCardList.findIndex(
-        item => item.index === indexCard
-      );
+      const findIndex = this.checkCardList.findIndex(item => item.index === indexCard);
 
       if (findIndex + 1) {
         this.checkCardList.splice(findIndex, 1);
       } else {
         this.checkCardList.push({
           index: indexCard,
-          sum: sumPay
+          sum: sumPay,
         });
       }
     },
@@ -494,59 +489,55 @@ export default {
 
         if (emptySum) {
           const itemParams = {
-            type: "payments",
+            type: 'payments',
             props: {
               paymentType: {
                 id: props.payment.paymentTypeId,
-                name: "На баланс",
+                name: 'На баланс',
                 isActive: true,
-                code: "balance"
+                code: 'balance',
               },
               amount: props.payment.amount,
               clientId: props.payment.clientId,
-              description: "На баланс"
-            }
+              description: props.comment,
+            },
           };
 
-          this.$store.dispatch("addItem", itemParams).then(() => {
+          this.$store.dispatch('addItem', itemParams).then(() => {
             this.refreshPayments();
           });
         } else {
           const newBouqet = props;
 
-          newBouqet.goods = item.goods.map(elem => {
+          newBouqet.goods = item.goods.map((elem) => {
             const good = {
               goodId: elem.id,
-              count: elem.value
+              count: elem.value,
             };
             return good;
           });
 
           const bouquetParams = {
-            type: "bouquets",
-            props: newBouqet
+            type: 'bouquets',
+            props: newBouqet,
           };
 
-          this.$store.dispatch("addItem", bouquetParams).then(() => {
+          this.$store.dispatch('addItem', bouquetParams).then(() => {
             this.refreshPayments();
           });
 
-          item.goods.forEach(elem => {
+          item.goods.forEach((elem) => {
             const findGood = this.goodsList.find(good => good.id === elem.id);
             findGood.store -= elem.value;
           });
         }
 
-        const cardNoEmpty = this.cardsList.filter(
-          elem =>
-            (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-            elem.success !== true
-        );
-        localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+        const cardNoEmpty = this.cardsList.filter(elem =>
+          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+            elem.success !== true);
+        localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-        const findIndex = this.checkCardList.findIndex(
-          card => card.index === index
-        );
+        const findIndex = this.checkCardList.findIndex(card => card.index === index);
 
         if (findIndex + 1) {
           this.checkCardList.splice(findIndex, 1);
@@ -558,37 +549,29 @@ export default {
       item.props = props;
       this.$set(this.cardsList, index, item);
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);
       this.cardsList.push(item);
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     deleteItem(index) {
       const item = this.cardsList[index];
       item.success = true;
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-      const findIndex = this.checkCardList.findIndex(
-        card => card.index === index
-      );
+      const findIndex = this.checkCardList.findIndex(card => card.index === index);
 
       if (findIndex + 1) {
         this.checkCardList.splice(findIndex, 1);
@@ -598,7 +581,7 @@ export default {
       this.createdSuccess = true;
       const checkCards = this.checkCardList.slice();
 
-      checkCards.forEach(item => {
+      checkCards.forEach((item) => {
         const card = this.cardsList[item.index];
 
         let sumPay = card.sum;
@@ -610,7 +593,7 @@ export default {
           paymentTypeId: this.typePay,
           amount: sumPay,
           clientId: card.props.clientId,
-          description: ""
+          description: '',
         };
 
         card.props.typePay = this.typePay;
@@ -624,29 +607,29 @@ export default {
     deleteCheckCards() {
       const checkCards = this.checkCardList.slice();
 
-      checkCards.forEach(item => {
+      checkCards.forEach((item) => {
         this.deleteItem(item.index);
       });
-    }
+    },
   },
   mounted() {
-    this.$store.commit("setShowGoodsList", []);
+    this.$store.commit('setShowGoodsList', []);
 
     const dateNow = new Date();
-    const dateNowStr = dateNow.toISOString().split("T")[0];
+    const dateNowStr = dateNow.toISOString().split('T')[0];
     this.dateNow = `${dateNowStr} 23:59:59`;
     dateNow.setDate(dateNow.getDate() - 1);
-    const dateYesterdayStr = dateNow.toISOString().split("T")[0];
+    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
     this.dateYesterday = `${dateYesterdayStr} 00:00:00`;
 
-    const cardsList = JSON.parse(localStorage.getItem("cardsList"));
+    const cardsList = JSON.parse(localStorage.getItem('cardsList'));
     this.cardsList = cardsList !== null ? cardsList : [];
     const addCountElem = 1 - this.cardsList.length;
 
     for (let i = 0; i < addCountElem; i += 1) {
       this.addCard();
     }
-  }
+  },
 };
 </script>
 

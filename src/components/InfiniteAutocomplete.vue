@@ -14,18 +14,18 @@
 </template>
 
 <script>
-const autocompleteMenuSelector = ".v-autocomplete__content";
+const autocompleteMenuSelector = '.v-autocomplete__content';
 
 export default {
   props: {
     hasMore: Boolean,
     items: Array,
     itemText: String,
-    itemValue: String
+    itemValue: String,
   },
   methods: {
     handleChange(event) {
-      this.$emit("onChange", event);
+      this.$emit('onChange', event);
     },
     handleScroll(event) {
       const element = event.target;
@@ -38,21 +38,21 @@ export default {
         this.handleEndOfItemsList(event);
       }
     },
-    handleEndOfItemsList(event) {
+    handleEndOfItemsList() {
       if (this.hasMore) {
-        this.$emit("needMore");
+        this.$emit('needMore');
       }
-    }
+    },
   },
   mounted() {
     const element = document.querySelectorAll(autocompleteMenuSelector)[0];
 
-    element.addEventListener("scroll", this.handleScroll);
+    element.addEventListener('scroll', this.handleScroll);
   },
   beforeDestroy() {
     const element = document.querySelectorAll(autocompleteMenuSelector)[0];
 
-    element.removeEventListener("scroll", this.handleScroll);
-  }
+    element.removeEventListener('scroll', this.handleScroll);
+  },
 };
 </script>

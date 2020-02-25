@@ -569,7 +569,7 @@ import userSettings from "./userSettings.vue";
 import Autosuggest from "../../components/Autosuggest";
 
 export default {
-  name: "Orders",
+  name: 'Orders',
   components: {
     autosuggest: Autosuggest,
     OrderEdit,
@@ -577,7 +577,7 @@ export default {
     ChangeStatus,
     changeDescription,
     changeAlreadyPaid,
-    userSettings
+    userSettings,
   },
   data() {
     return {
@@ -592,17 +592,17 @@ export default {
       },
       loadingData: [
         {
-          title: "Получение заказов",
+          title: 'Получение заказов',
           error: false,
           loading: true,
           color: "amber",
           id: "orders"
         }
       ],
-      dateNowStr: "",
+      dateNowStr: '',
       dataStartPicker: false,
       dataEndPicker: false,
-      search: "",
+      search: '',
       dialogForm: false,
       ordersList: [],
       statusList: [],
@@ -619,29 +619,29 @@ export default {
       floristPrinted: [],
       selectedOrders: [],
       deliveryTimeOfDayList: {
-        1: "Утро",
-        2: "День",
-        3: "Вечер"
+        1: 'Утро',
+        2: 'День',
+        3: 'Вечер',
       },
       userSettings: [],
       pagination: {
-        sortBy: "id",
+        sortBy: 'id',
         rowsPerPage: -1,
-        descending: false
+        descending: false,
       },
       deliveryTimeOfDayFilter: [
         {
-          name: "Утро",
-          id: 1
+          name: 'Утро',
+          id: 1,
         },
         {
-          name: "День",
-          id: 2
+          name: 'День',
+          id: 2,
         },
         {
-          name: "Вечер",
-          id: 3
-        }
+          name: 'Вечер',
+          id: 3,
+        },
       ],
       take: 20,
       page: 0,
@@ -926,19 +926,17 @@ export default {
     },
     updateOrderList(newValue) {
       if (newValue) {
-        this.$store.commit("setUpdateOrderList", false);
+        this.$store.commit('setUpdateOrderList', false);
         this.getOrdersList(false);
       }
-    }
+    },
   },
   computed: {
     updateOrderList() {
       return this.$store.getters.getUpdateOrderList;
     },
     loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     orderSourceTypeEditElem() {
@@ -946,22 +944,22 @@ export default {
       return editElem ? editElem.orderSourceType : [];
     },
     headersTable() {
-      const cols = this.userSettings.map(item => {
+      const cols = this.userSettings.map((item) => {
         const elem = {
           text: item.columnName,
-          align: "left",
+          align: 'left',
           value: item.sortField,
-          width: item.width
+          width: item.width,
         };
 
         return elem;
       });
 
       const colAction = {
-        text: "",
-        align: "right",
+        text: '',
+        align: 'right',
         sortable: false,
-        value: "action"
+        value: 'action',
       };
 
       cols.push(colAction);
@@ -970,7 +968,7 @@ export default {
     },
     printOrdersIds() {
       return this.selectedOrders.map(item => item.id);
-    }
+    },
   },
   methods: {
     formatDate(date, dateFormat) {
@@ -985,35 +983,35 @@ export default {
     },
     printOrders(type) {
       const arId = this.selectedOrders.map(item => item.id);
-      if (type === "delivery") {
-        this.$router.push({ name: "ordersDelivery", params: { ids: arId } });
-      } else if (type === "florist") {
-        this.$router.push({ name: "ordersFlorist", params: { ids: arId } });
+      if (type === 'delivery') {
+        this.$router.push({ name: 'ordersDelivery', params: { ids: arId } });
+      } else if (type === 'florist') {
+        this.$router.push({ name: 'ordersFlorist', params: { ids: arId } });
       }
     },
     printDoc(id, type) {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/order/${id}/${type}`;
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     },
     printDayOrders() {
       const dateNow = new Date();
-      const dateNowStr = dateNow.toISOString().split("T")[0];
+      const dateNowStr = dateNow.toISOString().split('T')[0];
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/day-orders/${dateNowStr}`;
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     },
     customFilter() {
       this.page = 0;
 
       if (this.$route.query.client === undefined) {
-        this.$store.commit("setOrderFilter", this.filter);
+        this.$store.commit('setOrderFilter', this.filter);
       }
       this.getOrdersList();
     },
     changeShowElem() {
-      localStorage.setItem("countElemPage", this.take);
-      this.$store.commit("setCountElemPage", this.take);
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
       this.page = 0;
       this.getOrdersList();
     },
@@ -1025,7 +1023,7 @@ export default {
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, "");
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
       return (
@@ -1066,7 +1064,7 @@ export default {
       this.dialogForm = true;
     },
     createdBouquet: function createdBouquet(item) {
-      let cardsList = JSON.parse(localStorage.getItem("cardsList"));
+      let cardsList = JSON.parse(localStorage.getItem('cardsList'));
       cardsList = cardsList !== null ? cardsList : [];
 
       const index = cardsList.findIndex(card => card.props.order === item.id);
@@ -1082,15 +1080,15 @@ export default {
             decorPercent: 20,
             deliveryCost: item.deliveryCost,
             salePercent: 0,
-            sumDecorAdditional: 0
+            sumDecorAdditional: 0,
           },
-          goods: []
+          goods: [],
         });
       } else {
         cardsList[index].props.clientId = item.client.id;
       }
-      localStorage.setItem("cardsList", JSON.stringify(cardsList));
-      this.$router.push({ path: "/", query: { selectOrder: item.id } });
+      localStorage.setItem('cardsList', JSON.stringify(cardsList));
+      this.$router.push({ path: '/', query: { selectOrder: item.id } });
     },
     getWeekEndDate() {
       const date = new Date();
@@ -1099,7 +1097,7 @@ export default {
         diff += 6;
       }
       date.setDate(date.getDate() + 1 * diff);
-      return date.toISOString().split("T")[0];
+      return date.toISOString().split('T')[0];
     },
     getWeekStartDate() {
       const date = new Date();
@@ -1108,7 +1106,7 @@ export default {
         diff += 7;
       }
       date.setDate(date.getDate() + -1 * diff);
-      return date.toISOString().split("T")[0];
+      return date.toISOString().split('T')[0];
     },
     setFilterDateNow() {
       this.filter.dateStart = this.dateNowStr;
@@ -1126,7 +1124,7 @@ export default {
         date.getUTCFullYear(),
         date.getUTCMonth(),
         1,
-        date.getUTCHours()
+        date.getUTCHours(),
       );
       const lastDay = new Date(
         date.getUTCFullYear(),
@@ -1134,10 +1132,10 @@ export default {
         0,
         23,
         59,
-        59
+        59,
       );
-      const dateStart = firstDay.toISOString().split("T")[0];
-      const dateEnd = lastDay.toISOString().split("T")[0];
+      const dateStart = firstDay.toISOString().split('T')[0];
+      const dateEnd = lastDay.toISOString().split('T')[0];
 
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
@@ -1156,8 +1154,8 @@ export default {
       this.page = 0;
     },
     setFilterNewOrderSite() {
-      this.filter.dateStart = "";
-      this.filter.dateEnd = "";
+      this.filter.dateStart = '';
+      this.filter.dateEnd = '';
       this.filter.orderSourceType = 2;
       this.filter.orderStatus = 1;
       this.page = 0;
@@ -1179,7 +1177,7 @@ export default {
 
       const sort = {
         sortBy: this.pagination.sortBy,
-        descending: this.pagination.descending
+        descending: this.pagination.descending,
       };
 
       this.$store.commit("setOrderSort", sort);
@@ -1189,13 +1187,13 @@ export default {
     const userFilter = this.$store.getters.getOrderFilter;
 
     const date = new Date();
-    const dateNowStr = date.toISOString().split("T")[0];
+    const dateNowStr = date.toISOString().split('T')[0];
     this.dateNowStr = dateNowStr;
 
     const dateStart = dateNowStr;
 
     date.setDate(date.getDate() + 7);
-    const dateEnd = date.toISOString().split("T")[0];
+    const dateEnd = date.toISOString().split('T')[0];
 
     this.take = localStorage.getItem("countElemPage") || this.$store.getters.getCountElemPage;
 

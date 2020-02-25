@@ -164,6 +164,7 @@
                     handleDirty();
                   "
                   :search-input.sync="clientName"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -212,6 +213,7 @@
                     handleDirty();
                   "
                   v-if="editedItem.clientType === 2"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -424,6 +426,7 @@
                   "
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
+                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-text-field
@@ -590,7 +593,7 @@ export default {
     yandexMap,
     ymapMarker,
     AutocompleteAddress,
-    DeliveryMap
+    DeliveryMap,
   },
   data() {
     return {
@@ -601,24 +604,24 @@ export default {
         id: -1,
         isCustomerRecipient: false,
         client: 0,
-        clientName: "",
-        clientPhone: "",
+        clientName: '',
+        clientPhone: '',
         courier: null,
         delivery: false,
-        deliveryDate: "",
-        deliveryTime: "",
+        deliveryDate: '',
+        deliveryTime: '',
         deliveryTimeOfDay: null,
         createdBy: 0,
         orderSourceType: [],
-        description: "",
-        orderCost: "",
+        description: '',
+        orderCost: '',
         addressee: null,
-        addresseeName: "",
-        addresseePhone: "",
-        address: "",
-        entrance: "",
-        flat: "",
-        floor: "",
+        addresseeName: '',
+        addresseePhone: '',
+        address: '',
+        entrance: '',
+        flat: '',
+        floor: '',
         orderStatus: 1,
         clientType: 1,
         deliveryType: 1,
@@ -697,9 +700,9 @@ export default {
         .filter(item => item.coordinates.length === 2)
         .map(order => ({
           id: order.id,
-          coordinates: order.coordinates
+          coordinates: order.coordinates,
         }));
-    }
+    },
   },
   methods: {
     handleBeforeUnload(e) {
@@ -717,7 +720,7 @@ export default {
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, "");
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
       return (
@@ -742,13 +745,13 @@ export default {
 
         findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.clientName = "";
-        this.editedItem.clientPhone = "";
-        this.editedItem.clientType = "";
-        this.editedItem.address = "";
-        this.editedItem.entrance = "";
-        this.editedItem.flat = "";
-        this.editedItem.floor = "";
+        this.editedItem.clientName = '';
+        this.editedItem.clientPhone = '';
+        this.editedItem.clientType = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setDataAddressee() {
@@ -765,12 +768,12 @@ export default {
 
         findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.addresseeName = "";
-        this.editedItem.addresseePhone = "";
-        this.editedItem.address = "";
-        this.editedItem.entrance = "";
-        this.editedItem.flat = "";
-        this.editedItem.floor = "";
+        this.editedItem.addresseeName = '';
+        this.editedItem.addresseePhone = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setPointByClientAddress(address) {
@@ -812,10 +815,10 @@ export default {
         if (inside.polygon(zone.coordinates, geo)) {
           this.editedItem.deliveryCost = zone.priceForKm
             ? (getDistance(
-                { longitude: geo[0], latitude: geo[1] },
-                { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
-                1000
-              ) *
+              { longitude: geo[0], latitude: geo[1] },
+              { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
+              1000,
+            ) *
                 zone.priceForKm) /
               1000
             : zone.price;
@@ -825,10 +828,10 @@ export default {
     },
     getPaymentTypesList() {
       const itemParams = {
-        type: "paymentTypes",
+        type: 'paymentTypes',
         filter: {
-          isActive: true
-        }
+          isActive: true,
+        },
       };
 
       this.$store
@@ -839,82 +842,82 @@ export default {
           );
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getUsersList() {
       const itemParams = {
-        type: "login"
+        type: 'login',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
           this.userInfo = response;
           this.userInfo.id = +this.userInfo.id;
           this.editedItem.createdBy = +this.userInfo.id;
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getTsList() {
       const itemParams = {
-        type: "order-source"
+        type: 'order-source',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.tsList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.tsList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getDeliveryList() {
       const itemParams = {
-        type: "delivery-type"
+        type: 'delivery-type',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.deliveryList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.deliveryList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getStatusList() {
       const itemParams = {
-        type: "order-status"
+        type: 'order-status',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.statusList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.statusList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getClientsList() {
       const itemParams = {
-        type: "clients",
+        type: 'clients',
         filter: {
-          isActive: true
-        }
+          isActive: true,
+        },
       };
 
       this.$store
@@ -928,69 +931,67 @@ export default {
             .filter(i => i.id !== 0);
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getClientTypeList() {
       const itemParams = {
-        type: "client-type"
+        type: 'client-type',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.typeClient = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.typeClient = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getCouriersList() {
       const itemParams = {
-        type: "users",
+        type: 'users',
         filter: {
           isActive: true,
-          group: 4
-        }
+          group: 4,
+        },
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.couriersList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.couriersList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getOrdersList: function getOrdersList() {
       const itemParams = {
-        type: "orders",
+        type: 'orders',
         filter: {
           deliveryDate: this.editedItem.deliveryDate,
           deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
           deliveryType: 2,
-          status: [1, 2, 3]
-        }
+          status: [1, 2, 3],
+        },
       };
 
-      Object.keys(itemParams.filter).forEach(
-        key => itemParams.filter[key] == null && delete itemParams.filter[key]
-      );
+      Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
           this.ordersList = response.orders;
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     cancel() {
@@ -1004,7 +1005,7 @@ export default {
 
       this.editedItem = {};
       this.createdSuccess = false;
-      this.$emit("cancel");
+      this.$emit('cancel');
     },
     submitForm() {
       const validate = this.$refs.form.validate();
@@ -1067,7 +1068,7 @@ export default {
         }
       };
 
-      this.$store.dispatch("addItem", itemParams).then(client => {
+      this.$store.dispatch('addItem', itemParams).then((client) => {
         this.editedItem.client = client.id;
         this.addOrder();
       });
@@ -1082,7 +1083,7 @@ export default {
     },
     bouquetDelete(index) {
       this.editedItem.bouquets.splice(index, 1);
-    }
+    },
   },
   created() {
     window.addEventListener("beforeunload", this.handleBeforeUnload);
@@ -1099,7 +1100,7 @@ export default {
     this.getClientTypeList();
     this.getCouriersList();
     this.getPaymentTypesList();
-  }
+  },
 };
 </script>
 

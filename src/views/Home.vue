@@ -132,9 +132,9 @@
                   <div
                     class="py-1 px-1 text-xs-center"
                     :style="
-                      'height: 30px;' + item.color
-                        ? `background-color: ${item.color}`
-                        : ''
+                      item.color
+                        ? `background-color: ${item.color}; height: 30px;`
+                        : 'height: 30px;'
                     "
                     :key="index"
                   >
@@ -333,11 +333,12 @@ export default {
     goodsList: {
       query: gql`
         query {
-          goodsList: goods {
+          goodsList: goods(order_by: { sortIndex: desc }) {
             id
             name
             price
             stockBalance
+            color
           }
         }
       `,
@@ -345,8 +346,14 @@ export default {
         this.handleLoadingSuccess('goods', 'Товары получены!');
       },
       error() {
-        this.handleLoadingFailed('goods', 'Ошибка получения товаров!');
+        this.handleLoadingFailed("goods", "Ошибка получения товаров!");
       },
+      update({ goodsList }) {
+        return goodsList.map(g => ({
+          ...g,
+          originalBalance: g.stockBalance
+        }));
+      }
     },
     paymentTypesList: {
       query: gql`
@@ -365,12 +372,16 @@ export default {
         good.stockBalance = good.originalBalance;
       }
 
-      for (let card of this.cardsList) {
-        for (let good of card.goods) {
-          const currentGoods = this.goodsList.find(g => g.id === good.id);
-          currentGoods.originalBalance = currentGoods.stockBalance;
-          currentGoods.stockBalance = good.stockBalance - good.value;
-        }
+      for (let good of this.goodsList) {
+        const goodCardsSum = this.cardsList.reduce((acc, card) => {
+          const { value } = card.goods.find(g => g.id === good.id) || {
+            value: 0
+          };
+
+          return acc + value;
+        }, 0);
+
+        good.stockBalance = good.stockBalance - goodCardsSum;
       }
 
       return this.goodsList;

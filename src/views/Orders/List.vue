@@ -235,7 +235,7 @@
             >
 
             <v-btn color="primary" dark @click.prevent="setFilter14February()"
-              >14 февраля</v-btn
+              >6 марта</v-btn
             >
 
             <v-btn color="primary" dark @click.prevent="setFilter8March()"
@@ -305,7 +305,7 @@
             <tr
               :class="[
                 props.item.orderStatus.color,
-                props.item.topLine ? 'top-line' : ''
+                props.item.isTopLine ? 'top-line' : ''
               ]"
             >
               <td
@@ -318,7 +318,7 @@
                   hide-details
                 ></v-checkbox>
               </td>
-              <template v-for="(col, colIndex) in colsTable">
+              <template v-for="(col, colIndex) in userSettings">
                 <td
                   class="px-1"
                   :style="{
@@ -338,29 +338,28 @@
                           props.item[prop.field] ||
                             prop.field === 'incognito' ||
                             prop.field === 'description' ||
-                            prop.field === 'alreadyPaid'
+                            prop.field === 'alreadyPaid' ||
+                            prop.field === 'orderSourceType'
                         "
                       >
                         <template v-if="prop.field === 'deliveryTimeOfDay'">
                           {{ deliveryTimeOfDayList[props.item[prop.field]] }}
                         </template>
+                        <template v-else-if="prop.field === 'createdAt'">
+                          {{ formatDate(props.item[prop.field], "dd.LL") }}
+                        </template>
                         <template v-else-if="prop.field === 'createdBy'">
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'orderSourceType'">
-                          <template
-                            v-for="(item, index) in props.item[
-                              'orderSourceTypeIds'
-                            ]"
-                          >
-                            <template v-if="item">
-                              <br :key="index" v-if="index" />{{
-                                this.orderSourceTypes.find(o => {
-                                  return o.id == item;
-                                }).name
-                              }}
-                            </template>
-                          </template>
+                          {{
+                            props.item["orderSourceTypeIds"]
+                              .map(
+                                st =>
+                                  orderSourceTypes.find(t => t.id === st).name
+                              )
+                              .join(", ")
+                          }}
                         </template>
                         <template v-else-if="prop.field === 'incognito'">
                           {{ props.item[prop.field] ? "Да" : "Нет" }}
@@ -387,7 +386,13 @@
                           <template
                             v-for="(item, key) in props.item[prop.field]"
                           >
-                            <div :class="item.isReady ? 'green' : ''">
+                            <div
+                              :class="
+                                item.readyBouquetCount.aggregate.count !== 0
+                                  ? 'green'
+                                  : ''
+                              "
+                            >
                               {{ item.name }} - {{ item.count }}
                               <template v-if="item.place">
                                 ({{ item.place }})
@@ -408,7 +413,7 @@
                           {{ props.item[prop.field].name }}
                         </template>
                         <template v-else-if="prop.field === 'deliveryDate'">
-                          {{ props.item[prop.field] }}
+                          {{ formatDate(props.item[prop.field], "eee dd.MM") }}
                         </template>
                         <template v-else-if="prop.field === 'courier'">
                           {{ props.item[prop.field].name }}
@@ -551,6 +556,10 @@
 
 <script>
 import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+import isAfter from "date-fns/isAfter";
+import parse from "date-fns/parse";
 import OrderEdit from "./edit.vue";
 import OrderAdd from "./add.vue";
 import ChangeStatus from "./changeStatus.vue";
@@ -671,9 +680,9 @@ export default {
                 { clientId: { _eq: $clientId } }
               ]
             }
-            order_by: { deliveryDate: asc, deliveryTime: asc, ${
-              this.pagination.sortBy
-            }: ${this.pagination.descending ? "desc" : "asc"} }
+            order_by: { ${this.pagination.sortBy}: ${
+          this.pagination.descending ? "desc" : "asc"
+        } }
           ) {
             id
             deliveryTimeOfDay
@@ -685,9 +694,16 @@ export default {
             clientName
             clientPhone
             coordinates
+            address
+            entrance
+            flat
+            floor
             addresseeName
             addresseePhone
+            deliveryCost
+            isAlreadyPrinted
             deliveryType {
+              id
               name
             }
             deliveryDate
@@ -704,15 +720,26 @@ export default {
             courier {
               name
             }
+            client {
+              id
+              name
+            }
             bouquets: orderBouquets {
               name
               count
               place
+              readyBouquetCount: bouquets_aggregate {
+                aggregate {
+                  count
+                }
+              }
             }
+            createdAt: created_at
             createdBy {
               name
             }
             orderStatus {
+              id
               name
               color
             }
@@ -738,6 +765,23 @@ export default {
               ? this.filter.deliveryTimeOfDay
               : undefined
         };
+      },
+      update({ ordersList }) {
+        const parseDateFormat = "yyyy-LL-dd";
+        let prevItem = null;
+
+        for (let order of ordersList) {
+          order.isTopLine =
+            prevItem &&
+            isAfter(
+              parse(order.deliveryDate, parseDateFormat, new Date()),
+              parse(prevItem, parseDateFormat, new Date())
+            );
+
+          prevItem = order.deliveryDate;
+        }
+
+        return ordersList;
       },
       skip() {
         return this.skipQuery;
@@ -922,23 +966,14 @@ export default {
 
       return cols;
     },
-    colsTable() {
-      const cols = this.userSettings.map((item) => {
-        const elem = {
-          width: item.width,
-          dataFields: item.dataFields,
-        };
-
-        return elem;
-      });
-
-      return cols;
-    },
     printOrdersIds() {
       return this.selectedOrders.map(item => item.id);
     },
   },
   methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
+    },
     onClientSelect(item) {
       this.filter.clientItem = item;
     },
@@ -1040,6 +1075,7 @@ export default {
           props: {
             floristId: null,
             orderId: item.id,
+            client: item.client,
             clientId: item.client.id,
             decorPercent: 20,
             deliveryCost: item.deliveryCost,
@@ -1107,8 +1143,8 @@ export default {
     },
     setFilter14February() {
       const date = new Date();
-      this.filter.dateStart = `${date.getFullYear()}-02-14`;
-      this.filter.dateEnd = `${date.getFullYear()}-02-14`;
+      this.filter.dateStart = `${date.getFullYear()}-03-06`;
+      this.filter.dateEnd = `${date.getFullYear()}-03-06`;
       this.page = 0;
     },
     setFilter8March() {
@@ -1159,7 +1195,7 @@ export default {
     date.setDate(date.getDate() + 7);
     const dateEnd = date.toISOString().split('T')[0];
 
-    this.take = this.$store.getters.getCountElemPage;
+    this.take = localStorage.getItem("countElemPage") || this.$store.getters.getCountElemPage;
 
     if (this.$route.query.client !== undefined) {
       this.filter.client = +this.$route.query.client;

@@ -107,6 +107,84 @@
 
               <v-flex xs2 class="px-2">
                 <v-select
+                  label="Тип"
+                  :items="[{id: 0, name: 'Все'}].concat(paymentTypes)"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.paymentType"
+                  hide-details
+                ></v-select>
+              </v-flex>
+
+<v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataStartPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (с)"
+                    v-model="filter.dateStart"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateStart"
+                    @input="dataStartPicker = false"
+                    no-title
+                    scrollable
+                    locale="ru-ru"
+                    first-day-of-week="1"
+                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataEndPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (по)"
+                    v-model="filter.dateEnd"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateEnd"
+                    @input="dataEndPicker = false"
+                    no-title
+                    locale="ru-ru"
+                    scrollable
+                    first-day-of-week="1"
+                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+
+              <v-flex xs2 class="px-2">
+                <v-select
                   label="Менеджер"
                   :items="[{ id: 0, name: 'Все' }].concat(usersList)"
                   item-text="name"
@@ -118,7 +196,15 @@
               </v-flex>
 
               <v-flex xs3 class="px-2">
-                <v-autocomplete
+                <autosuggest
+                  :suggestions="suggestions"
+                  placeholder="Клиенты"
+                  :value="client.name"
+                  @onChange="onInputChange"
+                  @onSelect="onSelected"
+                  class="mt-3"
+                />
+                <!-- <v-autocomplete
                   label="Клиент"
                   :items="
                     [{ id: 0, name: 'Все', phone: '' }].concat(clientsList)
@@ -131,7 +217,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   @change="handleClientChange($event)"
-                ></v-autocomplete>
+                ></v-autocomplete> -->
               </v-flex>
             </v-layout>
           </v-flex>
@@ -288,6 +374,7 @@
 <script>
 import BouquetEdit from './edit.vue';
 import BouquetCancel from './cancel.vue';
+import Autosuggest from '../../components/Autosuggest';
 import gql from 'graphql-tag';
 
 export default {
@@ -295,6 +382,7 @@ export default {
   components: {
     BouquetEdit,
     BouquetCancel,
+    Autosuggest,
   },
   data() {
     return {
@@ -308,8 +396,11 @@ export default {
         },
       ],
       filter: {
-        user: '',
-        client: '',
+        user: 0,
+        clientId: '',
+        dateStart: undefined,
+        dateEnd: undefined,
+        paymentType: 0,
       },
       search: '',
       headersTable: [
@@ -365,14 +456,23 @@ export default {
       tableLoading: false,
       selectedClientId: 0,
       selectedManagerId: 0,
+      client: {},
+      queryName: '',
+      skipClientsQuery: true,
+      suggestions: [],
+      dataStartPicker: false,
+      dataEndPicker: false,
     };
   },
   apollo: {
     bouquetsList: {
       query: gql`
         query BouquetsList(
-          $selectedClientId: bigint
+          $clientId: bigint
           $selectedManagerId: bigint
+          $paymentTypeId: bigint
+          $startDate: timestamptz
+          $endDate: timestamptz
           $limit: Int
           $offset: Int
         ) {
@@ -382,8 +482,11 @@ export default {
             offset: $offset
             where: {
               _and: [
-                { client: { id: { _eq: $selectedClientId } } }
+                { clientId: { _eq: $clientId } }
                 { user: { id: { _eq: $selectedManagerId } } }
+                { payments: { paymentTypeId: { _eq: $paymentTypeId } } }
+                { created_at: { _gte: $startDate } }
+                { created_at: { _lte: $endDate } }
               ]
             }
           ) {
@@ -434,23 +537,56 @@ export default {
         return {
           selectedManagerId:
             this.selectedManagerId !== 0 ? this.selectedManagerId : undefined,
-          selectedClientId:
-            this.selectedClientId !== 0 ? this.selectedClientId : undefined,
+          clientId: this.filter.clientId >= 0 && this.filter.clientId !== ''
+            ? this.filter.clientId
+            : undefined,
+          paymentTypeId: 
+            this.filter.paymentType !== 0 ? this.filter.paymentType : undefined,
+          startDate: `${this.filter.dateStart} 00:00:00`,
+          endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
         };
       },
     },
-    clientsList: {
+    paymentTypes: {
       query: gql`
         query {
-          clientsList: clients {
+          paymentTypes: paymentTypes(
+            where: { active: { _eq: true } }
+          ) {
             id
             name
-            phone
           }
         }
       `,
+    },
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+            id
+            name
+            type: clientType {
+              id
+            }
+            discountPercent: sale
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.suggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.queryName,
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      },
     },
     usersList: {
       query: gql`
@@ -472,9 +608,17 @@ export default {
     },
   },
   methods: {
-    handleClientChange(clientId) {
-      this.selectedClientId = clientId !== 0 ? clientId : undefined;
-      this.page = 0;
+    onSelected(item) {
+      this.client = item;
+      this.filter.clientId = item.id;
+    },
+    onInputChange(text) {
+      this.queryName = `%${text}%`;
+      this.skipClientsQuery = false;
+
+      if (text === '') {
+        this.filter.clientId = '';
+      }
     },
     handleManagerChange(managerId) {
       this.selectedManagerId = managerId !== 0 ? managerId : undefined;
@@ -488,15 +632,6 @@ export default {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
       window.open(url, '_blank');
-    },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return (
-        textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
-      );
     },
     getBouquetsList(loading = true) {
       if (loading) {
@@ -601,8 +736,17 @@ export default {
     },
   },
   mounted() {
+    const date = new Date();
+    const dateEnd = date.toISOString().split('T')[0];
+
+    date.setDate(date.getDate() - 30);
+    const dateStart = date.toISOString().split('T')[0];
+
+    this.filter.dateStart = dateStart;
+    this.filter.dateEnd = dateEnd;
+
     if (this.$route.query.client !== undefined) {
-      this.filter.client = +this.$route.query.client;
+      this.filter.clientId = +this.$route.query.client;
     }
   },
 };

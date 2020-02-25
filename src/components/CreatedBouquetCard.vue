@@ -352,7 +352,7 @@
 </template>
 
 <script>
-import Autosuggest from './Autosuggest'
+import Autosuggest from "./Autosuggest";
 import gql from "graphql-tag";
 
 import { ClientTypes, PaymentTypes } from '../constants';
@@ -361,7 +361,7 @@ import InfiniteAutocomplete from '../components/InfiniteAutocomplete';
 export default {
   name: 'CreatedBouquetCard',
   components: {
-    'autosuggest': Autosuggest
+    autosuggest: Autosuggest
   },
   props: {
     goods: {
@@ -645,7 +645,7 @@ export default {
           floristId: this.florist,
           clientId: this.clientId,
           orderId: this.order,
-          totalCost: this.sumPay,
+          totalCost: this.sumPay / +this.bouquetCount,
           decorPercent: +this.decorPercent,
           decorCost: this.sumDecor + this.sumDecorAdditional,
           deliveryCost: this.delivery,
@@ -653,19 +653,24 @@ export default {
           sumSale: this.sumSale,
           payment: {
             paymentTypeId: this.typePay,
-            amount: this.partlyPayment
-              ? this.sumPay - this.secondSumClient
-              : this.sumPay,
+            amount:
+              this.secondTypePay !== PaymentTypes.CASH &&
+              this.typePay === PaymentTypes.CASH
+                ? +this.sumClient - +this.sumChange
+                : +this.sumPay,
             clientId: this.clientId,
             description: '',
           },
           secondPayment: this.partlyPayment
             ? {
-              paymentTypeId: this.secondTypePay,
-              amount: this.secondSumClient,
-              clientId: this.clientId,
-              description: '',
-            }
+                paymentTypeId: this.secondTypePay,
+                amount:
+                  this.secondTypePay === PaymentTypes.CASH
+                    ? +this.secondSumClient - +this.sumChange
+                    : +this.secondSumClient,
+                clientId: this.clientId,
+                description: ""
+              }
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,

@@ -215,7 +215,7 @@ export default {
       this.$store.dispatch('getItem', itemParams).then((response) => {
         this.purchase = {
           ...response,
-          purchasedGoods: !response.purchasedGoods ? [] : response.purchasedGoods
+          purchasedGoods: !response.purchasedGoods ? [] : response.purchasedGoods,
         };
 
         const loadData = this.loadingData.find(item => item.id === itemParams.type);

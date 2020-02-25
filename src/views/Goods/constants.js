@@ -1,3 +1,3 @@
 export const PaymentTypes = {
-  Revaluation: 3
+  Revaluation: 3,
 };

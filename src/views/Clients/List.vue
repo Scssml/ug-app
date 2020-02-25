@@ -1,25 +1,18 @@
 <template>
-  <v-container
-    fluid
-    class="pa-0"
-  >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
+  <v-container fluid class="pa-0">
+    <v-dialog :value="loadingDialog" persistent max-width="320px">
       <v-list>
         <v-list-tile
           v-for="(item, index) in loadingData"
           :key="index"
           avatar
-          :color="(item.error) ? 'red' : item.color"
+          :color="item.error ? 'red' : item.color"
         >
           <v-list-tile-avatar>
             <v-progress-circular
               :value="100"
               :size="30"
-              :color="(item.error) ? 'red' : item.color"
+              :color="item.error ? 'red' : item.color"
               :indeterminate="item.loading"
             ></v-progress-circular>
           </v-list-tile-avatar>
@@ -30,36 +23,18 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!loadingDialog">
+    <template>
       <v-card>
         <v-card-title>
-          <v-layout
-            row
-            wrap
-          >
-            <!-- <v-flex
-              xs4
-              class="px-3"
-            >
-              <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                single-line
-                hide-details
-              ></v-text-field>
-            </v-flex> -->
-            <v-flex
-              xs2
-              class="px-3"
-            >
+          <v-layout row wrap>
+            <v-flex xs2 class="px-3">
               <v-select
                 label="Тип клиента"
-                :items="[{id: '', name: 'Все'}].concat(typeClient)"
+                :items="[{ id: 0, name: 'Все' }].concat(typeClient)"
                 item-text="name"
                 item-value="id"
                 v-model="filter.typeId"
-                @change="customFilter()"
+                @change="handleClientTypeChange($event)"
                 hide-details
               ></v-select>
             </v-flex>
@@ -71,7 +46,7 @@
                 label="Имя"
                 v-model="filter.name"
                 hide-details
-                @change="customFilter()"
+                @change="handleClientNameChange($event)"
               ></v-text-field>
             </v-flex>
           </v-layout>
@@ -79,14 +54,13 @@
 
           <v-dialog
             v-model="dialogForm"
-            persistent
-            max-width="420px"
+            persistent max-width="420px"
             :fullscreen="(printedId >= 0 && printedId !== null) ? true : false"
           >
-            <v-btn slot="activator" color="primary" dark class="mb-2">Добавить</v-btn>
-            <template
-              v-if="dialogForm"
+            <v-btn slot="activator" color="primary" dark class="mb-2"
+              >Добавить</v-btn
             >
+            <template v-if="dialogForm">
               <client-print
                 v-if="printedId >= 0 && printedId !== null"
                 :id="printedId"
@@ -103,10 +77,7 @@
                 :id="deleteId"
                 @cancel="closeDialog()"
               ></client-delete>
-              <client-add
-                v-else
-                @cancel="closeDialog()"
-              ></client-add>
+              <client-add v-else @cancel="closeDialog()"></client-add>
             </template>
           </v-dialog>
         </v-card-title>
@@ -119,7 +90,7 @@
           no-results-text="Клиентов не найдено"
           :search="search"
           :pagination.sync="pagination"
-          :loading="tableLoading"
+          :loading="!!$apollo.queries.clientsList.loading"
         >
           <template slot="headers" slot-scope="props">
             <tr>
@@ -142,24 +113,26 @@
             </tr>
           </template>
           <template slot="items" slot-scope="props">
-            <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
+            <td class="text-xs-right" style="width: 30px;">
+              {{ props.item.id }}
+            </td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.phone }}</td>
             <td>
-              {{ props.item.typeName }}
+              {{ props.item.clientType.name }}
             </td>
             <td>
               <template v-for="(item, index) in props.item.responsible">
                 <p :key="index">
                   {{ item.name }}
-                  <br>{{ item.phone }}
+                  <br />{{ item.phone }}
                 </p>
               </template>
             </td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.discountPercent }}</td>
             <td class="text-xs-right">
-              {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
+              {{ !!props.item.active ? "Да" : "Нет" }}
             </td>
             <td class="text-xs-right" style="width: 200px;">
               <v-icon
@@ -183,16 +156,16 @@
               >
                 local_florist
               </v-icon>
-              <v-icon
-                @click="editItem(props.item.id)"
-                title="Изменить"
-              >
+              <v-icon @click="editItem(props.item.id)" title="Изменить">
                 edit
               </v-icon>
               <v-icon
                 @click="deleteItem(props.item.id)"
                 class="ml-2"
-                v-if="props.item.id > 0 && $store.getters.getAuthUserGroup.code === 'admin'"
+                v-if="
+                  props.item.id > 0 &&
+                    $store.getters.getAuthUserGroup.code === 'admin'
+                "
                 title="Удалить"
               >
                 delete
@@ -200,16 +173,8 @@
             </td>
           </template>
         </v-data-table>
-        <v-layout
-          row
-          wrap
-          justify-space-around
-          class="py-2"
-        >
-          <v-flex
-            xs2
-            class="px-3"
-          >
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
             <v-text-field
               label="Количество на странице"
               v-model.number="take"
@@ -217,10 +182,7 @@
               @change="changeShowElem()"
             ></v-text-field>
           </v-flex>
-          <v-flex
-            xs10
-            class="text-xs-right px-3"
-          >
+          <v-flex xs10 class="text-xs-right px-3">
             <v-btn
               small
               color="info"
@@ -251,6 +213,7 @@ import ClientEdit from './edit.vue';
 import ClientAdd from './add.vue';
 import ClientDelete from './delete.vue';
 import ClientPrint from './printAct.vue';
+import gql from 'graphql-tag';
 
 export default {
   name: 'Clients',
@@ -266,14 +229,13 @@ export default {
         {
           title: 'Получение клиентов',
           error: false,
-          loading: true,
+          loading: false,
           color: 'indigo',
           id: 'clients',
         },
       ],
       filter: {
-        typeId: '',
-        name: '',
+        typeId: 0,
       },
       typeClient: [],
       search: '',
@@ -293,20 +255,20 @@ export default {
         {
           text: 'Телефон',
           align: 'left',
-          value: 'phoneNumber',
+          value: 'phone',
           sortable: true,
         },
         {
           text: 'Тип',
           align: 'left',
-          value: 'typeId',
+          value: 'clientType.name',
           sortable: true,
         },
         {
           text: 'Ответственный',
           align: 'left',
-          value: 'responsible',
-          sortable: false,
+          value: 'responsible.name',
+          sortable: true,
         },
         {
           text: 'Счет',
@@ -323,7 +285,7 @@ export default {
         {
           text: 'Активность',
           align: 'right',
-          value: 'isActive',
+          value: 'active',
           sortable: true,
         },
         {
@@ -339,121 +301,138 @@ export default {
       deleteId: 0,
       printedId: null,
       pagination: {
+        sortBy: 'id',
         rowsPerPage: -1,
-        sortBy: 'name',
-        descending: false,
+        descending: true,
       },
       take: 20,
       page: 0,
       tableLoading: false,
+      selectedClientType: 0,
+      selectedClientName: '',
     };
+  },
+  apollo: {
+    clientsList: {
+      query: gql`
+        query ClientsList(
+          $clientTypeId: bigint,
+          $clientName: String,
+          $limit: Int,
+          $offset: Int,
+          $orderBy: [clients_order_by!],
+        ) {
+          clientsList: clients(
+            order_by: $orderBy
+            limit: $limit
+            offset: $offset
+            where: {
+              clientType: {
+                id: {
+                  _eq: $clientTypeId
+                }
+              },
+              name: {
+                _ilike: $clientName
+              }
+            }
+          ) {
+            id
+            name
+            phone
+            address
+            birthDay
+            floor
+            flat
+            entrance
+            clientType {
+              id
+              name
+            }
+            responsible {
+              id
+              name
+              phone
+            }
+            bill
+            discountPercent: sale
+            active
+          }
+        }
+      `,
+      variables() {
+        return {
+          clientTypeId:
+            this.selectedClientType !== 0 ? this.selectedClientType : undefined,
+          clientName:
+            this.selectedClientName !== '' ? `%${this.selectedClientName}%` : undefined,
+          offset: this.page * this.take,
+          limit: this.take,
+          orderBy: this.orderBy,
+        };
+      },
+    },
+    typeClient: {
+      query: gql`
+        query {
+          typeClient: clientTypes {
+            id
+            name
+          }
+        }
+      `,
+    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
+      return loadData.length === this.loadingData.length ? 0 : 1;
+    },
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split('.');
+      let sortObject = {};
+      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder,
+            },
+          },
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder,
+          },
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
     },
   },
   methods: {
-    customFilter: function customFilter() {
-      // const filterProps = this.filter;
-      // let itemsFind = [];
-
-      // itemsFind = items.filter((item) => {
-      //   let find = false;
-      //   if (item.type === filterProps.type || filterProps.type === '') {
-      //     find = true;
-      //   }
-
-      //   return find;
-      // });
-
-      // return itemsFind;
-
-      this.page = 0;
-      this.getClientsList();
-    },
-    getClientsList: function getClientsList(loading = true) {
-      if (loading) {
-        this.tableLoading = true;
-        this.clientsList = [];
-      }
-
-      const orderFilter = {};
-
-      Object.keys(this.filter).forEach((key) => {
-        const val = this.filter[key];
-
-        if (val) {
-          orderFilter[key] = val;
-        }
-      });
-
-      const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
-
-      const itemParams = {
-        type: 'clients',
-        sort: sortSettings,
-        filter: orderFilter,
-        skip: this.page * this.take,
-        take: this.take,
-      };
-
-      const successData = 'Клиенты получены!';
-      const errorData = 'Ошибка получения клиентов!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item, index, clients) => {
-          const elem = Object.assign({}, item);
-          const itemTypeClient = this.typeClient.find(client => client.id === elem.type);
-          elem.typeName = (itemTypeClient) ? itemTypeClient.name : '-';
-
-          elem.responsible = [];
-          if (elem.id !== 0) {
-            elem.responsible = clients.filter(client => +client.referenceId === elem.id);
-          }
-          return elem;
-        });
-        this.tableLoading = false;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: 'client-type',
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.typeClient = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-        this.getClientsList();
-      }).catch(() => {
-        console.log('error');
-      });
-    },
     changeSort(column) {
+      this.clientsList = [];
       if (this.pagination.sortBy === column) {
         this.pagination.descending = !this.pagination.descending;
       } else {
         this.pagination.sortBy = column;
         this.pagination.descending = false;
       }
-
+    },
+    handleClientTypeChange(clientTypeId) {
+      this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
       this.page = 0;
-      this.getClientsList();
+    },
+    handleClientNameChange(clientName) {
+      this.selectedClientName = clientName !== '' ? clientName : '';
+      this.page = 0;
     },
     closeDialog() {
-      this.getClientsList();
       this.dialogForm = false;
       this.editedId = 0;
       this.deleteId = 0;
@@ -481,38 +460,29 @@ export default {
       localStorage.setItem('countElemPage', this.take);
       this.$store.commit('setCountElemPage', this.take);
       this.page = 0;
-      this.getClientTypeList();
     },
     prevPage() {
       this.page -= 1;
-      this.getClientTypeList();
     },
     nextPage() {
       this.page += 1;
-      this.getClientTypeList();
     },
-  },
-  mounted() {
-    this.getClientTypeList();
   },
 };
 </script>
 
 <style lang="scss" scoped>
-  .v-table {
+.v-table {
+  tr:nth-child(even) {
+    td {
+      background: #f9f9f9;
+    }
 
-    tr:nth-child(even) {
-
+    &:hover {
       td {
-        background: #f9f9f9;
-      }
-
-      &:hover {
-
-        td {
-          background: #eee;
-        }
+        background: #eee;
       }
     }
   }
+}
 </style>

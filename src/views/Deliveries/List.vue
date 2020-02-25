@@ -859,7 +859,7 @@ export default {
 
         const { settings } = response;
 
-        this.userSettings = (settings) ? settings : [];
+        this.userSettings = (settings) || [];
 
         if (settings) {
           const colSort = this.userSettings.find(item => item.sortOrder);

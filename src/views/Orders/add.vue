@@ -25,6 +25,7 @@
                   v-model.number="editedItem.createdBy"
                   hide-details
                   readonly
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-select
@@ -38,6 +39,7 @@
                   class="mb-4"
                   chips
                   multiple
+                  @change="handleDirty"
                 ></v-select>
 
                 <!-- <v-text-field
@@ -65,7 +67,10 @@
                   v-model.number="editedItem.deliveryType"
                   hide-details
                   class="mb-4"
-                  @change="editedItem.delivery = $event === 2"
+                  @change="
+                    editedItem.delivery = $event === 2;
+                    handleDirty();
+                  "
                 ></v-select>
 
                 <v-menu
@@ -79,6 +84,7 @@
                   min-width="290px"
                   class="mb-2"
                   v-if="editedItem.deliveryType !== 2"
+                  @change="handleDirty"
                 >
                   <v-text-field
                     slot="activator"
@@ -88,6 +94,7 @@
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
@@ -96,6 +103,7 @@
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
+                    @change="handleDirty"
                   ></v-date-picker>
                 </v-menu>
 
@@ -108,6 +116,7 @@
                       hide-details
                       class="mb-4"
                       v-if="editedItem.deliveryType !== 2"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
@@ -122,6 +131,7 @@
                       hide-details
                       class="mb-4"
                       v-if="editedItem.deliveryType !== 2"
+                      @change="handleDirty"
                     ></v-select>
                   </v-flex>
                 </v-layout>
@@ -135,6 +145,7 @@
                   v-model.number="editedItem.orderStatus"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-autocomplete
@@ -148,7 +159,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataClient()"
+                  @change="
+                    setDataClient();
+                    handleDirty();
+                  "
                   :search-input.sync="clientName"
                   :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
@@ -162,6 +176,7 @@
                   v-model.number="editedItem.clientType"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-text-field
@@ -170,6 +185,7 @@
                   v-model="editedItem.clientName"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -178,6 +194,7 @@
                   v-model="editedItem.clientPhone"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-autocomplete
@@ -191,7 +208,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataResponsible()"
+                  @change="
+                    setDataResponsible();
+                    handleDirty();
+                  "
                   v-if="editedItem.clientType === 2"
                   :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
@@ -207,6 +227,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-text-field
@@ -217,6 +238,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -227,6 +249,7 @@
                   class="mb-4"
                   readonly
                   v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -235,6 +258,7 @@
                   hide-details
                   placeholder="0"
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -244,6 +268,7 @@
                   placeholder="0"
                   class="mb-4"
                   v-if="editedItem.deliveryType !== 1"
+                  @change="handleDirty"
                 />
 
                 <v-text-field
@@ -252,6 +277,7 @@
                   hide-details
                   class="mb-4"
                   type="text"
+                  @change="handleDirty"
                 />
 
                 <v-select
@@ -267,7 +293,10 @@
                         ? 'Заполните поле'
                         : false
                   ]"
-                  @change="handlePrePaymentSource"
+                  @change="
+                    handlePrePaymentSource;
+                    handleDirty();
+                  "
                 />
 
                 <v-checkbox
@@ -276,6 +305,7 @@
                   color="primary"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty()"
                 ></v-checkbox>
               </v-flex>
 
@@ -295,6 +325,7 @@
                   hide-details
                   class="mb-4"
                   v-if="editedItem.orderStatus === 3"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-menu
@@ -316,11 +347,15 @@
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
-                    @change="getOrdersList()"
+                    @change="
+                      getOrdersList();
+                      handleDirty();
+                    "
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -336,6 +371,7 @@
                       v-model="editedItem.deliveryTime"
                       hide-details
                       class="mb-4"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
@@ -347,7 +383,10 @@
                       item-text="name"
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
-                      @change="getOrdersList()"
+                      @change="
+                        getOrdersList();
+                        handleDirty();
+                      "
                       hide-details
                       class="mb-4"
                     ></v-select>
@@ -381,7 +420,10 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                  @change="setDataAddressee()"
+                  @change="
+                    setDataAddressee();
+                    handleDirty();
+                  "
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
                   :menu-props="{ 'closeOnClick': true }"
@@ -393,6 +435,7 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.isCustomerRecipient"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -401,11 +444,15 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.isCustomerRecipient"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <autocomplete-address
                   :value="editedItem.address"
-                  @change="updateAddress($event)"
+                  @change="
+                    updateAddress($event);
+                    handleDirty();
+                  "
                   :readonly="false"
                 ></autocomplete-address>
 
@@ -415,6 +462,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -423,6 +471,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
@@ -431,6 +480,7 @@
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
             </v-layout>
@@ -460,6 +510,7 @@
                   row-height="6"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-textarea>
               </v-flex>
               <v-flex xs2 class="pr-3">
@@ -469,18 +520,17 @@
                   v-model="bouquet.count"
                   hide-details
                   class="mb-4"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
-              <v-flex
-                xs2
-                class="pr-3"
-              >
+              <v-flex xs2 class="pr-3">
                 <v-text-field
                   label="Место"
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
                   readonly
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
               <v-flex xs1>
@@ -500,6 +550,7 @@
               row-height="12"
               hide-details
               class="my-4"
+              @change="handleDirty"
             ></v-textarea>
           </v-flex>
 
@@ -531,16 +582,18 @@ import inside from "point-in-geopolygon";
 import DeliveryMap from "./deliveryMap.vue";
 import { getDistance } from "geolib";
 import geocoder from "geocoder";
-import { PaymentTypes } from '../../constants'
+import { PaymentTypes } from "../../constants";
 
 const baseCoordinates = [53.186104, 50.1602];
+const unSaveChangesText =
+  "На форме есть несохраненные данные. Вы уверены, что хотите закрыть форму?";
 
 export default {
   components: {
     yandexMap,
     ymapMarker,
     AutocompleteAddress,
-    DeliveryMap
+    DeliveryMap,
   },
   data() {
     return {
@@ -551,24 +604,24 @@ export default {
         id: -1,
         isCustomerRecipient: false,
         client: 0,
-        clientName: "",
-        clientPhone: "",
+        clientName: '',
+        clientPhone: '',
         courier: null,
         delivery: false,
-        deliveryDate: "",
-        deliveryTime: "",
+        deliveryDate: '',
+        deliveryTime: '',
         deliveryTimeOfDay: null,
         createdBy: 0,
         orderSourceType: [],
-        description: "",
-        orderCost: "",
+        description: '',
+        orderCost: '',
         addressee: null,
-        addresseeName: "",
-        addresseePhone: "",
-        address: "",
-        entrance: "",
-        flat: "",
-        floor: "",
+        addresseeName: '',
+        addresseePhone: '',
+        address: '',
+        entrance: '',
+        flat: '',
+        floor: '',
         orderStatus: 1,
         clientType: 1,
         deliveryType: 1,
@@ -580,13 +633,13 @@ export default {
           {
             count: null,
             name: null,
-            place: '',
-            isReady: false,
-          },
+            place: "",
+            isReady: false
+          }
         ],
         responsible: null,
         prePaymentSource: null,
-        prePayment: 0,
+        prePayment: 0
       },
       createdSuccess: false,
       userInfo: {},
@@ -599,22 +652,23 @@ export default {
       ordersList: [],
       deliveryTimeOfDayList: [
         {
-          name: 'Утро',
-          id: 1,
+          name: "Утро",
+          id: 1
         },
         {
-          name: 'День',
-          id: 2,
+          name: "День",
+          id: 2
         },
         {
-          name: 'Вечер',
-          id: 3,
-        },
+          name: "Вечер",
+          id: 3
+        }
       ],
       coordsMap: [53.05, 50.101783],
       responsible: undefined,
-      clientName: '',
-      addresseeName: '',
+      clientName: "",
+      addresseeName: "",
+      isDirty: false
     };
   },
   watch: {
@@ -630,31 +684,43 @@ export default {
       if (addresseeId === undefined && val) {
         this.editedItem.addresseePhone = val;
       }
-    },
+    }
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
     },
     responsibleList() {
-      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
+      return this.clientsList.filter(
+        item => +item.referenceId === +this.editedItem.client
+      );
     },
     placemarks() {
       return this.ordersList
         .filter(item => item.coordinates.length === 2)
         .map(order => ({
           id: order.id,
-          coordinates: order.coordinates
+          coordinates: order.coordinates,
         }));
-    }
+    },
   },
   methods: {
+    handleBeforeUnload(e) {
+      if (this.isDirty) {
+        e.returnValue = unSaveChangesText;
+      }
+    },
+    handleDirty() {
+      if (!this.isDirty) {
+        this.isDirty = true;
+      }
+    },
     handlePrePaymentSource(id) {
       this.editedItem.prePaymentSource = id;
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, "");
+      const textTwo = item.phone.replace(/[^0-9]/gim, '');
       const searchText = queryText.toLowerCase();
 
       return (
@@ -679,13 +745,13 @@ export default {
 
         findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.clientName = "";
-        this.editedItem.clientPhone = "";
-        this.editedItem.clientType = "";
-        this.editedItem.address = "";
-        this.editedItem.entrance = "";
-        this.editedItem.flat = "";
-        this.editedItem.floor = "";
+        this.editedItem.clientName = '';
+        this.editedItem.clientPhone = '';
+        this.editedItem.clientType = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setDataAddressee() {
@@ -702,12 +768,12 @@ export default {
 
         findClient.address && this.setPointByClientAddress(findClient.address);
       } else {
-        this.editedItem.addresseeName = "";
-        this.editedItem.addresseePhone = "";
-        this.editedItem.address = "";
-        this.editedItem.entrance = "";
-        this.editedItem.flat = "";
-        this.editedItem.floor = "";
+        this.editedItem.addresseeName = '';
+        this.editedItem.addresseePhone = '';
+        this.editedItem.address = '';
+        this.editedItem.entrance = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
       }
     },
     setPointByClientAddress(address) {
@@ -717,16 +783,16 @@ export default {
           _,
           {
             results: [
-              { geometry: { location: { lat, lng } = {} } = {} } = {},
-            ] = [],
-          } = {},
+              { geometry: { location: { lat, lng } = {} } = {} } = {}
+            ] = []
+          } = {}
         ) => {
           this.updateAddress({
             geo: [lat, lng],
-            address,
+            address
           });
         },
-        { language: 'ru', key: window.GOOGLE_API_KEY },
+        { language: "ru", key: window.GOOGLE_API_KEY }
       );
     },
     setDataResponsible() {
@@ -749,10 +815,10 @@ export default {
         if (inside.polygon(zone.coordinates, geo)) {
           this.editedItem.deliveryCost = zone.priceForKm
             ? (getDistance(
-                { longitude: geo[0], latitude: geo[1] },
-                { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
-                1000
-              ) *
+              { longitude: geo[0], latitude: geo[1] },
+              { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
+              1000,
+            ) *
                 zone.priceForKm) /
               1000
             : zone.price;
@@ -762,174 +828,184 @@ export default {
     },
     getPaymentTypesList() {
       const itemParams = {
-        type: "paymentTypes",
+        type: 'paymentTypes',
         filter: {
-          isActive: true
-        }
+          isActive: true,
+        },
       };
 
       this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
-          this.paymentTypesList = response.filter(pt => pt.id !== PaymentTypes.BALANCE);
+          this.paymentTypesList = response.filter(
+            pt => pt.id !== PaymentTypes.BALANCE
+          );
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getUsersList() {
       const itemParams = {
-        type: "login"
+        type: 'login',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
           this.userInfo = response;
           this.userInfo.id = +this.userInfo.id;
           this.editedItem.createdBy = +this.userInfo.id;
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getTsList() {
       const itemParams = {
-        type: "order-source"
+        type: 'order-source',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.tsList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.tsList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getDeliveryList() {
       const itemParams = {
-        type: "delivery-type"
+        type: 'delivery-type',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.deliveryList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.deliveryList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getStatusList() {
       const itemParams = {
-        type: "order-status"
+        type: 'order-status',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.statusList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.statusList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getClientsList() {
       const itemParams = {
-        type: "clients",
+        type: 'clients',
         filter: {
-          isActive: true
-        }
+          isActive: true,
+        },
       };
 
       this.$store
         .dispatch("getItemsList", itemParams)
         .then(response => {
-          this.clientsList = response.map(item => {
-            item.id = +item.id;
-            return item;
-          }).filter(i => i.id !== 0);
+          this.clientsList = response
+            .map(item => {
+              item.id = +item.id;
+              return item;
+            })
+            .filter(i => i.id !== 0);
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getClientTypeList() {
       const itemParams = {
-        type: "client-type"
+        type: 'client-type',
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.typeClient = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.typeClient = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getCouriersList() {
       const itemParams = {
-        type: "users",
+        type: 'users',
         filter: {
           isActive: true,
-          group: 4
-        }
+          group: 4,
+        },
       };
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.couriersList = response.map(item => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.couriersList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     getOrdersList: function getOrdersList() {
       const itemParams = {
-        type: "orders",
+        type: 'orders',
         filter: {
           deliveryDate: this.editedItem.deliveryDate,
           deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
           deliveryType: 2,
-          status: [1, 2, 3]
-        }
+          status: [1, 2, 3],
+        },
       };
 
-      Object.keys(itemParams.filter).forEach(
-        key => itemParams.filter[key] == null && delete itemParams.filter[key]
-      );
+      Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
 
       this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
           this.ordersList = response.orders;
         })
         .catch(() => {
-          console.log("error");
+          console.log('error');
         });
     },
     cancel() {
+      if (this.isDirty) {
+        const exitConfirmation = confirm(unSaveChangesText);
+
+        if (!exitConfirmation) {
+          return;
+        }
+      }
+
       this.editedItem = {};
       this.createdSuccess = false;
-      this.$emit("cancel");
+      this.$emit('cancel');
     },
     submitForm() {
       const validate = this.$refs.form.validate();
@@ -948,10 +1024,10 @@ export default {
       propsItem.delivery = false;
 
       if (propsItem.deliveryType === 1) {
-        propsItem.address = '';
-        propsItem.entrance = '';
-        propsItem.flat = '';
-        propsItem.floor = '';
+        propsItem.address = "";
+        propsItem.entrance = "";
+        propsItem.flat = "";
+        propsItem.floor = "";
       }
 
       if (!propsItem.coordinates) {
@@ -959,27 +1035,27 @@ export default {
       }
 
       if (!propsItem.description) {
-        propsItem.description = '';
+        propsItem.description = "";
       }
 
       const itemParams = {
-        type: 'orders',
-        props: propsItem,
+        type: "orders",
+        props: propsItem
       };
 
-      this.$store.dispatch('addItem', itemParams).then(() => {
+      this.$store.dispatch("addItem", itemParams).then(() => {
         this.createdSuccess = true;
         setTimeout(() => {
-          this.$emit('cancel');
+          this.$emit("cancel");
         }, 1000);
       });
     },
     addClient() {
       const itemParams = {
-        type: 'clients',
+        type: "clients",
         props: {
           name: this.editedItem.clientName,
-          birthDay: '1900-01-01',
+          birthDay: "1900-01-01",
           bill: 0,
           sale: 0,
           phone: this.editedItem.clientPhone,
@@ -988,11 +1064,11 @@ export default {
           address: this.editedItem.address,
           entrance: this.editedItem.entrance,
           flat: this.editedItem.flat,
-          floor: this.editedItem.floor,
+          floor: this.editedItem.floor
         }
       };
 
-      this.$store.dispatch("addItem", itemParams).then(client => {
+      this.$store.dispatch('addItem', itemParams).then((client) => {
         this.editedItem.client = client.id;
         this.addOrder();
       });
@@ -1001,13 +1077,19 @@ export default {
       this.editedItem.bouquets.push({
         name: null,
         count: null,
-        place: '',
-        isReady: false,
+        place: "",
+        isReady: false
       });
     },
     bouquetDelete(index) {
       this.editedItem.bouquets.splice(index, 1);
-    }
+    },
+  },
+  created() {
+    window.addEventListener("beforeunload", this.handleBeforeUnload);
+  },
+  beforeDestroy() {
+    window.removeEventListener("beforeunload", this.handleBeforeUnload);
   },
   mounted() {
     this.getUsersList();
@@ -1018,7 +1100,7 @@ export default {
     this.getClientTypeList();
     this.getCouriersList();
     this.getPaymentTypesList();
-  }
+  },
 };
 </script>
 

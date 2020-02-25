@@ -1,25 +1,18 @@
 <template>
-  <v-container
-    fluid
-    class="pa-0"
-  >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
+  <v-container fluid class="pa-0">
+    <v-dialog :value="loadingDialog" persistent max-width="320px">
       <v-list>
         <v-list-tile
           v-for="(item, index) in loadingData"
           :key="index"
           avatar
-          :color="(item.error) ? 'red' : item.color"
+          :color="item.error ? 'red' : item.color"
         >
           <v-list-tile-avatar>
             <v-progress-circular
               :value="100"
               :size="30"
-              :color="(item.error) ? 'red' : item.color"
+              :color="item.error ? 'red' : item.color"
               :indeterminate="item.loading"
             ></v-progress-circular>
           </v-list-tile-avatar>
@@ -114,20 +107,108 @@
 
               <v-flex xs2 class="px-2">
                 <v-select
+                  label="Тип"
+                  :items="[{id: 0, name: 'Все'}].concat(paymentTypes)"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.paymentType"
+                  hide-details
+                ></v-select>
+              </v-flex>
+
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataStartPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (с)"
+                    v-model="filter.dateStart"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateStart"
+                    @input="dataStartPicker = false"
+                    no-title
+                    scrollable
+                    locale="ru-ru"
+                    first-day-of-week="1"
+                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+              <v-flex
+                xs2
+                class="px-2"
+              >
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataEndPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (по)"
+                    v-model="filter.dateEnd"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateEnd"
+                    @input="dataEndPicker = false"
+                    no-title
+                    locale="ru-ru"
+                    scrollable
+                    first-day-of-week="1"
+                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+
+              <v-flex xs2 class="px-2">
+                <v-select
                   label="Менеджер"
-                  :items="[{id: '', name: 'Все'}].concat(usersList)"
+                  :items="[{ id: 0, name: 'Все' }].concat(usersList)"
                   item-text="name"
                   item-value="id"
                   v-model="filter.user"
                   hide-details
-                  @change="customFilter()"
+                  @change="handleManagerChange($event)"
                 ></v-select>
               </v-flex>
 
               <v-flex xs3 class="px-2">
-                <v-autocomplete
+                <autosuggest
+                  :suggestions="suggestions"
+                  placeholder="Клиенты"
+                  :value="client.name"
+                  @onChange="onInputChange"
+                  @onSelect="onSelected"
+                  class="mt-3"
+                />
+                <!-- <v-autocomplete
                   label="Клиент"
-                  :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
+                  :items="
+                    [{ id: 0, name: 'Все', phone: '' }].concat(clientsList)
+                  "
                   :filter="clientsFilter"
                   item-text="name"
                   item-value="id"
@@ -135,27 +216,16 @@
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
-                  @change="customFilter()"
-                ></v-autocomplete>
+                  @change="handleClientChange($event)"
+                ></v-autocomplete> -->
               </v-flex>
-
-              <!-- <v-flex xs2 class="px-2">
-                <v-select
-                  label="Клиент"
-                  :items="allClients"
-                  v-model="filterClientStatus"
-                  item-value="id"
-                  item-text="name"
-                  @change="filterByClient"
-                ></v-select>
-              </v-flex> -->
             </v-layout>
           </v-flex>
           <v-spacer></v-spacer>
           <v-dialog
             v-model="dialogForm"
             persistent
-            :max-width="(editDialog) ? '1200px' : '420px'"
+            :max-width="editDialog ? '1200px' : '420px'"
           >
             <bouquet-edit
               v-if="editedId && editDialog"
@@ -180,7 +250,7 @@
           no-results-text="Букетов не найдено"
           :search="search"
           :pagination.sync="pagination"
-          :loading="tableLoading"
+          :loading="!!$apollo.queries.bouquetsList.loading"
         >
           <template slot="headers" slot-scope="props">
             <tr>
@@ -203,22 +273,33 @@
             </tr>
           </template>
           <template slot="items" slot-scope="props">
-            <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
+            <td class="text-xs-right" style="width: 30px;">
+              {{ props.item.id }}
+            </td>
             <td>
               {{ props.item.client.name }}
-              <br>{{ props.item.client.phone }}
+              <br />{{ props.item.client.phone }}
               <template v-if="props.item.orderId">
-                <br>Заказ: {{ props.item.orderId }}
+                <br />Заказ: {{ props.item.orderId }}
               </template>
             </td>
-            <td>{{ props.item.florist ? props.item.florist.name : '' }}</td>
+            <td>{{ props.item.florist ? props.item.florist.name : "" }}</td>
             <td>{{ props.item.user.name }}</td>
             <td>
-              {{ props.item.payments.reduce((acc, item) => {
-                return acc + +item.amount
-              }, 0)}}р
-              <br>{{ props.item.payments[props.item.payments.length - 1].creationDate }}
-              <br>{{ props.item.payments.map(p => p.paymentType.name).join(', ') }}
+              {{
+                props.item.payments.reduce((acc, item) => {
+                  return acc + +item.amount;
+                }, 0)
+              }}р <br />{{
+                new Date(
+                  props.item.payments[
+                    props.item.payments.length - 1
+                  ].creationDate
+                ).toLocaleString()
+              }}
+              <br />{{
+                props.item.payments.map(p => p.paymentType.name).join(", ")
+              }}
             </td>
             <td class="text-xs-right" style="width: 160px;">
               <v-btn
@@ -244,7 +325,9 @@
                 flat
                 icon
                 @click="cancelItem(props.item.id)"
-                v-if="props.item.payments.every(item => item.paymentType.id !== 7)"
+                v-if="
+                  props.item.payments.every(item => item.paymentType.id !== 7)
+                "
                 class="mx-0"
                 title="Возврат"
               >
@@ -253,16 +336,8 @@
             </td>
           </template>
         </v-data-table>
-        <v-layout
-          row
-          wrap
-          justify-space-around
-          class="py-2"
-        >
-          <v-flex
-            xs2
-            class="px-3"
-          >
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
             <v-text-field
               label="Количество на странице"
               v-model.number="take"
@@ -270,10 +345,7 @@
               @change="changeShowElem()"
             ></v-text-field>
           </v-flex>
-          <v-flex
-            xs10
-            class="text-xs-right px-3"
-          >
+          <v-flex xs10 class="text-xs-right px-3">
             <v-btn
               small
               color="info"
@@ -302,34 +374,34 @@
 <script>
 import BouquetEdit from './edit.vue';
 import BouquetCancel from './cancel.vue';
+import Autosuggest from '../../components/Autosuggest';
+import gql from 'graphql-tag';
 
 export default {
   name: 'Bouquets',
   components: {
     BouquetEdit,
     BouquetCancel,
+    Autosuggest,
   },
   data() {
     return {
-      // filterManagerStatus: -1,
-      // filterClientStatus: -1,
       loadingData: [
         {
           title: 'Получение букетов',
           error: false,
-          loading: true,
+          loading: false,
           color: 'cyan',
           id: 'bouquets',
         },
       ],
       filter: {
-        user: '',
-        client: '',
-        dateStart: null,
-        dateEnd: null,
+        user: 0,
+        clientId: '',
+        dateStart: undefined,
+        dateEnd: undefined,
+        paymentType: 0,
       },
-      dataStartPicker: false,
-      dataEndPicker: false,
       search: '',
       headersTable: [
         {
@@ -342,25 +414,25 @@ export default {
           text: 'Клиент',
           align: 'left',
           value: 'client.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Флорист',
           align: 'left',
-          value: 'florist',
-          sortable: false,
+          value: 'florist.name',
+          sortable: true,
         },
         {
           text: 'Менеджер',
           align: 'left',
           value: 'user.name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Оплата',
           align: 'left',
-          value: 'payments[0].amount',
-          sortable: true,
+          value: 'payments.amount',
+          sortable: false,
         },
         {
           text: '',
@@ -377,60 +449,219 @@ export default {
       usersList: [],
       clientsList: [],
       pagination: {
-        rowsPerPage: -1,
         sortBy: 'id',
+        rowsPerPage: -1,
         descending: true,
       },
       take: 20,
       page: 0,
       tableLoading: false,
+      selectedClientId: 0,
+      selectedManagerId: 0,
+      client: {},
+      queryName: '',
+      skipClientsQuery: true,
+      suggestions: [],
+      dataStartPicker: false,
+      dataEndPicker: false,
     };
+  },
+  apollo: {
+    bouquetsList: {
+      query: gql`
+        query BouquetsList(
+          $clientId: bigint
+          $selectedManagerId: bigint
+          $paymentTypeId: bigint
+          $startDate: timestamptz
+          $endDate: timestamptz
+          $limit: Int
+          $offset: Int
+          $orderBy: [bouquets_order_by!]
+        ) {
+          bouquetsList: bouquets(
+            order_by: $orderBy
+            limit: $limit
+            offset: $offset
+            where: {
+              _and: [
+                { clientId: { _eq: $clientId } }
+                { user: { id: { _eq: $selectedManagerId } } }
+                { payments: { paymentTypeId: { _eq: $paymentTypeId } } }
+                { created_at: { _gte: $startDate } }
+                { created_at: { _lte: $endDate } }
+              ]
+            }
+          ) {
+            id
+            decorCost
+            decorPercent
+            sumSale
+            salePercent
+            deliveryCost
+            comment
+            client {
+              id
+              name
+              phone
+            }
+            orderBouquet {
+              name
+              count
+              order {
+                id
+              }
+            }
+            florist {
+              name
+            }
+            user {
+              id
+              name
+            }
+            payments {
+              amount
+              creationDate: creation_date
+              paymentType {
+                name
+              }
+            }
+            goods: bouquetGoodsMappings {
+              good {
+                name
+                price
+              }
+              count: goodsCount
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          selectedManagerId:
+            this.selectedManagerId !== 0 ? this.selectedManagerId : undefined,
+          clientId: this.filter.clientId >= 0 && this.filter.clientId !== ''
+            ? this.filter.clientId
+            : undefined,
+          paymentTypeId: 
+            this.filter.paymentType !== 0 ? this.filter.paymentType : undefined,
+          startDate: `${this.filter.dateStart} 00:00:00`,
+          endDate: `${this.filter.dateEnd} 23:59:59`,
+          offset: this.page * this.take,
+          limit: this.take,
+          orderBy: this.orderBy,
+        };
+      },
+    },
+    paymentTypes: {
+      query: gql`
+        query {
+          paymentTypes: paymentTypes(
+            where: { active: { _eq: true } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+            id
+            name
+            type: clientType {
+              id
+            }
+            discountPercent: sale
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.suggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.queryName,
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      },
+    },
+    usersList: {
+      query: gql`
+        query {
+          usersList: users(
+            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
+      return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    // allManagers() {
-    //   return [
-    //     { id: -1, name: 'Все' },
-    //     ...this.bouquetsList
-    //       .filter(p => p.user)
-    //       .map(p => ({ id: p.user.id, name: p.user.name })),
-    //   ];
-    // },
-    // allClients() {
-    //   return [
-    //     { id: -1, name: 'Все', phone: '' },
-    //     ...this.bouquetsList
-    //       .filter(p => p.client)
-    //       .map(p => ({ id: p.client.id, name: p.client.name, phone: p.client.phone })),
-    //   ];
-    // },
-    // filteredBouquestsList() {
-    //   let bouquetsList = this.bouquetsList;
-    //   if (this.filterManagerStatus !== -1) {
-    //     bouquetsList = bouquetsList.filter(
-    //       p => p.user && p.user.id === this.filterManagerStatus
-    //     );
-    //   }
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split('.');
+      let sortObject = {};
+      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
 
-    //   if (this.filterClientStatus !== -1) {
-    //     bouquetsList = bouquetsList.filter(
-    //       p => p.client && p.client.id === this.filterClientStatus
-    //     );
-    //   }
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder,
+            },
+          },
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder,
+          },
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
 
-    //   return bouquetsList;
-    // },
+      return sortObject;
+    },
   },
   methods: {
-    // filterByManager(filter) {
-    //   this.filterManagerStatus = filter;
-    // },
-    // filterByClient(filter) {
-    //   this.filterClientStatus = filter;
-    // },
+    changeSort(column) {
+      this.bouquetsList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
+    onSelected(item) {
+      this.client = item;
+      this.filter.clientId = item.id;
+    },
+    onInputChange(text) {
+      this.queryName = `%${text}%`;
+      this.skipClientsQuery = false;
+
+      if (text === '') {
+        this.filter.clientId = '';
+      }
+    },
+    handleManagerChange(managerId) {
+      this.selectedManagerId = managerId !== 0 ? managerId : undefined;
+      this.page = 0;
+    },
     customFilter: function customFilter() {
       this.page = 0;
       this.getBouquetsList();
@@ -439,14 +670,6 @@ export default {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
       window.open(url, '_blank');
-    },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
     },
     getBouquetsList(loading = true) {
       if (loading) {
@@ -477,7 +700,9 @@ export default {
 
       const itemParams = {
         type: 'bouquets',
-        sort: sortSettings,
+        sort: {
+          id: 'desc',
+        },
         filter: orderFilter,
         skip: this.page * this.take,
         take: this.take,
@@ -486,18 +711,21 @@ export default {
       const successData = 'Букеты получены!';
       const errorData = 'Ошибка получения букетов!';
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.bouquetsList = response;
-        this.tableLoading = false;
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.bouquetsList = response;
+          this.tableLoading = false;
 
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
+          loadData.title = successData;
+          loadData.loading = false;
+        })
+        .catch(() => {
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
+          loadData.title = errorData;
+          loadData.error = true;
+        });
     },
     getUsersList() {
       const itemParams = {
@@ -508,42 +736,16 @@ export default {
         },
       };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-        },
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      this.$store
+        .dispatch('getItemsList', itemParams)
+        .then((response) => {
+          this.usersList = response;
+        })
+        .catch(() => {
+          console.log('error');
         });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    changeSort(column) {
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-
-      this.page = 0;
-      this.getBouquetsList();
     },
     closeDialog() {
-      this.getBouquetsList();
       this.dialogForm = false;
       this.editedId = 0;
       this.cancelDialog = false;
@@ -563,44 +765,43 @@ export default {
       localStorage.setItem('countElemPage', this.take);
       this.$store.commit('setCountElemPage', this.take);
       this.page = 0;
-      this.getBouquetsList();
     },
     prevPage() {
       this.page -= 1;
-      this.getBouquetsList();
     },
     nextPage() {
       this.page += 1;
-      this.getBouquetsList();
     },
   },
   mounted() {
-    if (this.$route.query.client !== undefined) {
-      this.filter.client = +this.$route.query.client;
-    }
+    const date = new Date();
+    const dateEnd = date.toISOString().split('T')[0];
 
-    this.getBouquetsList();
-    this.getUsersList();
-    this.getClientsList();
+    date.setDate(date.getDate() - 30);
+    const dateStart = date.toISOString().split('T')[0];
+
+    this.filter.dateStart = dateStart;
+    this.filter.dateEnd = dateEnd;
+
+    if (this.$route.query.client !== undefined) {
+      this.filter.clientId = +this.$route.query.client;
+    }
   },
 };
 </script>
 
 <style lang="scss" scoped>
-  .v-table {
+.v-table {
+  tr:nth-child(even) {
+    td {
+      background: #f9f9f9;
+    }
 
-    tr:nth-child(even) {
-
+    &:hover {
       td {
-        background: #f9f9f9;
-      }
-
-      &:hover {
-
-        td {
-          background: #eee;
-        }
+        background: #eee;
       }
     }
   }
+}
 </style>

@@ -241,17 +241,13 @@ export default {
   },
   computed: {
     isSaveButtonDisabled() {
-      return !this.goodsList.some(
-        g => +g.oldPrice !== +g.price || +g.oldCount !== +g.count
-      );
+      return !this.goodsList.some(g => +g.oldPrice !== +g.price || +g.oldCount !== +g.count);
     },
     historyLinkPage() {
       return '/goods/history';
     },
     loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     formAlertTitle() {
@@ -280,7 +276,7 @@ export default {
     calculateRevaluation(goodsList) {
       return goodsList.reduce(
         (sum, item) => sum + (item.price - item.oldPrice) * item.stockBalance,
-        0
+        0,
       );
     },
     calculateOtherOperations(goodsList) {
@@ -307,7 +303,7 @@ export default {
       const itemParams = {
         type: 'goods',
         sort: {
-          sortIndex: 'asc'
+          sortIndex: 'asc',
         },
         filter: {
           isActive: true,
@@ -319,8 +315,8 @@ export default {
 
       this.$store
         .dispatch('getItemsList', itemParams)
-        .then(response => {
-          this.goodsList = response.map(item => {
+        .then((response) => {
+          this.goodsList = response.map((item) => {
             const good = item;
             good.count = 0;
             good.oldPrice = good.price;
@@ -328,29 +324,25 @@ export default {
             return good;
           });
 
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
           loadData.title = successData;
           loadData.loading = false;
         })
         .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
+          const loadData = this.loadingData.find(item => item.id === itemParams.type);
           loadData.title = errorData;
           loadData.error = true;
         });
     },
     getPurchaseTypesList() {
       const itemParams = {
-        type: 'purchase-types'
+        type: 'purchase-types',
       };
 
       this.$store
         .dispatch('getItemsList', itemParams)
-        .then(response => {
-          this.typeEdit = response.map(item => {
+        .then((response) => {
+          this.typeEdit = response.map((item) => {
             item.id = +item.id;
             return item;
           });
@@ -370,8 +362,8 @@ export default {
 
       this.$store
         .dispatch('getItemsList', itemParams)
-        .then(response => {
-          this.clientsList = response.map(item => {
+        .then((response) => {
+          this.clientsList = response.map((item) => {
             item.id = +item.id;
             return item;
           });
@@ -399,13 +391,13 @@ export default {
         //   return good;
         // });
 
-        const purchaseGoods = this.goodsList.map(item => {
+        const purchaseGoods = this.goodsList.map((item) => {
           const good = {
             estimate: item.count,
             newPrice: item.price,
             oldPrice: item.oldPrice,
             stockQuantity: item.stockBalance,
-            good: item.id
+            good: item.id,
           };
 
           return good;
@@ -414,12 +406,12 @@ export default {
         const propsItem = Object.assign({}, this.dataEdit);
         [propsItem.purchasedGoods, propsItem.arrival] = [
           purchaseGoods,
-          this.arrival
+          this.arrival,
         ];
 
         const itemParams = {
           type: 'purchase',
-          props: propsItem
+          props: propsItem,
         };
 
         this.$store.dispatch('addItem', itemParams).then(() => {
@@ -430,7 +422,7 @@ export default {
           }, 1000);
         });
 
-        this.goodsList.forEach(elem => {
+        this.goodsList.forEach((elem) => {
           const propsGood = Object.assign({}, elem);
           propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
           delete propsGood.id;
@@ -441,7 +433,7 @@ export default {
           const goodParams = {
             type: 'goods',
             props: propsGood,
-            id: elem.id
+            id: elem.id,
           };
 
           this.$store.dispatch('updateItem', goodParams);
@@ -465,7 +457,7 @@ export default {
     this.getGoodsList();
     this.getPurchaseTypesList();
     this.getClientsList();
-  }
+  },
 };
 </script>
 

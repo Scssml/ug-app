@@ -248,9 +248,7 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const bouquetOrderIndex = this.order.bouquets.findIndex((item) => {
-          return item.id === this.editedItem.orderBouquet.id;
-        });
+        const bouquetOrderIndex = this.order.bouquets.findIndex(item => item.id === this.editedItem.orderBouquet.id);
         this.order.bouquets[bouquetOrderIndex].place = this.place;
 
         const propsItem = Object.assign({}, this.order);

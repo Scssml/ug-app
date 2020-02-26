@@ -137,7 +137,7 @@
             <td class="text-xs-right" style="width: 200px;">
               <v-icon
                 class="mr-2"
-                @click="showOrders(props.item.id)"
+                @click="showOrders(props.item.id, props.item.name)"
                 title="Показать заказы"
               >
                 assignment
@@ -450,8 +450,8 @@ export default {
       this.printedId = +id;
       this.dialogForm = true;
     },
-    showOrders(id) {
-      this.$router.push({ path: `/orders/?client=${id}` });
+    showOrders(id, name) {
+      this.$router.push({ path: `/orders/?clientId=${id}&clientName=${name}` });
     },
     showBouquests(id) {
       this.$router.push({ path: `/bouquets/?client=${id}` });

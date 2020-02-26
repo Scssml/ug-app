@@ -677,4 +677,20 @@ export default {
     max-width: 300px;
   }
 }
+
+.view-filter {
+  border-bottom: 1px solid rgba(0,0,0,.42);
+  padding-bottom: 5px;
+
+  &:hover,
+  &:focus {
+    border-bottom-color: #000;
+  }
+
+  #autosuggest__input {
+    text-indent: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
 </style>

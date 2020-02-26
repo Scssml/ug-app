@@ -122,7 +122,7 @@
                   :value="client.name"
                   @onChange="onInputChange"
                   @onSelect="onSelected"
-                  class="mt-3"
+                  class="mt-3 view-filter"
                 />
 
                 <!-- <v-autocomplete

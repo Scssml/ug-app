@@ -95,7 +95,7 @@
           </v-dialog>
           <v-spacer></v-spacer>
           <v-layout row wrap justify-space-around>
-            <v-flex xs2 class="px-2 py-3">
+            <v-flex xs2 class="px-2">
               <v-select
                 label="Статус"
                 :items="[{ id: 0, name: 'Все' }].concat(statusList)"
@@ -113,6 +113,7 @@
                 :value="filter.client"
                 @onChange="onClientsInputChange"
                 @onSelect="onClientSelect"
+                class="view-filter"
               />
             </v-flex>
 
@@ -980,6 +981,10 @@ export default {
     onClientsInputChange(text) {
       this.clientsQueryName = `%${text}%`;
       this.skipClientsQuery = false;
+
+      if (text === '') {
+        this.filter.clientItem = null;
+      }
     },
     printOrders(type) {
       const arId = this.selectedOrders.map(item => item.id);

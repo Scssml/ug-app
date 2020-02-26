@@ -73,7 +73,6 @@
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
                   @checkCard="checkCard(index, $event)"
-                  @loadMoreClient="handleLoadMoreClients"
                 ></created-bouquet-card>
               </v-flex>
             </template>

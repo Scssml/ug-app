@@ -28,83 +28,6 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <!-- <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                single-line
-                hide-details
-              ></v-text-field> -->
-
-              <!-- <v-flex
-                xs2
-                class="px-2"
-              >
-                <v-menu
-                  :close-on-content-click="false"
-                  v-model="dataStartPicker"
-                  :nudge-right="40"
-                  lazy
-                  transition="scale-transition"
-                  offset-y
-                  full-width
-                  min-width="290px"
-                >
-                  <v-text-field
-                    slot="activator"
-                    label="Дата (с)"
-                    v-model="filter.dateStart"
-                    prepend-icon="event"
-                    hide-details
-                    readonly
-                  ></v-text-field>
-                  <v-date-picker
-                    v-model="filter.dateStart"
-                    @input="dataStartPicker = false"
-                    no-title
-                    scrollable
-                    locale="ru-ru"
-                    first-day-of-week="1"
-                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                    @change="customFilter()"
-                  ></v-date-picker>
-                </v-menu>
-              </v-flex>
-              <v-flex
-                xs2
-                class="px-2"
-              >
-                <v-menu
-                  :close-on-content-click="false"
-                  v-model="dataEndPicker"
-                  :nudge-right="40"
-                  lazy
-                  transition="scale-transition"
-                  offset-y
-                  full-width
-                  min-width="290px"
-                >
-                  <v-text-field
-                    slot="activator"
-                    label="Дата (по)"
-                    v-model="filter.dateEnd"
-                    prepend-icon="event"
-                    hide-details
-                    readonly
-                  ></v-text-field>
-                  <v-date-picker
-                    v-model="filter.dateEnd"
-                    @input="dataEndPicker = false"
-                    no-title
-                    locale="ru-ru"
-                    scrollable
-                    first-day-of-week="1"
-                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                    @change="customFilter()"
-                  ></v-date-picker>
-                </v-menu>
-              </v-flex> -->
-
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Тип"
@@ -783,8 +706,12 @@ export default {
     this.filter.dateStart = dateStart;
     this.filter.dateEnd = dateEnd;
 
-    if (this.$route.query.client !== undefined) {
-      this.filter.clientId = +this.$route.query.client;
+    if (this.$route.query.clientId && this.$route.query.clientName) {
+      this.filter.clientId = +this.$route.query.clientId;
+      this.client = {
+        name: this.$route.query.clientName
+      };
+      this.$router.replace({ query: {} });
     }
   },
 };

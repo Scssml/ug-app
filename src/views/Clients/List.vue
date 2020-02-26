@@ -151,7 +151,7 @@
               </v-icon>
               <v-icon
                 class="mr-2"
-                @click="showBouquests(props.item.id)"
+                @click="showBouquests(props.item.id, props.item.name)"
                 title="Показать букеты"
               >
                 local_florist
@@ -453,8 +453,8 @@ export default {
     showOrders(id, name) {
       this.$router.push({ path: `/orders/?clientId=${id}&clientName=${name}` });
     },
-    showBouquests(id) {
-      this.$router.push({ path: `/bouquets/?client=${id}` });
+    showBouquests(id, name) {
+      this.$router.push({ path: `/bouquets/?clientId=${id}&clientName=${name}` });
     },
     changeShowElem() {
       localStorage.setItem('countElemPage', this.take);

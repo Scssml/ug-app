@@ -424,9 +424,7 @@ export default {
           clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
             id
             name
-            type: clientType {
-              id
-            }
+            type: typeId
             discountPercent: sale
           }
         }

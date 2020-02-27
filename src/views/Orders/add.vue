@@ -160,11 +160,11 @@
                   no-data-text="Не надено"
                   clearable
                   @change="
+                  handleDirty();
                     setDataClient();
-                    handleDirty();
+
                   "
                   :search-input.sync="clientName"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select

@@ -11,8 +11,10 @@
       @input="onInputChange"
       @selected="onSelected"
     >
-      <template slot-scope="{ suggestion }">
-        <span>{{ suggestion.item.name }}</span>
+      <template slot-scope="suggestion">
+        <slot v-bind="suggestion">
+          <span>{{ suggestion.suggestion.item.name }}</span>
+        </slot>
       </template>
     </vue-autosuggest>
   </div>

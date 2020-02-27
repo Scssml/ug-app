@@ -28,7 +28,11 @@
         :value="client.name"
         @onChange="onInputChange"
         @onSelect="onSelected"
-      />
+      >
+        <template slot-scope="slotProps">
+          <span>{{slotProps.suggestion.item.name}} (Баланс: {{slotProps.suggestion.item.bill}})</span>
+        </template>
+      </autosuggest>
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -426,6 +430,7 @@ export default {
             name
             type: typeId
             discountPercent: sale
+            bill
           }
         }
       `,

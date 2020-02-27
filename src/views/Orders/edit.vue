@@ -530,7 +530,6 @@
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
-                  readonly
                 ></v-text-field>
               </v-flex>
               <v-flex

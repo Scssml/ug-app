@@ -181,7 +181,6 @@
                   clearable
                   @change="setDataClient()"
                   :search-input.sync="clientName"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select

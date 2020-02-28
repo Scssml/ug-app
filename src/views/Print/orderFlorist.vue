@@ -73,7 +73,7 @@
               <tr>
                 <td colspan="3" style="width: 100%; text-align: center;">
                   <span><b>№ Заказа: </b></span>
-                  <u style="font-size: 70px;">{{ orderData.orderId }}</u>
+                  <u style="font-size: 90px;">{{ orderData.orderId }}</u>
                 </td>
               </tr>
               <tr>
@@ -83,7 +83,7 @@
               </tr>
               <tr>
                 <td colspan="5" style="width: 182px; text-align: left;">
-                  <u style="font-size: 55px;">{{ orderData.clientName }}</u>
+                  <u style="font-size: 70px;">{{ orderData.clientName }}</u>
                 </td>
               </tr>
               <tr>

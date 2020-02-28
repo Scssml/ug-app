@@ -671,6 +671,7 @@ export default {
           deliveryCost: this.delivery,
           salePercent: +this.clientSale,
           sumSale: this.sumSale,
+          sumPayCustom: this.sumPayCustom,
           payment: {
             paymentTypeId: this.typePay,
             amount:

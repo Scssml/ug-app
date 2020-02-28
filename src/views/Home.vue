@@ -502,7 +502,7 @@ export default {
                 isActive: true,
                 code: "balance"
               },
-              amount: props.payment.amount,
+              amount: props.sumPayCustom,
               clientId: props.payment.clientId,
               description: props.comment
             }

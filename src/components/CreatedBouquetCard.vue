@@ -30,7 +30,7 @@
         @onSelect="onSelected"
       >
         <template slot-scope="slotProps">
-          <span>{{slotProps.suggestion.item.name}} (Баланс: {{slotProps.suggestion.item.bill}})</span>
+          <span>{{slotProps.suggestion.item.name}} ({{slotProps.suggestion.item.bill}})</span>
         </template>
       </autosuggest>
     </div>

@@ -697,10 +697,6 @@ export default {
           bouquetCount: +this.bouquetCount
         };
 
-        if (this.sumFlowers === 0) {
-          props.payment.amount = this.sumPayCustom;
-        }
-
         setTimeout(() => {
           this.dialogPay = false;
           this.$emit("saveProps", props);

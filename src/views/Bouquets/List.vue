@@ -538,8 +538,12 @@ export default {
               : undefined,
           paymentTypeId:
             this.filter.paymentType !== 0 ? this.filter.paymentType : undefined,
-          startDate: `${this.filter.dateStart} 00:00:00`,
-          endDate: `${this.filter.dateEnd} 23:59:59`,
+          startDate: this.filter.dateStart
+            ? `${this.filter.dateStart} 00:00:00`
+            : undefined,
+          endDate: this.filter.dateEnd
+            ? `${this.filter.dateEnd} 23:59:59`
+            : undefined,
           offset: this.page * this.take,
           limit: this.take,
           orderBy: this.orderBy

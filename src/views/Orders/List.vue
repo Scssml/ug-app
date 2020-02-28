@@ -828,7 +828,12 @@ export default {
     clientsList: {
       query: gql`
         query ClientsList($name: String) {
-          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+          clientsList: clients(
+            where: {
+              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+            }
+            limit: 50
+          ) {
             id
             name
           }

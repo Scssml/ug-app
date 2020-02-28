@@ -28,18 +28,15 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <v-flex xs2 class="px-2">
-                <v-select
-                  label="Тип"
-                  :items="[{id: 0, name: 'Все'}].concat(paymentTypes)"
-                  item-text="name"
-                  item-value="id"
-                  v-model="filter.paymentType"
-                  hide-details
-                ></v-select>
-              </v-flex>
+              <!-- <v-text-field
+                v-model="search"
+                prepend-icon="search"
+                label="Поиск"
+                single-line
+                hide-details
+              ></v-text-field> -->
 
-              <v-flex
+              <!-- <v-flex
                 xs2
                 class="px-2"
               >
@@ -69,6 +66,7 @@
                     locale="ru-ru"
                     first-day-of-week="1"
                     :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -102,6 +100,79 @@
                     scrollable
                     first-day-of-week="1"
                     :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                    @change="customFilter()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex> -->
+
+              <v-flex xs2 class="px-2">
+                <v-select
+                  label="Тип"
+                  :items="[{ id: 0, name: 'Все' }].concat(paymentTypes)"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.paymentType"
+                  hide-details
+                ></v-select>
+              </v-flex>
+
+              <v-flex xs2 class="px-2">
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataStartPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (с)"
+                    v-model="filter.dateStart"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateStart"
+                    @input="dataStartPicker = false"
+                    no-title
+                    scrollable
+                    locale="ru-ru"
+                    first-day-of-week="1"
+                    :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+                  ></v-date-picker>
+                </v-menu>
+              </v-flex>
+              <v-flex xs2 class="px-2">
+                <v-menu
+                  :close-on-content-click="false"
+                  v-model="dataEndPicker"
+                  :nudge-right="40"
+                  lazy
+                  transition="scale-transition"
+                  offset-y
+                  full-width
+                  min-width="290px"
+                >
+                  <v-text-field
+                    slot="activator"
+                    label="Дата (по)"
+                    v-model="filter.dateEnd"
+                    prepend-icon="event"
+                    hide-details
+                    readonly
+                  ></v-text-field>
+                  <v-date-picker
+                    v-model="filter.dateEnd"
+                    @input="dataEndPicker = false"
+                    no-title
+                    locale="ru-ru"
+                    scrollable
+                    first-day-of-week="1"
+                    :min="!!filter.dateStart ? filter.dateStart : undefined"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -182,15 +253,13 @@
                 :key="header.text"
                 class="text-xs-left column"
                 :class="[
-                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
                   header.value === pagination.sortBy ? 'active' : ''
                 ]"
-                @click="(header.sortable) ? changeSort(header.value) : ''"
+                @click="header.sortable ? changeSort(header.value) : ''"
               >
-                <v-icon
-                  small
-                  v-if="header.sortable"
-                >arrow_upward</v-icon>
+                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
                 {{ header.text }}
               </th>
             </tr>
@@ -295,74 +364,74 @@
 </template>
 
 <script>
-import BouquetEdit from './edit.vue';
-import BouquetCancel from './cancel.vue';
-import Autosuggest from '../../components/Autosuggest';
-import gql from 'graphql-tag';
+import BouquetEdit from "./edit.vue";
+import BouquetCancel from "./cancel.vue";
+import Autosuggest from "../../components/Autosuggest";
+import gql from "graphql-tag";
 
 export default {
-  name: 'Bouquets',
+  name: "Bouquets",
   components: {
     BouquetEdit,
     BouquetCancel,
-    Autosuggest,
+    Autosuggest
   },
   data() {
     return {
       loadingData: [
         {
-          title: 'Получение букетов',
+          title: "Получение букетов",
           error: false,
           loading: false,
-          color: 'cyan',
-          id: 'bouquets',
-        },
+          color: "cyan",
+          id: "bouquets"
+        }
       ],
       filter: {
         user: 0,
-        clientId: '',
+        clientId: "",
         dateStart: undefined,
         dateEnd: undefined,
-        paymentType: 0,
+        paymentType: 0
       },
-      search: '',
+      search: "",
       headersTable: [
         {
-          text: 'ID',
-          align: 'right',
-          value: 'id',
-          sortable: true,
+          text: "ID",
+          align: "right",
+          value: "id",
+          sortable: true
         },
         {
-          text: 'Клиент',
-          align: 'left',
-          value: 'client.name',
-          sortable: true,
+          text: "Клиент",
+          align: "left",
+          value: "client.name",
+          sortable: true
         },
         {
-          text: 'Флорист',
-          align: 'left',
-          value: 'florist.name',
-          sortable: true,
+          text: "Флорист",
+          align: "left",
+          value: "florist.name",
+          sortable: true
         },
         {
-          text: 'Менеджер',
-          align: 'left',
-          value: 'user.name',
-          sortable: true,
+          text: "Менеджер",
+          align: "left",
+          value: "user.name",
+          sortable: true
         },
         {
-          text: 'Оплата',
-          align: 'left',
-          value: 'payments.amount',
+          text: "Оплата",
+          align: "left",
+          value: "payments.amount",
+          sortable: false
+        },
+        {
+          text: "",
+          align: "right",
           sortable: false,
-        },
-        {
-          text: '',
-          align: 'right',
-          sortable: false,
-          value: 'action',
-        },
+          value: "action"
+        }
       ],
       dialogForm: false,
       editDialog: false,
@@ -372,9 +441,9 @@ export default {
       usersList: [],
       clientsList: [],
       pagination: {
-        sortBy: 'id',
+        sortBy: "id",
         rowsPerPage: -1,
-        descending: true,
+        descending: true
       },
       take: 20,
       page: 0,
@@ -382,11 +451,11 @@ export default {
       selectedClientId: 0,
       selectedManagerId: 0,
       client: {},
-      queryName: '',
+      queryName: "",
       skipClientsQuery: true,
       suggestions: [],
       dataStartPicker: false,
-      dataEndPicker: false,
+      dataEndPicker: false
     };
   },
   apollo: {
@@ -463,35 +532,39 @@ export default {
         return {
           selectedManagerId:
             this.selectedManagerId !== 0 ? this.selectedManagerId : undefined,
-          clientId: this.filter.clientId >= 0 && this.filter.clientId !== ''
-            ? this.filter.clientId
-            : undefined,
-          paymentTypeId: 
+          clientId:
+            this.filter.clientId >= 0 && this.filter.clientId !== ""
+              ? this.filter.clientId
+              : undefined,
+          paymentTypeId:
             this.filter.paymentType !== 0 ? this.filter.paymentType : undefined,
           startDate: `${this.filter.dateStart} 00:00:00`,
           endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
-          orderBy: this.orderBy,
+          orderBy: this.orderBy
         };
-      },
+      }
     },
     paymentTypes: {
       query: gql`
         query {
-          paymentTypes: paymentTypes(
-            where: { active: { _eq: true } }
-          ) {
+          paymentTypes: paymentTypes(where: { active: { _eq: true } }) {
             id
             name
           }
         }
-      `,
+      `
     },
     clientsList: {
       query: gql`
         query ClientsList($name: String) {
-          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+          clientsList: clients(
+            where: {
+              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+            }
+            limit: 50
+          ) {
             id
             name
             type: clientType {
@@ -508,12 +581,12 @@ export default {
       },
       variables() {
         return {
-          name: this.queryName,
+          name: this.queryName
         };
       },
       skip() {
         return this.skipClientsQuery;
-      },
+      }
     },
     usersList: {
       query: gql`
@@ -525,39 +598,43 @@ export default {
             name
           }
         }
-      `,
-    },
+      `
+    }
   },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
+      const loadData = this.loadingData.filter(
+        item => !item.error && !item.loading
+      );
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     orderBy() {
-      const sortFields = this.pagination.sortBy.split('.');
+      const sortFields = this.pagination.sortBy.split(".");
       let sortObject = {};
-      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+      const sortOrder = this.pagination.descending
+        ? "desc_nulls_last"
+        : "asc_nulls_last";
 
       if (sortFields.length === 3) {
         sortObject = {
           [sortFields[0]]: {
             [sortFields[1]]: {
-              [sortFields[2]]: sortOrder,
-            },
-          },
+              [sortFields[2]]: sortOrder
+            }
+          }
         };
       } else if (sortFields.length === 2) {
         sortObject = {
           [sortFields[0]]: {
-            [sortFields[1]]: sortOrder,
-          },
+            [sortFields[1]]: sortOrder
+          }
         };
       } else {
         sortObject[sortFields[0]] = sortOrder;
       }
 
       return sortObject;
-    },
+    }
   },
   methods: {
     changeSort(column) {
@@ -577,8 +654,8 @@ export default {
       this.queryName = `%${text}%`;
       this.skipClientsQuery = false;
 
-      if (text === '') {
-        this.filter.clientId = '';
+      if (text === "") {
+        this.filter.clientId = "";
       }
     },
     handleManagerChange(managerId) {
@@ -592,7 +669,7 @@ export default {
     printDoc(id) {
       const { protocol, hostname } = window.location;
       const url = `${protocol}//${hostname}/print/bouquet/${id}/receipt`;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     },
     getBouquetsList(loading = true) {
       if (loading) {
@@ -601,16 +678,16 @@ export default {
       }
 
       const orderFilter = {
-        created_at: [],
+        created_at: []
       };
 
-      Object.keys(this.filter).forEach((key) => {
+      Object.keys(this.filter).forEach(key => {
         const val = this.filter[key];
 
         if (val) {
-          if (key === 'dateStart') {
+          if (key === "dateStart") {
             orderFilter.created_at[0] = `${val} 00:00:00`;
-          } else if (key === 'dateEnd') {
+          } else if (key === "dateEnd") {
             orderFilter.created_at[1] = `${val} 23:59:59`;
           } else {
             orderFilter[key] = val;
@@ -619,53 +696,59 @@ export default {
       });
 
       const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+      sortSettings[this.pagination.sortBy] = this.pagination.descending
+        ? "desc"
+        : "asc";
 
       const itemParams = {
-        type: 'bouquets',
+        type: "bouquets",
         sort: {
-          id: 'desc',
+          id: "desc"
         },
         filter: orderFilter,
         skip: this.page * this.take,
-        take: this.take,
+        take: this.take
       };
 
-      const successData = 'Букеты получены!';
-      const errorData = 'Ошибка получения букетов!';
+      const successData = "Букеты получены!";
+      const errorData = "Ошибка получения букетов!";
 
       this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
+        .dispatch("getItemsList", itemParams)
+        .then(response => {
           this.bouquetsList = response;
           this.tableLoading = false;
 
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
+          const loadData = this.loadingData.find(
+            item => item.id === itemParams.type
+          );
           loadData.title = successData;
           loadData.loading = false;
         })
         .catch(() => {
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
+          const loadData = this.loadingData.find(
+            item => item.id === itemParams.type
+          );
           loadData.title = errorData;
           loadData.error = true;
         });
     },
     getUsersList() {
       const itemParams = {
-        type: 'users',
+        type: "users",
         filter: {
           active: true,
-          group: [1, 2],
-        },
+          group: [1, 2]
+        }
       };
 
       this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
+        .dispatch("getItemsList", itemParams)
+        .then(response => {
           this.usersList = response;
         })
         .catch(() => {
-          console.log('error');
+          console.log("error");
         });
     },
     closeDialog() {
@@ -685,8 +768,8 @@ export default {
       this.cancelDialog = true;
     },
     changeShowElem() {
-      localStorage.setItem('countElemPage', this.take);
-      this.$store.commit('setCountElemPage', this.take);
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
       this.page = 0;
     },
     prevPage() {
@@ -694,14 +777,14 @@ export default {
     },
     nextPage() {
       this.page += 1;
-    },
+    }
   },
   mounted() {
     const date = new Date();
-    const dateEnd = date.toISOString().split('T')[0];
+    const dateEnd = date.toISOString().split("T")[0];
 
     date.setDate(date.getDate() - 30);
-    const dateStart = date.toISOString().split('T')[0];
+    const dateStart = date.toISOString().split("T")[0];
 
     this.filter.dateStart = dateStart;
     this.filter.dateEnd = dateEnd;
@@ -713,7 +796,7 @@ export default {
       };
       this.$router.replace({ query: {} });
     }
-  },
+  }
 };
 </script>
 

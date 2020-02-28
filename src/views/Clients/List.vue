@@ -38,10 +38,7 @@
                 hide-details
               ></v-select>
             </v-flex>
-            <v-flex
-              xs4
-              class="px-3"
-            >
+            <v-flex xs4 class="px-3">
               <v-text-field
                 label="Имя"
                 v-model="filter.name"
@@ -54,8 +51,9 @@
 
           <v-dialog
             v-model="dialogForm"
-            persistent max-width="420px"
-            :fullscreen="(printedId >= 0 && printedId !== null) ? true : false"
+            persistent
+            max-width="420px"
+            :fullscreen="printedId >= 0 && printedId !== null ? true : false"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2"
               >Добавить</v-btn
@@ -99,15 +97,13 @@
                 :key="header.text"
                 class="text-xs-left column"
                 :class="[
-                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
                   header.value === pagination.sortBy ? 'active' : ''
                 ]"
-                @click="(header.sortable) ? changeSort(header.value) : ''"
+                @click="header.sortable ? changeSort(header.value) : ''"
               >
-                <v-icon
-                  small
-                  v-if="header.sortable"
-                >arrow_upward</v-icon>
+                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
                 {{ header.text }}
               </th>
             </tr>
@@ -209,91 +205,91 @@
 </template>
 
 <script>
-import ClientEdit from './edit.vue';
-import ClientAdd from './add.vue';
-import ClientDelete from './delete.vue';
-import ClientPrint from './printAct.vue';
-import gql from 'graphql-tag';
+import ClientEdit from "./edit.vue";
+import ClientAdd from "./add.vue";
+import ClientDelete from "./delete.vue";
+import ClientPrint from "./printAct.vue";
+import gql from "graphql-tag";
 
 export default {
-  name: 'Clients',
+  name: "Clients",
   components: {
     ClientEdit,
     ClientAdd,
     ClientDelete,
-    ClientPrint,
+    ClientPrint
   },
   data() {
     return {
       loadingData: [
         {
-          title: 'Получение клиентов',
+          title: "Получение клиентов",
           error: false,
           loading: false,
-          color: 'indigo',
-          id: 'clients',
-        },
+          color: "indigo",
+          id: "clients"
+        }
       ],
       filter: {
-        typeId: 0,
+        typeId: 0
       },
       typeClient: [],
-      search: '',
+      search: "",
       headersTable: [
         {
-          text: 'ID',
-          align: 'right',
-          value: 'id',
-          sortable: true,
+          text: "ID",
+          align: "right",
+          value: "id",
+          sortable: true
         },
         {
-          text: 'Клиент',
-          align: 'left',
-          value: 'name',
-          sortable: true,
+          text: "Клиент",
+          align: "left",
+          value: "name",
+          sortable: true
         },
         {
-          text: 'Телефон',
-          align: 'left',
-          value: 'phone',
-          sortable: true,
+          text: "Телефон",
+          align: "left",
+          value: "phone",
+          sortable: true
         },
         {
-          text: 'Тип',
-          align: 'left',
-          value: 'clientType.name',
-          sortable: true,
+          text: "Тип",
+          align: "left",
+          value: "clientType.name",
+          sortable: true
         },
         {
-          text: 'Ответственный',
-          align: 'left',
-          value: 'responsible.name',
-          sortable: true,
+          text: "Ответственный",
+          align: "left",
+          value: "responsible.name",
+          sortable: true
         },
         {
-          text: 'Счет',
-          align: 'right',
-          value: 'bill',
-          sortable: true,
+          text: "Счет",
+          align: "right",
+          value: "bill",
+          sortable: true
         },
         {
-          text: 'Скидка',
-          align: 'right',
-          value: 'sale',
-          sortable: true,
+          text: "Скидка",
+          align: "right",
+          value: "sale",
+          sortable: true
         },
         {
-          text: 'Активность',
-          align: 'right',
-          value: 'active',
-          sortable: true,
+          text: "Активность",
+          align: "right",
+          value: "active",
+          sortable: true
         },
         {
-          text: '',
-          align: 'right',
+          text: "",
+          align: "right",
           sortable: false,
-          value: 'action',
-        },
+          value: "action"
+        }
       ],
       dialogForm: false,
       editedId: 0,
@@ -301,40 +297,34 @@ export default {
       deleteId: 0,
       printedId: null,
       pagination: {
-        sortBy: 'id',
+        sortBy: "id",
         rowsPerPage: -1,
-        descending: true,
+        descending: true
       },
       take: 20,
       page: 0,
       tableLoading: false,
       selectedClientType: 0,
-      selectedClientName: '',
+      selectedClientName: ""
     };
   },
   apollo: {
     clientsList: {
       query: gql`
         query ClientsList(
-          $clientTypeId: bigint,
-          $clientName: String,
-          $limit: Int,
-          $offset: Int,
-          $orderBy: [clients_order_by!],
+          $clientTypeId: bigint
+          $clientName: String
+          $limit: Int
+          $offset: Int
+          $orderBy: [clients_order_by!]
         ) {
           clientsList: clients(
             order_by: $orderBy
             limit: $limit
             offset: $offset
             where: {
-              clientType: {
-                id: {
-                  _eq: $clientTypeId
-                }
-              },
-              name: {
-                _ilike: $clientName
-              }
+              clientType: { id: { _eq: $clientTypeId } }
+              _or: [{ name: { _ilike: $clientName } }, { phone: { _ilike: $clientName } }]
             }
           ) {
             id
@@ -365,12 +355,14 @@ export default {
           clientTypeId:
             this.selectedClientType !== 0 ? this.selectedClientType : undefined,
           clientName:
-            this.selectedClientName !== '' ? `%${this.selectedClientName}%` : undefined,
+            this.selectedClientName !== ""
+              ? `%${this.selectedClientName}%`
+              : undefined,
           offset: this.page * this.take,
           limit: this.take,
-          orderBy: this.orderBy,
+          orderBy: this.orderBy
         };
-      },
+      }
     },
     typeClient: {
       query: gql`
@@ -380,39 +372,43 @@ export default {
             name
           }
         }
-      `,
-    },
+      `
+    }
   },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
+      const loadData = this.loadingData.filter(
+        item => !item.error && !item.loading
+      );
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     orderBy() {
-      const sortFields = this.pagination.sortBy.split('.');
+      const sortFields = this.pagination.sortBy.split(".");
       let sortObject = {};
-      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+      const sortOrder = this.pagination.descending
+        ? "desc_nulls_last"
+        : "asc_nulls_last";
 
       if (sortFields.length === 3) {
         sortObject = {
           [sortFields[0]]: {
             [sortFields[1]]: {
-              [sortFields[2]]: sortOrder,
-            },
-          },
+              [sortFields[2]]: sortOrder
+            }
+          }
         };
       } else if (sortFields.length === 2) {
         sortObject = {
           [sortFields[0]]: {
-            [sortFields[1]]: sortOrder,
-          },
+            [sortFields[1]]: sortOrder
+          }
         };
       } else {
         sortObject[sortFields[0]] = sortOrder;
       }
 
       return sortObject;
-    },
+    }
   },
   methods: {
     changeSort(column) {
@@ -429,7 +425,7 @@ export default {
       this.page = 0;
     },
     handleClientNameChange(clientName) {
-      this.selectedClientName = clientName !== '' ? clientName : '';
+      this.selectedClientName = clientName !== "" ? clientName : "";
       this.page = 0;
     },
     closeDialog() {
@@ -454,11 +450,13 @@ export default {
       this.$router.push({ path: `/orders/?clientId=${id}&clientName=${name}` });
     },
     showBouquests(id, name) {
-      this.$router.push({ path: `/bouquets/?clientId=${id}&clientName=${name}` });
+      this.$router.push({
+        path: `/bouquets/?clientId=${id}&clientName=${name}`
+      });
     },
     changeShowElem() {
-      localStorage.setItem('countElemPage', this.take);
-      this.$store.commit('setCountElemPage', this.take);
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
       this.page = 0;
     },
     prevPage() {
@@ -466,8 +464,8 @@ export default {
     },
     nextPage() {
       this.page += 1;
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -6,13 +6,14 @@
       class="mb-4 print-btn"
       @click.prevent="printPage()"
     >Распечатать</v-btn>
-    <div style="display:flex;flex-wrap: wrap;justify-content: space-between;">
+    <div style="flex-wrap: wrap;justify-content: space-between;">
       <template v-for="(order) in ordersList">
         <template v-for="(elem, index) in order.bouquets">
           <template v-for="n in elem.count">
             <table
-              style="width: 50%; padding: 10px; border: 1px solid black; margin-bottom: 40px;"
+              style="width: 100%; padding: 10px; border: 1px solid black; margin-bottom: 40px;"
               :key="`${index}-${n}`"
+              class="print-blank"
             >
               <tbody>
                 <tr>
@@ -124,3 +125,12 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  @media print {
+    .print-blank:nth-child(even) {
+      break-after: always;
+      page-break-after: always;
+    }
+  }
+</style>

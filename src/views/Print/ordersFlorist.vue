@@ -5,9 +5,10 @@
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-    >Распечатать</v-btn>
+      >Распечатать</v-btn
+    >
     <div style="flex-wrap: wrap;justify-content: space-between;">
-      <template v-for="(order) in ordersList">
+      <template v-for="order in ordersList">
         <template v-for="(elem, index) in order.bouquets">
           <template v-for="n in elem.count">
             <table
@@ -20,8 +21,13 @@
                   <td style="width: 73px;">
                     <b>Дата</b>
                   </td>
-                  <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">
+                  <td
+                    colspan="3"
+                    style="width: 100%; text-align: center; font-size: 30px;"
+                  >
                     {{ order.orderDate }}
+                    <p></p>
+                    {{ order.orderTime }}
                   </td>
                   <td style="width: 204px; text-align: right;">
                     <b>{{ order.orderDeliveryType }}</b>
@@ -75,7 +81,8 @@
       dark
       class="mt-4 print-btn"
       @click.prevent="printPage()"
-    >Распечатать</v-btn>
+      >Распечатать</v-btn
+    >
   </div>
 </template>
 
@@ -84,53 +91,56 @@ export default {
   data() {
     return {
       ids: [],
-      ordersList: [],
+      ordersList: []
     };
   },
   methods: {
     getItems() {
       const itemParams = {
-        type: 'print/order/florist-batch',
+        type: "print/order/florist-batch",
         props: {
-          ids: this.ids,
-        },
+          ids: this.ids
+        }
       };
 
-      this.$store.dispatch('addItem', itemParams).then((response) => {
-        this.ordersList = response.map((item) => {
-          const elem = item;
+      this.$store
+        .dispatch("addItem", itemParams)
+        .then(response => {
+          this.ordersList = response.map(item => {
+            const elem = item;
 
-          if (elem.orderDate) {
-            const date = new Date(elem.orderDate);
-            elem.orderDate = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'numeric',
-              year: 'numeric',
-            });
-          }
+            if (elem.orderDate) {
+              const date = new Date(elem.orderDate);
+              elem.orderDate = date.toLocaleString("ru", {
+                day: "numeric",
+                month: "numeric",
+                year: "numeric"
+              });
+            }
 
-          return elem;
+            return elem;
+          });
+        })
+        .catch(() => {
+          console.log("error");
         });
-      }).catch(() => {
-        console.log('error');
-      });
     },
     printPage() {
       window.print();
-    },
+    }
   },
   mounted() {
-    this.ids = this.$route.params.ids.split(',');
+    this.ids = this.$route.params.ids.split(",");
     this.getItems();
-  },
+  }
 };
 </script>
 
 <style lang="scss">
-  @media print {
-    .print-blank:nth-child(even) {
-      break-after: always;
-      page-break-after: always;
-    }
+@media print {
+  .print-blank:nth-child(even) {
+    break-after: always;
+    page-break-after: always;
   }
+}
 </style>

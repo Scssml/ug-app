@@ -63,8 +63,13 @@
                 <td style="width: 73px;">
                   <b>Дата</b>
                 </td>
-                <td colspan="3" style="width: 100%; text-align: center; font-size: 30px;">
+                <td
+                  colspan="3"
+                  style="width: 100%; text-align: center; font-size: 30px;"
+                >
                   {{ orderData.orderDate }}
+                  <p></p>
+                  {{ orderData.orderTime }}
                 </td>
                 <td style="width: 204px; text-align: right;">
                   <b>{{ orderData.orderDeliveryType }}</b>
@@ -112,13 +117,16 @@
         </template>
       </template>
     </div>
-    <br>
+    <br />
     <v-btn
-      :color="(orderData.isAlreadyPrinted) ? 'success' : 'primary'"
+      :color="orderData.isAlreadyPrinted ? 'success' : 'primary'"
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-    >{{ (orderData.isAlreadyPrinted) ? 'Повторная печать' : 'Распечатать' }}</v-btn>
+      >{{
+        orderData.isAlreadyPrinted ? "Повторная печать" : "Распечатать"
+      }}</v-btn
+    >
   </div>
 </template>
 
@@ -127,49 +135,52 @@ export default {
   data() {
     return {
       id: 0,
-      orderData: {},
+      orderData: {}
     };
   },
   methods: {
     getItem() {
       const itemParams = {
-        type: 'print/order',
-        id: `${this.id}/florist`,
+        type: "print/order",
+        id: `${this.id}/florist`
       };
 
-      this.$store.dispatch('getItem', itemParams).then((response) => {
-        const elem = response;
+      this.$store
+        .dispatch("getItem", itemParams)
+        .then(response => {
+          const elem = response;
 
-        if (elem.orderDate) {
-          const date = new Date(elem.orderDate);
-          elem.orderDate = date.toLocaleString('ru', {
-            day: 'numeric',
-            month: 'numeric',
-            year: 'numeric',
-          });
-        }
+          if (elem.orderDate) {
+            const date = new Date(elem.orderDate);
+            elem.orderDate = date.toLocaleString("ru", {
+              day: "numeric",
+              month: "numeric",
+              year: "numeric"
+            });
+          }
 
-        this.orderData = elem;
-      }).catch(() => {
-        console.log('error');
-      });
+          this.orderData = elem;
+        })
+        .catch(() => {
+          console.log("error");
+        });
     },
     printPage() {
       window.print();
-    },
+    }
   },
   mounted() {
     this.id = this.$route.params.id;
     this.getItem();
-  },
+  }
 };
 </script>
 
 <style lang="scss">
-  @media print {
-    .print-blank:nth-child(even) {
-      break-after: always;
-      page-break-after: always;
-    }
+@media print {
+  .print-blank:nth-child(even) {
+    break-after: always;
+    page-break-after: always;
   }
+}
 </style>

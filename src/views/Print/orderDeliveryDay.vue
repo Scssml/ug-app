@@ -1,6 +1,10 @@
 <template>
   <div>
-    <table style="width: 620px; border-collapse: collapse; padding: 2px;">
+    <v-card-text
+      v-html="report"
+      class="report"
+    ></v-card-text>
+    <!-- <table style="width: 620px; border-collapse: collapse; padding: 2px;">
       <tr>
         <th style="border: 1px solid black">
           Номер
@@ -27,7 +31,7 @@
           <td style="border: 1px solid black; text-align: center;">{{ elem.description }}</td>
         </tr>
       </template>
-    </table>
+    </table> -->
     <br>
     <v-btn
       color="primary"
@@ -43,7 +47,8 @@ export default {
   data() {
     return {
       date: '',
-      ordersList: {},
+      // ordersList: {},
+      report: '',
     };
   },
   methods: {
@@ -54,7 +59,8 @@ export default {
       };
 
       this.$store.dispatch('getItem', itemParams).then((response) => {
-        this.ordersList = response;
+        // this.ordersList = response;
+        this.report = response;
       }).catch(() => {
         console.log('error');
       });
@@ -69,3 +75,18 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+  .report {
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      td, th {
+        padding: 5px;
+        border: 1px solid #ccc;
+      }
+    }
+  }
+</style>

@@ -164,7 +164,7 @@ export default {
     },
   },
   mounted() {
-    this.createdReportGraphQL();
+    // this.createdReportGraphQL();
   },
 };
 </script>

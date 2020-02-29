@@ -181,7 +181,6 @@
                   clearable
                   @change="setDataClient()"
                   :search-input.sync="clientName"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -531,7 +530,6 @@
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
-                  readonly
                 ></v-text-field>
               </v-flex>
               <v-flex

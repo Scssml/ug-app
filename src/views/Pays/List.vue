@@ -31,17 +31,14 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Тип"
-                  :items="[{id: 0, name: 'Все'}].concat(paymentTypes)"
+                  :items="[{ id: 0, name: 'Все' }].concat(paymentTypes)"
                   item-text="name"
                   item-value="id"
                   v-model="filter.paymentType"
                   hide-details
                 ></v-select>
               </v-flex>
-              <v-flex
-                xs2
-                class="px-2"
-              >
+              <v-flex xs2 class="px-2">
                 <v-menu
                   :close-on-content-click="false"
                   v-model="dataStartPicker"
@@ -67,14 +64,11 @@
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
-                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
+                    :max="!!filter.dateEnd ? filter.dateEnd : undefined"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
-              <v-flex
-                xs2
-                class="px-2"
-              >
+              <v-flex xs2 class="px-2">
                 <v-menu
                   :close-on-content-click="false"
                   v-model="dataEndPicker"
@@ -100,7 +94,7 @@
                     locale="ru-ru"
                     scrollable
                     first-day-of-week="1"
-                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
+                    :min="!!filter.dateStart ? filter.dateStart : undefined"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -122,7 +116,7 @@
                   :value="client.name"
                   @onChange="onInputChange"
                   @onSelect="onSelected"
-                  class="mt-3"
+                  class="mt-3 view-filter"
                 />
 
                 <!-- <v-autocomplete
@@ -170,15 +164,13 @@
                 :key="header.text"
                 class="text-xs-left column"
                 :class="[
-                  'column sortable', pagination.descending ? 'desc' : 'asc',
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
                   header.value === pagination.sortBy ? 'active' : ''
                 ]"
-                @click="(header.sortable) ? changeSort(header.value) : ''"
+                @click="header.sortable ? changeSort(header.value) : ''"
               >
-                <v-icon
-                  small
-                  v-if="header.sortable"
-                >arrow_upward</v-icon>
+                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
                 {{ header.text }}
               </th>
             </tr>
@@ -239,91 +231,91 @@
 </template>
 
 <script>
-import PaymentEdit from './edit.vue';
-import Autosuggest from '../../components/Autosuggest';
-import gql from 'graphql-tag';
+import PaymentEdit from "./edit.vue";
+import Autosuggest from "../../components/Autosuggest";
+import gql from "graphql-tag";
 
 export default {
-  name: 'Payments',
+  name: "Payments",
   components: {
     PaymentEdit,
-    Autosuggest,
+    Autosuggest
   },
   data() {
     return {
       // filterManagerStatus: -1,
       loadingData: [
         {
-          title: 'Получение оплат',
+          title: "Получение оплат",
           error: false,
           loading: false,
-          color: 'cyan',
-          id: 'payments',
-        },
+          color: "cyan",
+          id: "payments"
+        }
       ],
       filter: {
-        createdBy: '',
+        createdBy: "",
         paymentType: 0,
         dateStart: undefined,
         dateEnd: undefined,
-        clientId: null,
+        clientId: null
       },
       dataStartPicker: false,
       dataEndPicker: false,
-      search: '',
+      search: "",
       headersTable: [
         {
-          text: 'ID',
-          align: 'right',
-          value: 'id',
+          text: "ID",
+          align: "right",
+          value: "id",
           filterable: false,
-          sortable: true,
+          sortable: true
         },
         {
-          text: 'Дата',
-          align: 'left',
-          value: 'creation_date',
+          text: "Дата",
+          align: "left",
+          value: "creation_date",
           filterable: false,
-          sortable: true,
+          sortable: true
         },
         {
-          text: 'Клиент',
-          align: 'left',
-          value: 'client.name',
-          sortable: true,
+          text: "Клиент",
+          align: "left",
+          value: "client.name",
+          sortable: true
         },
         {
-          text: 'Стоимость',
-          align: 'left',
-          value: 'amount',
-          sortable: true,
+          text: "Стоимость",
+          align: "left",
+          value: "amount",
+          sortable: true
         },
         {
-          text: 'Тип',
-          align: 'left',
-          value: 'paymentType.name',
-          sortable: true,
+          text: "Тип",
+          align: "left",
+          value: "paymentType.name",
+          sortable: true
         },
         {
-          text: 'Комментарий',
-          align: 'left',
-          value: 'description',
-          sortable: true,
+          text: "Комментарий",
+          align: "left",
+          value: "description",
+          sortable: true
         },
         {
-          text: '',
-          align: 'right',
+          text: "",
+          align: "right",
           sortable: false,
-          value: 'action',
-        },
+          value: "action"
+        }
       ],
       usersList: [],
       dialogForm: false,
       editedId: 0,
       pagination: {
-        sortBy: 'id',
+        sortBy: "id",
         rowsPerPage: -1,
-        descending: true,
+        descending: true
       },
       take: 20,
       page: 0,
@@ -331,36 +323,36 @@ export default {
       paymentsList: [],
       selectedManagerId: null,
       client: {},
-      queryName: '',
+      queryName: "",
       skipClientsQuery: true,
-      suggestions: [],
+      suggestions: []
     };
   },
   apollo: {
     paymentsList: {
       query: gql`
         query PaymentsList(
-          $managerId: bigint_comparison_exp,
-          $paymentTypeId: bigint_comparison_exp,
-          $clientId: bigint,
-          $startDate: timestamptz,
-          $endDate: timestamptz,
-          $limit: Int,
-          $offset: Int,
-          $orderBy: [payments_order_by!],
+          $managerId: bigint_comparison_exp
+          $paymentTypeId: bigint_comparison_exp
+          $clientId: bigint
+          $startDate: timestamptz
+          $endDate: timestamptz
+          $limit: Int
+          $offset: Int
+          $orderBy: [payments_order_by!]
         ) {
           paymentsList: payments(
             order_by: $orderBy
             where: {
               _and: [
-                { managerId: $managerId },
-                { paymentTypeId: $paymentTypeId },
-                { clientId: { _eq: $clientId } },
-                { creation_date: { _gte: $startDate } },
-                { creation_date: { _lte: $endDate } },
+                { managerId: $managerId }
+                { paymentTypeId: $paymentTypeId }
+                { clientId: { _eq: $clientId } }
+                { creation_date: { _gte: $startDate } }
+                { creation_date: { _lte: $endDate } }
               ]
             }
-            limit: $limit,
+            limit: $limit
             offset: $offset
           ) {
             id
@@ -382,24 +374,25 @@ export default {
         return {
           managerId: this.selectedManagerId
             ? {
-              _eq: this.selectedManagerId,
-            }
+                _eq: this.selectedManagerId
+              }
             : undefined,
           paymentTypeId: this.filter.paymentType
             ? {
-              _eq: this.filter.paymentType,
-            }
+                _eq: this.filter.paymentType
+              }
             : undefined,
-          clientId: this.filter.clientId >= 0 && this.filter.clientId !== ''
-            ? this.filter.clientId
-            : undefined,
+          clientId:
+            this.filter.clientId >= 0 && this.filter.clientId !== ""
+              ? this.filter.clientId
+              : undefined,
           startDate: `${this.filter.dateStart} 00:00:00`,
           endDate: `${this.filter.dateEnd} 23:59:59`,
           offset: this.page * this.take,
           limit: this.take,
-          orderBy: this.orderBy,
+          orderBy: this.orderBy
         };
-      },
+      }
     },
     usersList: {
       query: gql`
@@ -411,24 +404,27 @@ export default {
             name
           }
         }
-      `,
+      `
     },
     paymentTypes: {
       query: gql`
         query {
-          paymentTypes: paymentTypes(
-            where: { active: { _eq: true } }
-          ) {
+          paymentTypes: paymentTypes(where: { active: { _eq: true } }) {
             id
             name
           }
         }
-      `,
+      `
     },
     clientsList: {
       query: gql`
         query ClientsList($name: String) {
-          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+          clientsList: clients(
+            where: {
+              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+            }
+            limit: 50
+          ) {
             id
             name
             type: clientType {
@@ -445,44 +441,48 @@ export default {
       },
       variables() {
         return {
-          name: this.queryName,
+          name: this.queryName
         };
       },
       skip() {
         return this.skipClientsQuery;
-      },
-    },
+      }
+    }
   },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
+      const loadData = this.loadingData.filter(
+        item => !item.error && !item.loading
+      );
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     orderBy() {
-      const sortFields = this.pagination.sortBy.split('.');
+      const sortFields = this.pagination.sortBy.split(".");
       let sortObject = {};
-      const sortOrder = this.pagination.descending ? 'desc_nulls_last' : 'asc_nulls_last';
+      const sortOrder = this.pagination.descending
+        ? "desc_nulls_last"
+        : "asc_nulls_last";
 
       if (sortFields.length === 3) {
         sortObject = {
           [sortFields[0]]: {
             [sortFields[1]]: {
-              [sortFields[2]]: sortOrder,
-            },
-          },
+              [sortFields[2]]: sortOrder
+            }
+          }
         };
       } else if (sortFields.length === 2) {
         sortObject = {
           [sortFields[0]]: {
-            [sortFields[1]]: sortOrder,
-          },
+            [sortFields[1]]: sortOrder
+          }
         };
       } else {
         sortObject[sortFields[0]] = sortOrder;
       }
 
       return sortObject;
-    },
+    }
   },
   methods: {
     changeSort(column) {
@@ -505,8 +505,8 @@ export default {
       this.queryName = `%${text}%`;
       this.skipClientsQuery = false;
 
-      if (text === '') {
-        this.filter.clientId = '';
+      if (text === "") {
+        this.filter.clientId = "";
       }
     },
     handleSelectedManagerChange(selectedId) {
@@ -520,16 +520,16 @@ export default {
       }
 
       const orderFilter = {
-        creationDate: [],
+        creationDate: []
       };
 
-      Object.keys(this.filter).forEach((key) => {
+      Object.keys(this.filter).forEach(key => {
         const val = this.filter[key];
 
         if (val) {
-          if (key === 'dateStart') {
+          if (key === "dateStart") {
             orderFilter.creationDate[0] = `${val} 00:00:00`;
-          } else if (key === 'dateEnd') {
+          } else if (key === "dateEnd") {
             orderFilter.creationDate[1] = `${val} 23:59:59`;
           } else {
             orderFilter[key] = val;
@@ -538,22 +538,26 @@ export default {
       });
 
       const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = (this.pagination.descending) ? 'desc' : 'asc';
+      sortSettings[this.pagination.sortBy] = this.pagination.descending
+        ? "desc"
+        : "asc";
 
       const itemParams = {
-        type: 'payments',
+        type: "payments",
         sort: {
-          id: 'desc',
+          id: "desc"
         },
         filter: orderFilter,
         skip: this.page * this.take,
-        take: this.take,
+        take: this.take
       };
 
-      const successData = 'Оплаты получены!';
-      const errorData = 'Ошибка получения оплат!';
+      const successData = "Оплаты получены!";
+      const errorData = "Ошибка получения оплат!";
 
-      const loadData = this.loadingData.find(item => item.id === itemParams.type);
+      const loadData = this.loadingData.find(
+        item => item.id === itemParams.type
+      );
       loadData.title = successData;
       loadData.loading = false;
 
@@ -586,8 +590,8 @@ export default {
       this.dialogForm = true;
     },
     changeShowElem() {
-      localStorage.setItem('countElemPage', this.take);
-      this.$store.commit('setCountElemPage', this.take);
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
       this.page = 0;
     },
     prevPage() {
@@ -595,18 +599,18 @@ export default {
     },
     nextPage() {
       this.page += 1;
-    },
+    }
   },
   mounted() {
     const date = new Date();
-    const dateEnd = date.toISOString().split('T')[0];
+    const dateEnd = date.toISOString().split("T")[0];
 
     date.setDate(date.getDate() - 30);
-    const dateStart = date.toISOString().split('T')[0];
+    const dateStart = date.toISOString().split("T")[0];
 
     this.filter.dateStart = dateStart;
     this.filter.dateEnd = dateEnd;
-  },
+  }
 };
 </script>
 

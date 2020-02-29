@@ -25,10 +25,18 @@
       <autosuggest
         :suggestions="suggestions"
         placeholder="Клиенты"
-        :value="client.name"
+        :value="autosuggestValue"
         @onChange="onInputChange"
         @onSelect="onSelected"
-      />
+      >
+        <template slot-scope="slotProps">
+          <span
+            >{{ slotProps.suggestion.item.name }} ({{
+              slotProps.suggestion.item.bill
+            }})</span
+          >
+        </template>
+      </autosuggest>
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -355,34 +363,33 @@
 import Autosuggest from "./Autosuggest";
 import gql from "graphql-tag";
 
-import { ClientTypes, PaymentTypes } from '../constants';
-import InfiniteAutocomplete from '../components/InfiniteAutocomplete';
+import { ClientTypes, PaymentTypes } from "../constants";
 
 export default {
-  name: 'CreatedBouquetCard',
+  name: "CreatedBouquetCard",
   components: {
     autosuggest: Autosuggest
   },
   props: {
     goods: {
       type: Array,
-      required: true,
+      required: true
     },
     floristsList: {
       type: Array,
-      required: true,
+      required: true
     },
     paymentTypesList: {
       type: Array,
-      required: true,
+      required: true
     },
     sumFlowers: {
       type: Number,
-      required: true,
+      required: true
     },
     propsDefault: {
-      type: Object,
-    },
+      type: Object
+    }
   },
   data() {
     return {
@@ -394,7 +401,7 @@ export default {
       order: 0,
       decorPercent: 20,
       delivery: 0,
-      comment: '',
+      comment: "",
       sumDecorAdditional: 0,
       salePersent: null,
       dialogPay: false,
@@ -403,8 +410,8 @@ export default {
       typePay: null,
       secondTypePay: null,
       dialogClear: false,
-      sumDecorCustom: '',
-      clientSaleCustom: '',
+      sumDecorCustom: "",
+      clientSaleCustom: "",
       check: false,
       bouquetCount: 1,
       orderBouquet: null,
@@ -412,22 +419,26 @@ export default {
       clientsList: [],
       partlyPayment: false,
       btnLoad: false,
-      queryName: '',
+      queryName: "",
       skipClientsQuery: true,
-      suggestions: [],
+      suggestions: []
     };
   },
   apollo: {
     clientsList: {
       query: gql`
         query ClientsList($name: String) {
-          clientsList: clients(where: { name: { _ilike: $name } }, limit: 50) {
+          clientsList: clients(
+            where: {
+              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+            }
+            limit: 50
+          ) {
             id
             name
-            type: clientType {
-              id
-            }
+            type: typeId
             discountPercent: sale
+            bill
           }
         }
       `,
@@ -438,12 +449,12 @@ export default {
       },
       variables() {
         return {
-          name: this.queryName,
+          name: this.queryName
         };
       },
       skip() {
         return this.skipClientsQuery;
-      },
+      }
     },
     clientOrdersList: {
       query: gql`
@@ -467,17 +478,24 @@ export default {
       `,
       variables() {
         return {
-          clientId: this.clientId,
+          clientId: this.clientId
         };
-      },
-    },
+      }
+    }
   },
   computed: {
+    autosuggestValue() {
+      return this.client.name
+        ? `${this.client.name} (${this.client.bill})`
+        : "";
+    },
     prePayment() {
       let prePayment = 0;
 
       if (this.order > 0 && this.clientOrdersList.length) {
-        const order = this.clientOrdersList.find(item => item.id === this.order);
+        const order = this.clientOrdersList.find(
+          item => item.id === this.order
+        );
 
         prePayment = order ? +order.prePayment : 0;
       }
@@ -485,11 +503,13 @@ export default {
       return prePayment;
     },
     orderBouquets() {
-      const orderSelected = this.clientOrdersList.find(item => item.id === this.order);
+      const orderSelected = this.clientOrdersList.find(
+        item => item.id === this.order
+      );
       let orderList = [];
 
       if (orderSelected) {
-        orderList = orderSelected.bouquets.map((item) => {
+        orderList = orderSelected.bouquets.map(item => {
           item.fullName = `${item.name} - ${item.count}шт`;
           return item;
         });
@@ -498,7 +518,7 @@ export default {
       return orderList;
     },
     typePayList() {
-      return this.paymentTypesList.filter((item) => {
+      return this.paymentTypesList.filter(item => {
         if (
           item.id === PaymentTypes.PRESENT &&
           (this.client.type !== ClientTypes.LEGAL || this.goods.length)
@@ -515,7 +535,7 @@ export default {
     },
     sumDecor: function decorSum() {
       let sum = 0;
-      if (this.sumDecorCustom !== '') {
+      if (this.sumDecorCustom !== "") {
         sum = this.sumDecorCustom;
       } else {
         sum = Math.ceil(this.sumFlowers * (this.decorPercent / 100));
@@ -523,8 +543,10 @@ export default {
       return this.priceRound(sum);
     },
     sumSale: function sumSale() {
-      const sum = Math.ceil((this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
-          (this.clientSale / 100));
+      const sum = Math.ceil(
+        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
+          (this.clientSale / 100)
+      );
       return this.priceRound(sum);
     },
     sumOrder: function sumPay() {
@@ -558,7 +580,7 @@ export default {
       return sum > 0 ? sum : 0;
     },
     activePayBtn: function activePayBtn() {
-      const active = this.florist !== '' ? 1 : 0;
+      const active = this.florist !== "" ? 1 : 0;
       return active;
     },
     clientSale: function clientSale() {
@@ -567,7 +589,7 @@ export default {
       let salePersent = 0;
 
       if (client) {
-        if (this.clientSaleCustom !== '') {
+        if (this.clientSaleCustom !== "") {
           salePersent = this.clientSaleCustom;
         } else if (client !== 0 && client.discountPercent > 0) {
           salePersent = client.discountPercent;
@@ -582,7 +604,7 @@ export default {
       }
 
       return salePersent;
-    },
+    }
   },
   methods: {
     onSelected(item) {
@@ -609,7 +631,9 @@ export default {
     handleOrderChange(id) {
       const order = this.clientOrdersList.find(item => item.id === id);
 
-      const isHaveReadyBouquets = order.bouquets.some(b => b.bouquets_aggregate.aggregate.count);
+      const isHaveReadyBouquets = order.bouquets.some(
+        b => b.bouquets_aggregate.aggregate.count
+      );
 
       this.delivery = !isHaveReadyBouquets ? order.deliveryCost : 0;
 
@@ -628,7 +652,7 @@ export default {
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
+      const textTwo = item.phone.replace(/[^0-9]/gim, "");
       const searchText = queryText.toLowerCase();
 
       return (
@@ -651,6 +675,7 @@ export default {
           deliveryCost: this.delivery,
           salePercent: +this.clientSale,
           sumSale: this.sumSale,
+          sumPayCustom: this.sumPayCustom,
           payment: {
             paymentTypeId: this.typePay,
             amount:
@@ -659,7 +684,7 @@ export default {
                 ? +this.sumClient - +this.sumChange
                 : +this.sumPay,
             clientId: this.clientId,
-            description: '',
+            description: ""
           },
           secondPayment: this.partlyPayment
             ? {
@@ -674,16 +699,12 @@ export default {
             : null,
           comment: this.comment,
           orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount,
+          bouquetCount: +this.bouquetCount
         };
-
-        if (this.sumFlowers === 0) {
-          props.payment.amount = this.sumPayCustom;
-        }
 
         setTimeout(() => {
           this.dialogPay = false;
-          this.$emit('saveProps', props);
+          this.$emit("saveProps", props);
         }, 1000);
       }
     },
@@ -703,19 +724,19 @@ export default {
           paymentTypeId: 1,
           amount: this.sumPay,
           clientId: this.clientId,
-          description: '',
+          description: ""
         },
         comment: this.comment,
         orderBouquet: this.orderBouquet,
         sumDecorAdditional: this.sumDecorAdditional,
-        bouquetCount: +this.bouquetCount,
+        bouquetCount: +this.bouquetCount
       };
 
-      this.$emit('updateProps', props);
+      this.$emit("updateProps", props);
     },
     checkCard() {
       this.check = !this.check;
-      this.$emit('checkCard', this.sumPay);
+      this.$emit("checkCard", this.sumPay);
     },
     priceRound: function priceRound(sum) {
       return +sum;
@@ -733,7 +754,7 @@ export default {
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
       }
-    },
+    }
   },
   updated() {
     // if ((this.salePersent === null || this.salePersent === '')
@@ -743,7 +764,7 @@ export default {
   },
   created() {
     this.setValueDefault();
-  },
+  }
 };
 </script>
 

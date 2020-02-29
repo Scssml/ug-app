@@ -160,11 +160,11 @@
                   no-data-text="Не надено"
                   clearable
                   @change="
+                  handleDirty();
                     setDataClient();
-                    handleDirty();
+
                   "
                   :search-input.sync="clientName"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -529,7 +529,6 @@
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
-                  readonly
                   @change="handleDirty"
                 ></v-text-field>
               </v-flex>

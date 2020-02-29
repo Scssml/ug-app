@@ -1101,7 +1101,8 @@ export default {
         cardsList[index].props.clientId = item.client.id;
       }
       localStorage.setItem("cardsList", JSON.stringify(cardsList));
-      this.$router.push({ path: "/", query: { selectOrder: item.id } });
+      const routeData = this.$router.resolve({ path: "/", query: { selectOrder: item.id } });
+      window.open(routeData.href, '_blank');
     },
     getWeekEndDate() {
       const date = new Date();

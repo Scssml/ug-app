@@ -79,20 +79,20 @@
 </template>
 
 <script>
-import axios from 'axios';
-import Chrome from 'vue-color/src/components/Chrome';
+import axios from "axios";
+import Chrome from "vue-color/src/components/Chrome";
 
-axios.defaults.baseURL = '/api/';
+axios.defaults.baseURL = process.env.VUE_APP_API_PREFIX;
 
 export default {
-  name: 'ListItem',
-  props: ['props', 'exelCalc'],
+  name: "ListItem",
+  props: ["props", "exelCalc"],
   data: () => ({
-    color: '#FFF',
-    showPicker: false,
+    color: "#FFF",
+    showPicker: false
   }),
   components: {
-    'chrome-picker': Chrome,
+    "chrome-picker": Chrome
   },
   methods: {
     handleColorPickerButtonClick() {
@@ -101,7 +101,7 @@ export default {
     handleClickOutsidePicker() {
       if (this.showPicker) {
         this.updateItem({
-          color: this.color.hex,
+          color: this.color.hex
         });
       }
 
@@ -109,30 +109,30 @@ export default {
     },
     changeSortIndex(e) {
       this.updateItem({
-        sortIndex: +e.target.value,
+        sortIndex: +e.target.value
       });
     },
     handleItemChange(prop) {
-      return (e) => {
+      return e => {
         const { value } = e.target;
 
         if (value) {
-          this.$emit('onChange', { id: this.props.item.id, value, prop });
+          this.$emit("onChange", { id: this.props.item.id, value, prop });
         }
       };
     },
     deleteItem(id) {
-      this.$emit('deleteItem', id);
+      this.$emit("deleteItem", id);
     },
     updateItem(data) {
       const { id } = this.props.item;
 
       return axios.put(`/goods/${id}`, data);
-    },
+    }
   },
   mounted() {
     this.color = this.props.item.color;
-  },
+  }
 };
 </script>
 

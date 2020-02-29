@@ -1,17 +1,8 @@
+require("dotenv").config();
+
 module.exports = {
   devServer: {
-    proxy: 'http://192.168.4.161',
-    // proxy: 'http://192.168.4.54',
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://10.0.0.18:3000',
-    //     changeOrigin: true,
-    //     ws: true,
-    //     pathRewrite: {
-    //       '^/api': '',
-    //     },
-    //   },
-    // },
+    proxy: process.env.VUE_APP_DEV_SERVER_PROXY
   },
-  lintOnSave: true,
+  lintOnSave: true
 };

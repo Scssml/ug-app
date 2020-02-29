@@ -117,7 +117,7 @@ export default {
       });
 
     const socketCouriersGps = io(window.location.origin, {
-      path: "/api/zont-socket",
+      path: `${process.env.VUE_APP_API_PREFIX}zont-socket`,
       transports: ["websocket"]
     });
 
@@ -126,7 +126,7 @@ export default {
     });
 
     const socketOrders = io(window.location.origin, {
-      path: "/api/main-socket",
+      path: `${process.env.VUE_APP_API_PREFIX}main-socket`,
       transports: ["websocket"]
     });
 

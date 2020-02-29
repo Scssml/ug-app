@@ -1,9 +1,9 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import axios from 'axios';
-import router from './router';
+import Vue from "vue";
+import Vuex from "vuex";
+import axios from "axios";
+import router from "./router";
 
-axios.defaults.baseURL = '/api/';
+axios.defaults.baseURL = process.env.VUE_APP_API_PREFIX;
 
 Vue.use(Vuex);
 
@@ -21,9 +21,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     authUser: 0,
-    apiUrl: '/',
-    authToken: '',
-    authStatus: '',
+    apiUrl: "/",
+    authToken: "",
+    authStatus: "",
     authUserGroup: {},
     couriersGps: [],
     deliveryZones: [],
@@ -34,11 +34,11 @@ export default new Vuex.Store({
       endDate: null,
       type: null,
       search: null,
-      goodId: null,
+      goodId: null
     },
     showGoodsList: [],
     orderFilter: {},
-    orderSort: {},
+    orderSort: {}
   },
   getters: {
     isAuthenticated: state => !!state.authToken,
@@ -51,24 +51,24 @@ export default new Vuex.Store({
     getCountElemPage: state => state.countElemPage,
     getShowGoodsList: state => state.showGoodsList,
     getOrderFilter: state => state.orderFilter,
-    getOrderSort: state => state.orderSort,
+    getOrderSort: state => state.orderSort
   },
   mutations: {
-    authRequest: (state) => {
-      state.authStatus = 'loading';
+    authRequest: state => {
+      state.authStatus = "loading";
     },
     authSuccess: (state, { token, id, group }) => {
-      state.authStatus = 'success';
+      state.authStatus = "success";
       state.authToken = token;
       state.authUser = id;
       state.authUserGroup = group;
     },
-    authError: (state) => {
-      state.authStatus = 'error';
+    authError: state => {
+      state.authStatus = "error";
     },
-    authLogout: (state) => {
-      state.authStatus = '';
-      state.authToken = '';
+    authLogout: state => {
+      state.authStatus = "";
+      state.authToken = "";
       state.authUser = 0;
       state.authUserGroup = {};
     },
@@ -96,76 +96,75 @@ export default new Vuex.Store({
     setOrderSort: (state, value) => {
       state.orderSort = value;
     },
-    clearPurchaseFilter: (state) => {
+    clearPurchaseFilter: state => {
       state.purchaseFilter = {
         startDate: null,
         endDate: null,
         type: null,
         search: null,
-        goodId: null,
+        goodId: null
       };
-    },
+    }
   },
   actions: {
     login({ state, commit }, user) {
       return new Promise((resolve, rejected) => {
-        commit('authRequest');
-        axios.post(
-          `${state.apiUrl}login`,
-          user,
-          {
+        commit("authRequest");
+        axios
+          .post(`${state.apiUrl}login`, user, {
             headers: {
-              'Content-Type': 'application/json',
-            },
-          },
-        ).then((response) => {
-          const token = response.data.jwtToken;
-          const { id, group } = response.data.userInfo;
-          localStorage.setItem('user-token', token);
-          axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+              "Content-Type": "application/json"
+            }
+          })
+          .then(response => {
+            const token = response.data.jwtToken;
+            const { id, group } = response.data.userInfo;
+            localStorage.setItem("user-token", token);
+            axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-          localStorage.setItem('user-id', id);
-          localStorage.setItem('user-group', JSON.stringify(group));
+            localStorage.setItem("user-id", id);
+            localStorage.setItem("user-group", JSON.stringify(group));
 
-          const countElemPage = localStorage.getItem('countElemPage');
-          if (countElemPage !== null) {
-            commit('setCountElemPage', countElemPage);
-          }
+            const countElemPage = localStorage.getItem("countElemPage");
+            if (countElemPage !== null) {
+              commit("setCountElemPage", countElemPage);
+            }
 
-          commit('authSuccess', { token, id, group });
+            commit("authSuccess", { token, id, group });
 
-          resolve(response);
-        }).catch((error) => {
-          commit('authError', error);
-          localStorage.removeItem('user-token');
-          rejected(error);
-        });
+            resolve(response);
+          })
+          .catch(error => {
+            commit("authError", error);
+            localStorage.removeItem("user-token");
+            rejected(error);
+          });
       });
     },
     logout({ commit }) {
-      return new Promise((resolve) => {
-        commit('authLogout');
-        localStorage.removeItem('user-token');
-        localStorage.removeItem('user-id');
-        localStorage.removeItem('user-group');
+      return new Promise(resolve => {
+        commit("authLogout");
+        localStorage.removeItem("user-token");
+        localStorage.removeItem("user-id");
+        localStorage.removeItem("user-group");
         delete axios.defaults.headers.common.Authorization;
         resolve();
       });
     },
     autoAuth({ commit }) {
       return new Promise((resolve, rejected) => {
-        const token = localStorage.getItem('user-token');
-        const id = +localStorage.getItem('user-id');
-        const group = JSON.parse(localStorage.getItem('user-group'));
+        const token = localStorage.getItem("user-token");
+        const id = +localStorage.getItem("user-id");
+        const group = JSON.parse(localStorage.getItem("user-group"));
 
-        const countElemPage = localStorage.getItem('countElemPage');
+        const countElemPage = localStorage.getItem("countElemPage");
         if (countElemPage !== null) {
-          commit('setCountElemPage', countElemPage);
+          commit("setCountElemPage", countElemPage);
         }
 
         if (token !== null) {
           axios.defaults.headers.common.Authorization = `Bearer ${token}`;
-          commit('authSuccess', { token, id, group });
+          commit("authSuccess", { token, id, group });
           resolve();
         } else {
           rejected();
@@ -177,17 +176,22 @@ export default new Vuex.Store({
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}`;
 
-        let filterQuery = '?';
+        let filterQuery = "?";
         if (item.filter !== undefined) {
           const keys = Object.keys(item.filter);
           const values = Object.values(item.filter);
           for (let i = 0; i < keys.length; i += 1) {
-            filterQuery += (i !== 0) ? '&' : '';
+            filterQuery += i !== 0 ? "&" : "";
             if (Array.isArray(values[i])) {
               for (let j = 0; j < values[i].length; j += 1) {
-                filterQuery += (j !== 0) ? '&' : '';
+                filterQuery += j !== 0 ? "&" : "";
 
-                if (keys[i] === 'creationDate' || keys[i] === 'deliveryDate' || keys[i] === 'purchaseDate' || keys[i] === 'created_at') {
+                if (
+                  keys[i] === "creationDate" ||
+                  keys[i] === "deliveryDate" ||
+                  keys[i] === "purchaseDate" ||
+                  keys[i] === "created_at"
+                ) {
                   filterQuery += `filter[${keys[i]}][btw][]=${values[i][j]}`;
                 } else {
                   filterQuery += `filter[${keys[i]}][]=${values[i][j]}`;
@@ -199,7 +203,7 @@ export default new Vuex.Store({
           }
         }
 
-        let sortQuery = '';
+        let sortQuery = "";
         if (item.sort !== undefined) {
           const keysSort = Object.keys(item.sort);
           const valSort = Object.values(item.sort);
@@ -208,120 +212,126 @@ export default new Vuex.Store({
           }
         }
 
-        let takeQuery = '';
+        let takeQuery = "";
         if (item.take !== undefined) {
           takeQuery = `&take=${item.take}`;
         }
 
-        let skipQuery = '';
+        let skipQuery = "";
         if (item.skip !== undefined) {
           skipQuery = `&skip=${item.skip}`;
         }
 
-        let fullQuery = '';
+        let fullQuery = "";
         fullQuery += filterQuery;
         fullQuery += sortQuery;
         fullQuery += takeQuery;
         fullQuery += skipQuery;
 
-        axios.get(url + fullQuery).then((response) => {
-          const elemList = response.data;
-          resolve(elemList);
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .get(url + fullQuery)
+          .then(response => {
+            const elemList = response.data;
+            resolve(elemList);
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
     getItem({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}/${item.id}`;
-        axios.get(url, {
-          params: item.params,
-        }).then((response) => {
-          const elem = response.data;
-          resolve(elem);
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .get(url, {
+            params: item.params
+          })
+          .then(response => {
+            const elem = response.data;
+            resolve(elem);
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
     addItem({ state, dispatch }, item) {
       return new Promise((resolve, rejected) => {
         const url = `${state.apiUrl}${item.type}`;
-        axios.post(
-          url,
-          item.props,
-        ).then((response) => {
-          resolve(response.data);
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .post(url, item.props)
+          .then(response => {
+            resolve(response.data);
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
     updateItem({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
-        axios.put(
-          url,
-          item.props,
-        ).then(() => {
-          resolve();
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .put(url, item.props)
+          .then(() => {
+            resolve();
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
     deleteItem({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
-        axios.delete(
-          url,
-          {
-            data: item.props,
-          },
-        ).then(() => {
-          resolve();
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .delete(url, {
+            data: item.props
+          })
+          .then(() => {
+            resolve();
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
 
     changePwd({ state, dispatch }, item) {
       const url = `${state.apiUrl}${item.type}/${item.id}/pwd`;
       return new Promise((resolve, rejected) => {
-        axios.put(
-          url,
-          item.props,
-        ).then(() => {
-          resolve();
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .put(url, item.props)
+          .then(() => {
+            resolve();
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
 
@@ -329,9 +339,10 @@ export default new Vuex.Store({
       return new Promise((res, rej) => {
         const url = `${state.apiUrl}delivery-zones`;
 
-        axios.get(url)
+        axios
+          .get(url)
           .then(({ data }) => {
-            commit('setDeliveryZones', data);
+            commit("setDeliveryZones", data);
             res(data);
           })
           .catch(err => rej(err));
@@ -341,18 +352,18 @@ export default new Vuex.Store({
     courierDelivered({ dispatch }, item) {
       const url = `/delivery/${item.type}/${item.id}`;
       return new Promise((resolve, rejected) => {
-        axios.put(
-          url,
-          item.props,
-        ).then(() => {
-          resolve();
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+        axios
+          .put(url, item.props)
+          .then(() => {
+            resolve();
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
     },
 
@@ -363,15 +374,16 @@ export default new Vuex.Store({
 
         // const ordersList = ordersListResponse;
         const errorData = {
-          text: 'Ошибка получения заказов!',
+          text: "Ошибка получения заказов!"
         };
         const successData = {
-          text: 'Заказы получены!',
+          text: "Заказы получены!"
         };
 
-        axios.get(`${store.state.apiUrl}orders`).then((response) => {
+        axios.get(`${store.state.apiUrl}orders`).then(response => {
           let ordersList = response.data;
-          ordersList = (ordersList !== null && ordersList !== '') ? ordersList : [];
+          ordersList =
+            ordersList !== null && ordersList !== "" ? ordersList : [];
           ordersList = ordersList.filter(item => item.status === 1);
 
           const error = false;
@@ -391,15 +403,16 @@ export default new Vuex.Store({
         // let purchaseList = JSON.parse(localStorage.getItem('purchase'));
 
         const errorData = {
-          text: 'Ошибка получения закупок!',
+          text: "Ошибка получения закупок!"
         };
         const successData = {
-          text: 'Закупки получены!',
+          text: "Закупки получены!"
         };
 
-        axios.get(`${store.state.apiSrc}purchase/list.php`).then((response) => {
+        axios.get(`${store.state.apiSrc}purchase/list.php`).then(response => {
           let purchaseList = response.data;
-          purchaseList = (purchaseList !== null && purchaseList !== '') ? purchaseList : [];
+          purchaseList =
+            purchaseList !== null && purchaseList !== "" ? purchaseList : [];
 
           const error = false;
           if (error) {
@@ -414,21 +427,23 @@ export default new Vuex.Store({
 
     getGraphQL({ dispatch }, item) {
       return new Promise((resolve, rejected) => {
-        const url = 'http://192.168.4.161:7000/v1/graphql';
+        const url = "http://192.168.4.161:7000/v1/graphql";
         axios({
-          method: 'post',
+          method: "post",
           url,
-          data: item.data,
-        }).then((response) => {
-          resolve(response.data);
-        }).catch((error) => {
-          if (error.response.status === 401) {
-            dispatch('logout');
-            router.push('/login');
-          }
-          rejected();
-        });
+          data: item.data
+        })
+          .then(response => {
+            resolve(response.data);
+          })
+          .catch(error => {
+            if (error.response.status === 401) {
+              dispatch("logout");
+              router.push("/login");
+            }
+            rejected();
+          });
       });
-    },
-  },
+    }
+  }
 });

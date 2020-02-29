@@ -23,13 +23,13 @@
                   </td>
                   <td
                     colspan="3"
-                    style="width: 100%; text-align: center; font-size: 30px;"
+                    style="width: 100%; text-align: center; font-size: 30px; font-weight: 900"
                   >
                     {{ order.orderDate }}
                     <p></p>
                     {{ order.orderTime }}
                   </td>
-                  <td style="width: 204px; text-align: right;">
+                  <td style="width: 204px; text-align: right; font-size: 70px;">
                     <b>{{ order.orderDeliveryType }}</b>
                   </td>
                 </tr>
@@ -46,7 +46,7 @@
                 </tr>
                 <tr>
                   <td colspan="5" style="width: 182px; text-align: left;">
-                    <u style="font-size: 70px;">{{ order.clientName }}</u>
+                    <u style="font-size: 70px; font-weight: 900;">{{ order.clientName }}</u>
                   </td>
                 </tr>
                 <tr>

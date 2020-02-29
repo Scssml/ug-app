@@ -25,7 +25,7 @@
       <autosuggest
         :suggestions="suggestions"
         placeholder="Клиенты"
-        :value="client.name"
+        :value="autosuggestValue"
         @onChange="onInputChange"
         @onSelect="onSelected"
       >
@@ -364,7 +364,6 @@ import Autosuggest from "./Autosuggest";
 import gql from "graphql-tag";
 
 import { ClientTypes, PaymentTypes } from "../constants";
-import InfiniteAutocomplete from "../components/InfiniteAutocomplete";
 
 export default {
   name: "CreatedBouquetCard",
@@ -485,6 +484,11 @@ export default {
     }
   },
   computed: {
+    autosuggestValue() {
+      return this.client.name
+        ? `${this.client.name} (${this.client.bill})`
+        : "";
+    },
     prePayment() {
       let prePayment = 0;
 

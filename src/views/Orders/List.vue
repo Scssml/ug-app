@@ -724,6 +724,7 @@ export default {
             client {
               id
               name
+              bill
             }
             bouquets: orderBouquets {
               name

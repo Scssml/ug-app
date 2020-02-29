@@ -496,6 +496,7 @@ export default {
               id
               name
               phone
+              bill
             }
             orderBouquet {
               name

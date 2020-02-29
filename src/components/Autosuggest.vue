@@ -21,12 +21,12 @@
 </template>
 
 <script>
-  import { VueAutosuggest } from "vue-autosuggest";
+import { VueAutosuggest } from "vue-autosuggest";
 
 export default {
   name: "Autosuggest",
   components: {
-    'vue-autosuggest': VueAutosuggest
+    "vue-autosuggest": VueAutosuggest
   },
   props: {
     suggestions: {

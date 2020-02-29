@@ -82,6 +82,8 @@
 import axios from 'axios';
 import Chrome from 'vue-color/src/components/Chrome';
 
+axios.defaults.baseURL = '/api/';
+
 export default {
   name: 'ListItem',
   props: ['props', 'exelCalc'],

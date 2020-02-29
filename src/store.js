@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import axios from 'axios';
 import router from './router';
 
+axios.defaults.baseURL = '/api/';
+
 Vue.use(Vuex);
 
 // axios.interceptors.response.use(undefined, err =>

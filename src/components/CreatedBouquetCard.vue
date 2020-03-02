@@ -86,6 +86,9 @@
           v-model.number="decorPercent"
           class="scs-small"
           @change="updateProps()"
+          type="number"
+          min="0"
+          @keyup="handleNumberFieldKeyUp($event, 'decorPercent')"
         ></v-text-field>
       </v-flex>
       <v-flex xs6>
@@ -124,6 +127,9 @@
             v-model.number="delivery"
             class="scs-small"
             @change="updateProps()"
+            type="number"
+            min="0"
+            @keyup="handleNumberFieldKeyUp($event, 'delivery')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -167,6 +173,9 @@
             de
             class="scs-small"
             @input="updateProps()"
+            type="number"
+            min="0"
+            @keyup="handleNumberFieldKeyUp($event, 'sumDecorAdditional')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -185,6 +194,9 @@
             class="scs-small"
             @input="clientSaleCustom = $event"
             @change="updateProps()"
+            type="number"
+            min="0"
+            @keyup="handleNumberFieldKeyUp($event, 'clientSaleCustom')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -611,6 +623,11 @@ export default {
     }
   },
   methods: {
+    handleNumberFieldKeyUp(e, fieldName) {
+      if (e.target.value === "") {
+        this[fieldName] = 0;
+      }
+    },
     onSelected(item) {
       this.client = item;
       this.clientId = item.id;
@@ -671,12 +688,12 @@ export default {
 
         const props = {
           floristId: this.florist,
-          clientId: this.clientId,
+          clientId: this.clientId || 0,
           orderId: this.order,
           totalCost: this.sumPay / +this.bouquetCount,
           decorPercent: +this.decorPercent,
           decorCost: this.sumDecor + this.sumDecorAdditional,
-          deliveryCost: this.delivery,
+          deliveryCost: +this.delivery,
           salePercent: +this.clientSale,
           sumSale: this.sumSale,
           sumPayCustom: this.sumPayCustom,

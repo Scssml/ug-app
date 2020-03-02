@@ -564,7 +564,11 @@ export default {
       sum += +this.sumDecorAdditional;
       sum -= this.sumSale;
 
-      return +sum.toFixed() * +this.bouquetCount;
+      return (
+        +sum.toFixed() * +this.bouquetCount -
+        +this.delivery * +this.bouquetCount +
+        +this.delivery
+      );
     },
     isEmptySum() {
       let emptySum = true;

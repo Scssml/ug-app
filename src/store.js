@@ -276,7 +276,7 @@ export default new Vuex.Store({
               dispatch("logout");
               router.push("/login");
             }
-            rejected();
+            rejected(error.response.data);
           });
       });
     },

@@ -23,6 +23,7 @@
         <router-view />
       </transition>
     </v-content>
+
     <v-footer
       height="auto"
       color="blue-grey darken-3"
@@ -34,6 +35,7 @@
         <v-flex text-xs-center xs12> &copy; {{ yearNow }} </v-flex>
       </v-layout>
     </v-footer>
+    <notifications group="global" />
   </v-app>
 </template>
 

@@ -8,6 +8,7 @@ import vClickOutside from "v-click-outside";
 import { createProvider } from "./vue-apollo";
 import * as Sentry from "@sentry/browser";
 import * as Integrations from "@sentry/integrations";
+import Notifications from "vue-notification";
 
 console.log(process.env.VUE_APP_SENTRY_ENABLE);
 if (process.env.VUE_APP_SENTRY_ENABLE === "true") {
@@ -22,6 +23,7 @@ if (process.env.VUE_APP_SENTRY_ENABLE === "true") {
 Vue.config.productionTip = false;
 window.GOOGLE_API_KEY = process.env.VUE_APP_GOOGLE_MAP_API_KEY;
 Vue.use(vClickOutside);
+Vue.use(Notifications);
 
 new Vue({
   router,

@@ -345,7 +345,13 @@
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="px-4 pb-4">
-            <v-btn @click.native="dialogPay = false">Отмена</v-btn>
+            <v-btn
+              @click.native="
+                dialogPay = false;
+                btnLoad = false;
+              "
+              >Отмена</v-btn
+            >
             <v-spacer></v-spacer>
             <v-btn color="info" @click="submitForm" :loading="btnLoad"
               >Оплатить</v-btn
@@ -683,7 +689,6 @@ export default {
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        this.createdSuccess = true;
         this.btnLoad = true;
 
         const props = {
@@ -724,7 +729,6 @@ export default {
         };
 
         setTimeout(() => {
-          this.dialogPay = false;
           this.$emit("saveProps", props);
         }, 1000);
       }

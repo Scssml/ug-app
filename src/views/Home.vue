@@ -73,6 +73,7 @@
                   @copy="copyItem(index)"
                   @delete="deleteItem(index)"
                   @checkCard="checkCard(index, $event)"
+                  ref="createBouquetCard"
                 ></created-bouquet-card>
               </v-flex>
             </template>
@@ -482,80 +483,103 @@ export default {
       }
     },
     saveProps: function saveProps(index, props) {
+      const item = this.cardsList[index];
+
       if (props) {
-        const item = this.cardsList[index];
-        item.success = true;
-        this.$set(this.cardsList, index, item);
+        new Promise((res, rej) => {
+          let emptySum = true;
 
-        let emptySum = true;
+          if (
+            item.goods.length > 0 ||
+            props.decorCost > 0 ||
+            props.deliveryCost > 0
+          ) {
+            emptySum = false;
+          }
 
-        if (
-          item.goods.length > 0 ||
-          props.decorCost > 0 ||
-          props.deliveryCost > 0
-        ) {
-          emptySum = false;
-        }
-
-        if (emptySum) {
-          const itemParams = {
-            type: "payments",
-            props: {
-              paymentType: {
-                id: props.payment.paymentTypeId,
-                name: "На баланс",
-                isActive: true,
-                code: "balance"
-              },
-              amount: props.sumPayCustom,
-              clientId: props.payment.clientId,
-              description: props.comment
-            }
-          };
-
-          this.$store.dispatch("addItem", itemParams).then(() => {
-            this.refreshPayments();
-          });
-        } else {
-          const newBouqet = props;
-
-          newBouqet.goods = item.goods.map(elem => {
-            const good = {
-              goodId: elem.id,
-              count: elem.value
+          if (emptySum) {
+            const itemParams = {
+              type: "payments",
+              props: {
+                paymentType: {
+                  id: props.payment.paymentTypeId,
+                  name: "На баланс",
+                  isActive: true,
+                  code: "balance"
+                },
+                amount: props.sumPayCustom,
+                clientId: props.payment.clientId,
+                description: props.comment
+              }
             };
-            return good;
-          });
 
-          const bouquetParams = {
-            type: "bouquets",
-            props: newBouqet
-          };
+            this.$store
+              .dispatch("addItem", itemParams)
+              .then(res)
+              .catch(rej);
+          } else {
+            const newBouqet = props;
 
-          this.$store.dispatch("addItem", bouquetParams).then(() => {
+            newBouqet.goods = item.goods.map(elem => {
+              const good = {
+                goodId: elem.id,
+                count: elem.value
+              };
+              return good;
+            });
+
+            const bouquetParams = {
+              type: "bouquets",
+              props: newBouqet
+            };
+
+            this.$store
+              .dispatch("addItem", bouquetParams)
+              .then(res)
+              .catch(rej);
+          }
+        })
+          .then(() => {
+            item.success = true;
+            this.$set(this.cardsList, index, item);
+
             this.refreshPayments();
+
+            item.goods.forEach(elem => {
+              const findGood = this.goodsList.find(good => good.id === elem.id);
+              findGood.store -= elem.value;
+            });
+
+            const cardNoEmpty = this.cardsList.filter(
+              elem =>
+                (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+                elem.success !== true
+            );
+            localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+
+            const findIndex = this.checkCardList.findIndex(
+              card => card.index === index
+            );
+
+            if (findIndex + 1) {
+              this.checkCardList.splice(findIndex, 1);
+            }
+          })
+          .catch(err => {
+            this.$refs.createBouquetCard[0] &&
+              (this.$refs.createBouquetCard[0].btnLoad = false);
+            err &&
+              err.message &&
+              this.getErrors(err.message).forEach(msg => {
+                this.$notify({
+                  group: "global",
+                  title: "Ошибка валидации!",
+                  text: msg,
+                  type: "error",
+                  duration: -1
+                });
+              });
           });
-
-          item.goods.forEach(elem => {
-            const findGood = this.goodsList.find(good => good.id === elem.id);
-            findGood.store -= elem.value;
-          });
-        }
-
-        const cardNoEmpty = this.cardsList.filter(
-          elem =>
-            (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-            elem.success !== true
-        );
-        localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
-
-        const findIndex = this.checkCardList.findIndex(
-          card => card.index === index
-        );
-
-        if (findIndex + 1) {
-          this.checkCardList.splice(findIndex, 1);
-        }
       }
     },
     updateProps: function updateProps(index, props) {
@@ -632,6 +656,11 @@ export default {
       checkCards.forEach(item => {
         this.deleteItem(item.index);
       });
+    },
+    getErrors(rawErrors) {
+      return rawErrors.reduce((acc, msg) => {
+        return [...acc, ...Object.values(msg.constraints)];
+      }, []);
     }
   },
   mounted() {

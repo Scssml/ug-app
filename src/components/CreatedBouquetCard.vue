@@ -174,7 +174,6 @@
             class="scs-small"
             @input="updateProps()"
             type="number"
-            min="0"
             @keyup="handleNumberFieldKeyUp($event, 'sumDecorAdditional')"
           ></v-text-field>
         </div>

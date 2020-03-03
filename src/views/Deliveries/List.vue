@@ -491,6 +491,26 @@
           Все
         </v-btn>
       </div>
+      <div>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryType', 2)"
+          :color="(filter.deliveryType === 2) ? 'info' : ''"
+          class="px-1"
+          style="min-width: 144px;"
+        >
+          Доставка
+        </v-btn>
+        <v-btn
+          exact
+          @click="setFilterProp('deliveryType', 1)"
+          :color="(filter.deliveryType === 1) ? 'info' : ''"
+          class="px-1"
+          style="min-width: 144px;"
+        >
+          Самовывоз
+        </v-btn>
+      </div>
       <v-data-table
         :headers="headersTableMobile"
         :items="ordersList"

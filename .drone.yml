@@ -29,6 +29,7 @@ steps:
       repo: localhost:5000/fs-frontend
       registry: registry:5000
       insecure: true
+      purge: true
       build_args_from_env:
         - VUE_APP_GRAPHQL_HTTP
         - VUE_APP_GRAPHQL_WS

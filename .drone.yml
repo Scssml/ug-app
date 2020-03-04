@@ -26,7 +26,7 @@ steps:
       VUE_APP_GOOGLE_MAP_API_KEY:
         from_secret: GOOGLE_MAP_API_KEY
     settings:
-      repo: localhost:5000/fs-frontend
+      repo: registry:5000/fs-frontend
       registry: registry:5000
       insecure: true
       purge: true

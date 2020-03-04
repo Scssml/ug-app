@@ -26,12 +26,9 @@ steps:
       VUE_APP_GOOGLE_MAP_API_KEY:
         from_secret: GOOGLE_MAP_API_KEY
     settings:
-      repo: fs/frontend
+      repo: registry:5000/fs/frontend
       registry: registry:5000
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
+      insecure: true
       tags: latest
       build_args_from_env:
         - VUE_APP_GRAPHQL_HTTP
@@ -49,3 +46,6 @@ steps:
       branch:
         exclude: [master, release/*]
         event: push
+
+image_pull_secrets:
+  - dockerconfigjson

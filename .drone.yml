@@ -6,10 +6,45 @@ steps:
 
   - name: docker tag
     image: plugins/docker
+    environment:
+      VUE_APP_GRAPHQL_HTTP:
+        from_secret: GRAPHQL_HTTP
+      VUE_APP_GRAPHQL_WS:
+        from_secret: GRAPHQL_WS
+      VUE_APP_DEV_SERVER_PROXY:
+        from_secret: DEV_SERVER_PROXY
+      VUE_APP_API_PREFIX:
+        from_secret: API_PREFIX
+      VUE_APP_SENTRY_ENABLE:
+        from_secret: SENTRY_ENABLE
+      VUE_APP_SENTRY_DSN:
+        from_secret: SENTRY_DSN
+      VUE_APP_SENTRY_SERVER_NAME:
+        from_secret: SENTRY_SERVER_NAME
+      VUE_APP_SENTRY_ENVIRONMENT:
+        from_secret: SENTRY_ENVIRONMENT
+      VUE_APP_GOOGLE_MAP_API_KEY:
+        from_secret: GOOGLE_MAP_API_KEY
     settings:
       repo: fs/frontend
       registry: registry:5000
-        - latest
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      tags: latest
+      build_args_from_env:
+        - VUE_APP_GRAPHQL_HTTP
+        - VUE_APP_GRAPHQL_WS
+        - VUE_APP_DEV_SERVER_PROXY
+        - VUE_APP_API_PREFIX
+        - VUE_APP_SENTRY_ENABLE
+        - VUE_APP_SENTRY_DSN
+        - VUE_APP_SENTRY_SERVER_NAME
+        - VUE_APP_SENTRY_ENVIRONMENT
+        - VUE_APP_GOOGLE_MAP_API_KEY
+      dry_run: true
+
     when:
       branch:
         exclude: [master, release/*]

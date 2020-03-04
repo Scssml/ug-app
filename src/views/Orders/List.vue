@@ -224,11 +224,17 @@
 
         <v-layout row wrap align-center>
           <v-flex xs3 class="px-1">
-            Доставок на сегодня: {{ todayDeliveriesCount }}
-
-            <v-btn color="primary" dark @click.prevent="changeSettings()"
-              >Настройки</v-btn
-            >
+            <v-layout row wrap align-center>
+              <v-flex class="px-1">
+                Доставок на сегодня: {{ todayDeliveriesCount }}<br>
+                Количество заказов: {{ ordersCount }}
+              </v-flex>
+              <v-flex xs4 class="px-1">
+                <v-btn color="primary" dark @click.prevent="changeSettings()"
+                  >Настройки</v-btn
+                >
+              </v-flex>
+            </v-layout>
           </v-flex>
           <v-flex xs9 class="px-1 text-xs-right">
             <v-btn color="primary" dark @click.prevent="setFilterNewOrderSite()"
@@ -616,6 +622,7 @@ export default {
       editSettings: false,
       dataNowStr: "",
       todayDeliveriesCount: 0,
+      ordersCount: 0,
       deliveryPrinted: [],
       floristPrinted: [],
       selectedOrders: [],
@@ -746,6 +753,22 @@ export default {
               color
             }
           }
+          ordersCount: orders_aggregate(
+            where: {
+              _and: [
+                { deliveryDate: { _gte: $startDate } }
+                { deliveryDate: { _lte: $endDate } }
+                { orderStatusId: { _eq: $orderStatus } }
+                { createdById: { _eq: $createdBy } }
+                { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
+                { clientId: { _eq: $clientId } }
+              ]
+            }
+          ) {
+            aggregate {
+              count
+            }
+          }
         }
       `;
       },
@@ -768,7 +791,7 @@ export default {
               : undefined
         };
       },
-      update({ ordersList }) {
+      update({ ordersList, ordersCount }) {
         const parseDateFormat = "yyyy-LL-dd";
         let prevItem = null;
 
@@ -782,6 +805,8 @@ export default {
 
           prevItem = order.deliveryDate;
         }
+
+        this.ordersCount = ordersCount.aggregate.count;
 
         return ordersList;
       },

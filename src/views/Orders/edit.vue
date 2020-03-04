@@ -17,6 +17,7 @@
       <v-divider></v-divider>
       <v-card-text
         class="px-4 pt-1"
+        @click="autocompleteClose"
       >
         <v-layout
           row
@@ -168,6 +169,7 @@
                 ></v-select>
 
                 <v-autocomplete
+                  ref="clientSelect"
                   label="Клиент"
                   :items="clientsList"
                   :filter="clientsFilter"
@@ -214,6 +216,7 @@
                 ></v-text-field>
 
                 <v-autocomplete
+                  ref="responsibleSelect"
                   label="Ответственный"
                   :items="responsibleList"
                   :filter="clientsFilter"
@@ -227,7 +230,6 @@
                   clearable
                   @change="setDataResponsible()"
                   v-if="editedItem.clientType === 2"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-select
@@ -406,6 +408,7 @@
                 ></v-checkbox>
 
                 <v-autocomplete
+                  ref="addresseeSelect"
                   label="Получатель"
                   :items="clientsList"
                   :filter="clientsFilter"
@@ -420,7 +423,6 @@
                   @change="setDataAddressee()"
                   v-if="!editedItem.isCustomerRecipient"
                   :search-input.sync="addresseeName"
-                  :menu-props="{ 'closeOnClick': true }"
                 ></v-autocomplete>
 
                 <v-text-field
@@ -684,10 +686,10 @@ export default {
       type: Boolean,
       default: false,
     },
-    orderSourceType: {
-      type: Array,
-      required: true,
-    },
+    // orderSourceType: {
+    //   type: Array,
+    //   required: true,
+    // },
   },
   data() {
     return {
@@ -1225,6 +1227,27 @@ export default {
     },
     bouquetDelete(index) {
       this.editedItem.bouquets.splice(index, 1);
+    },
+    autocompleteClose(e) {
+      const selects = document.querySelectorAll('.v-autocomplete');
+      const { target } = e;
+      let isFind = false;
+
+      for (let i = 0; i < selects.length; i += 1) {
+        if (target === selects[i] || selects[i].contains(target)) {
+          isFind = true;
+        }
+      }
+
+      if (!isFind) {
+        this.$refs.clientSelect.blur();
+        if (this.$refs.responsibleSelect) {
+          this.$refs.responsibleSelect.blur();
+        }
+        if (this.$refs.addresseeSelect) {
+          this.$refs.addresseeSelect.blur();
+        }
+      }
     },
   },
   mounted() {

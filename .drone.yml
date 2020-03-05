@@ -47,8 +47,8 @@ steps:
         - VUE_APP_GOOGLE_MAP_API_KEY
     when:
       branch:
-        exclude: [master, release/*]
-        event: push
+        - develop
+      event: push
 
   - name: deploy to dev
     image: appleboy/drone-ssh
@@ -67,33 +67,33 @@ steps:
         - docker-compose up -d
     when:
       branch:
-        exclude: [master, release/*]
-        event: push
-  - name: send_telegram_notification
-    image: appleboy/drone-telegram
-    settings:
-      token:
-        from_secret: telegram_token
-      to:
-        from_secret: telegram_to
-      format: markdown
-      message: >
-          {{#success build.status}}
-          ✅ Build #{{build.number}} of `{{repo.name}}` succeeded.
-          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
-          ```
-          {{commit.message}}
-          ```
-          🌐 {{ build.link }}
-          {{else}}
-          ❌ Build #{{build.number}} of `{{repo.name}}` failed.
-          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
-          ```
-          {{commit.message}}
-          ```
-          🌐 {{ build.link }}
-          {{/success}}
-    when:
-      status:
-        - success
-        - failure
+        - develop
+      event: push
+#  - name: send_telegram_notification
+#    image: appleboy/drone-telegram
+#    settings:
+#      token:
+#        from_secret: telegram_token
+#      to:
+#        from_secret: telegram_to
+#      format: markdown
+#      message: >
+#          {{#success build.status}}
+#          ✅ Build #{{build.number}} of `{{repo.name}}` succeeded.
+#          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
+#          ```
+#          {{commit.message}}
+#          ```
+#          🌐 {{ build.link }}
+#          {{else}}
+#          ❌ Build #{{build.number}} of `{{repo.name}}` failed.
+#          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
+#          ```
+#          {{commit.message}}
+#          ```
+#          🌐 {{ build.link }}
+#          {{/success}}
+#    when:
+#      status:
+#        - success
+#        - failure

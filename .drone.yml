@@ -3,6 +3,7 @@ name: default
 type: docker
 
 steps:
+  
   - name: docker tag
     image: plugins/docker
     network_mode: host
@@ -29,6 +30,10 @@ steps:
       repo: registry.example.com/fs/frontend
       registry: registry.example.com
       insecure: true
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
       tags: [ "${DRONE_BUILD_NUMBER}", latest ]
       build_args_from_env:
         - VUE_APP_GRAPHQL_HTTP
@@ -45,6 +50,3 @@ steps:
       branch:
         exclude: [master, release/*]
         event: push
-
-image_pull_secrets:
-  - dockerconfigjson

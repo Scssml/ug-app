@@ -4,7 +4,7 @@ type: docker
 
 steps:
 
-  - name: docker tag
+  - name: build image
     image: plugins/docker
     network_mode: host
     environment:
@@ -45,7 +45,23 @@ steps:
         - VUE_APP_SENTRY_SERVER_NAME
         - VUE_APP_SENTRY_ENVIRONMENT
         - VUE_APP_GOOGLE_MAP_API_KEY
+    when:
+      branch:
+        exclude: [master, release/*]
+        event: push
 
+  - name: push image
+    image: plugins/docker
+    network_mode: host
+    settings:
+      repo: localhost:5000/fs/frontend
+      registry: localhost:5000
+      insecure: true
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      tags: [ "${DRONE_BUILD_NUMBER}", latest ]
     when:
       branch:
         exclude: [master, release/*]

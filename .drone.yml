@@ -1,0 +1,99 @@
+kind: pipeline
+name: default
+type: docker
+
+steps:
+
+  - name: build image
+    image: plugins/docker
+    network_mode: host
+    environment:
+      VUE_APP_GRAPHQL_HTTP:
+        from_secret: GRAPHQL_HTTP
+      VUE_APP_GRAPHQL_WS:
+        from_secret: GRAPHQL_WS
+      VUE_APP_DEV_SERVER_PROXY:
+        from_secret: DEV_SERVER_PROXY
+      VUE_APP_API_PREFIX:
+        from_secret: API_PREFIX
+      VUE_APP_SENTRY_ENABLE:
+        from_secret: SENTRY_ENABLE
+      VUE_APP_SENTRY_DSN:
+        from_secret: SENTRY_DSN
+      VUE_APP_SENTRY_SERVER_NAME:
+        from_secret: SENTRY_SERVER_NAME
+      VUE_APP_SENTRY_ENVIRONMENT:
+        from_secret: SENTRY_ENVIRONMENT
+      VUE_APP_GOOGLE_MAP_API_KEY:
+        from_secret: GOOGLE_MAP_API_KEY
+    settings:
+      repo: localhost:5000/fs/frontend
+      registry: localhost:5000
+      insecure: true
+      username:
+        from_secret: registry_username
+      password:
+        from_secret: registry_password
+      tags: [ "${DRONE_BUILD_NUMBER}", latest ]
+      build_args_from_env:
+        - VUE_APP_GRAPHQL_HTTP
+        - VUE_APP_GRAPHQL_WS
+        - VUE_APP_DEV_SERVER_PROXY
+        - VUE_APP_API_PREFIX
+        - VUE_APP_SENTRY_ENABLE
+        - VUE_APP_SENTRY_DSN
+        - VUE_APP_SENTRY_SERVER_NAME
+        - VUE_APP_SENTRY_ENVIRONMENT
+        - VUE_APP_GOOGLE_MAP_API_KEY
+    when:
+      branch:
+        - develop
+      event: push
+
+  - name: deploy to dev
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: ssh_host
+      port:
+        from_secret: ssh_port
+      username:
+        from_secret: ssh_user
+      password:
+        from_secret: ssh_password
+      script:
+        - cd ../home/admin/fs
+        - docker-compose pull
+        - docker-compose up -d
+    when:
+      branch:
+        - develop
+      event: push
+#  - name: send_telegram_notification
+#    image: appleboy/drone-telegram
+#    settings:
+#      token:
+#        from_secret: telegram_token
+#      to:
+#        from_secret: telegram_to
+#      format: markdown
+#      message: >
+#          {{#success build.status}}
+#          ✅ Build #{{build.number}} of `{{repo.name}}` succeeded.
+#          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
+#          ```
+#          {{commit.message}}
+#          ```
+#          🌐 {{ build.link }}
+#          {{else}}
+#          ❌ Build #{{build.number}} of `{{repo.name}}` failed.
+#          📝 Commit by {{commit.author}} on `{{commit.branch}}`:
+#          ```
+#          {{commit.message}}
+#          ```
+#          🌐 {{ build.link }}
+#          {{/success}}
+#    when:
+#      status:
+#        - success
+#        - failure

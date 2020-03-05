@@ -50,18 +50,21 @@ steps:
         exclude: [master, release/*]
         event: push
 
-  - name: push image
-    image: plugins/docker
-    network_mode: host
+  - name: deploy to dev
+    image: appleboy/drone-ssh
     settings:
-      repo: localhost:5000/fs/frontend
-      registry: localhost:5000
-      insecure: true
+      host:
+        from_secret: ssh_host
+      port:
+        from_secret: ssh_port
       username:
-        from_secret: registry_username
+        from_secret: ssh_user
       password:
-        from_secret: registry_password
-      tags: [ "${DRONE_BUILD_NUMBER}", latest ]
+        from_secret: ssh_password
+      script:
+        - cd ../home/admin/fs
+        - docker-compose pull
+        - docker-compose up -d
     when:
       branch:
         exclude: [master, release/*]

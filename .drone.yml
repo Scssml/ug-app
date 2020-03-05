@@ -5,6 +5,7 @@ type: docker
 steps:
   - name: docker tag
     image: plugins/docker
+    network_mode: host
     environment:
       VUE_APP_GRAPHQL_HTTP:
         from_secret: GRAPHQL_HTTP

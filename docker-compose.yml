@@ -4,13 +4,6 @@ services:
   fs-frontend:
     container_name: fs-frontend
     restart: always
-    build: .
-    image: fs-frontend
-    networks:
-      - shopbackend_discovery
+    image: localhost:5000/fs/frontend:latest
     ports:
       - '80:80'
-
-networks:
-  shopbackend_discovery:
-    external: true

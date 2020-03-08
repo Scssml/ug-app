@@ -73,8 +73,14 @@
                 :orderSourceType="orderSourceTypeEditElem"
                 @cancel="closeDialog()"
               ></change-description>
+              <edit-bouquets
+                v-if="editOrderBouquets"
+                :id="editedId"
+                :orderSourceType="orderSourceTypeEditElem"
+                @cancel="closeDialog()"
+              ></edit-bouquets>
               <order-edit
-                v-if="editedId && !editStatus && !editDescription"
+                v-if="editedId && !editStatus && !editDescription && !editOrderBouquets"
                 :id="editedId"
                 :copy="copyElem"
                 :orderSourceType="orderSourceTypeEditElem"
@@ -82,7 +88,7 @@
               ></order-edit>
               <order-add
                 v-if="
-                  !editedId && !editStatus && !editDescription && !editSettings
+                  !editedId && !editStatus && !editDescription && !editSettings && !editOrderBouquets
                 "
                 @cancel="closeDialog()"
               ></order-add>
@@ -390,23 +396,25 @@
                           </div>
                         </template>
                         <template v-else-if="prop.field === 'bouquets'">
-                          <template
-                            v-for="(item, key) in props.item[prop.field]"
-                          >
-                            <div
-                              :class="
-                                item.readyBouquetCount.aggregate.count !== 0
-                                  ? 'green'
-                                  : ''
-                              "
+                          <div @click.prevent="changeBouquets(props.item.id)">
+                            <template
+                              v-for="(item, key) in props.item[prop.field]"
                             >
-                              {{ item.name }} - {{ item.count }}
-                              <template v-if="item.place">
-                                ({{ item.place }})
-                              </template>
-                            </div>
-                            <br :key="key" />
-                          </template>
+                              <div
+                                :class="
+                                  item.readyBouquetCount.aggregate.count !== 0
+                                    ? 'green'
+                                    : ''
+                                "
+                              >
+                                {{ item.name }} - {{ item.count }}
+                                <template v-if="item.place">
+                                  ({{ item.place }})
+                                </template>
+                              </div>
+                              <br :key="key" />
+                            </template>
+                          </div>
                         </template>
                         <template v-else-if="prop.field === 'orderStatus'">
                           <div
@@ -574,6 +582,7 @@ import changeDescription from "./changeDescription.vue";
 import changeAlreadyPaid from "./changeAlreadyPaid.vue";
 import userSettings from "./userSettings.vue";
 import Autosuggest from "../../components/Autosuggest";
+import editBouquets from './editOrderBouquets.vue';
 
 export default {
   name: "Orders",
@@ -584,7 +593,8 @@ export default {
     ChangeStatus,
     changeDescription,
     changeAlreadyPaid,
-    userSettings
+    userSettings,
+    editBouquets,
   },
   data() {
     return {
@@ -620,6 +630,7 @@ export default {
       editStatus: false,
       editDescription: false,
       editSettings: false,
+      editOrderBouquets: false,
       dataNowStr: "",
       todayDeliveriesCount: 0,
       ordersCount: 0,
@@ -658,7 +669,7 @@ export default {
       orderSourceTypeIds: [],
       clientSuggestions: [],
       skipClientsQuery: true,
-      clientsQueryName: ""
+      clientsQueryName: "",
     };
   },
   apollo: {
@@ -975,7 +986,7 @@ export default {
     },
     orderSourceTypeEditElem() {
       const editElem = this.ordersList.find(item => item.id === this.editedId);
-      return editElem ? editElem.orderSourceType : [];
+      return editElem ? editElem.orderSourceTypeIds : [];
     },
     headersTable() {
       const cols = this.userSettings.map(item => {
@@ -1080,6 +1091,7 @@ export default {
         this.editStatus = false;
         this.editDescription = false;
         this.editSettings = false;
+        this.editOrderBouquets = false;
       }, 300);
     },
     editItem(id, copy = false) {
@@ -1095,6 +1107,11 @@ export default {
     changeDescription(id) {
       this.editedId = +id;
       this.editDescription = true;
+      this.dialogForm = true;
+    },
+    changeBouquets(id) {
+      this.editedId = +id;
+      this.editOrderBouquets = true;
       this.dialogForm = true;
     },
     changeSettings() {

@@ -503,12 +503,12 @@
         </v-btn>
         <v-btn
           exact
-          @click="setFilterProp('deliveryType', 1)"
-          :color="(filter.deliveryType === 1) ? 'info' : ''"
+          @click="setFilterProp('deliveryType', '')"
+          :color="(filter.deliveryType === '') ? 'info' : ''"
           class="px-1"
           style="min-width: 144px;"
         >
-          Самовывоз
+          Все
         </v-btn>
       </div>
       <v-data-table

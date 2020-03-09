@@ -227,11 +227,7 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0 text-xs-center" style="height: 40px;">
-      <v-btn
-        color="info"
-        @click.native="$refs.createPaymentModel.dialogPay = true"
-        small
-      >
+      <v-btn color="info" @click="handlePaymentModelOpenButtonClick" small>
         Оплатить
       </v-btn>
       <v-btn
@@ -263,6 +259,8 @@
           v-model="bouquetCount"
           class="scs-small text-lg-right"
           title="Количество"
+          type="number"
+          @change="updateProps()"
         ></v-text-field>
       </div>
       <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
@@ -272,17 +270,15 @@
     </div>
     <v-divider></v-divider>
     <create-payment-modal
-      :sum-flowers="sumFlowers"
-      :sum-decor="sumDecor"
-      :sum-decor-additional="sumDecorAdditional"
-      :sum-sale="sumSale"
       :sum-pay-custom="sumPayCustom"
-      :bouquet-count="bouquetCount"
-      :delivery="delivery"
       :payment-types-list="paymentTypesList"
       :pre-payment="prePayment"
       :client="client"
-      ref="createPaymentModel"
+      :orderPrice="orderPrice"
+      :to-pay="toPay"
+      :is-payment-on-balance="isPaymentOnBalance"
+      ref="cardPaymentModel"
+      @onPay="submitForm"
     />
     <v-dialog v-model="dialogClear" persistent max-width="320px">
       <v-card>
@@ -334,6 +330,9 @@ export default {
       type: Object,
       required: true,
     },
+    check: {
+      type: Boolean,
+    },
   },
   data() {
     return {
@@ -354,7 +353,6 @@ export default {
       dialogClear: false,
       sumDecorCustom: '',
       clientSaleCustom: '',
-      check: false,
       bouquetCount: 1,
       orderBouquet: null,
       clientOrdersList: [],
@@ -426,6 +424,24 @@ export default {
     },
   },
   computed: {
+    isPaymentOnBalance() {
+      return !(
+        this.sumFlowers > 0 ||
+        this.sumDecorAdditional > 0 ||
+        this.delivery > 0
+      );
+    },
+    orderPrice() {
+      return (
+        this.sumFlowers +
+        +this.sumDecor +
+        +this.sumDecorAdditional -
+        this.sumSale
+      );
+    },
+    toPay() {
+      return (+this.orderPrice + +this.delivery) * +this.bouquetCount;
+    },
     autosuggestValue() {
       return this.client.name
         ? `${this.client.name} (${this.client.bill})`
@@ -504,7 +520,7 @@ export default {
 
       return emptySum;
     },
-    sumChange: function sumChange() {
+    sumChange: function surrender() {
       const sum = +this.sumClient + +this.secondSumClient - +this.sumPay;
 
       return sum > 0 ? sum : 0;
@@ -537,8 +553,12 @@ export default {
     },
   },
   methods: {
+    handlePaymentModelOpenButtonClick() {
+      console.log(this.$refs.cardPaymentModel.dialogPay);
+      this.$refs.cardPaymentModel.dialogPay = true;
+    },
     handleNumberFieldKeyUp(e, fieldName) {
-      if (e.target.value === "") {
+      if (e.target.value === '') {
         this[fieldName] = 0;
       }
     },
@@ -585,53 +605,27 @@ export default {
         textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
       );
     },
-    submitForm: function submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        this.btnLoad = true;
+    submitForm(model) {
+      const props = {
+        floristId: this.florist,
+        clientId: this.clientId || 0,
+        orderId: this.order,
+        totalCost: this.sumPay / +this.bouquetCount,
+        decorPercent: +this.decorPercent,
+        decorCost: this.sumDecor + this.sumDecorAdditional,
+        deliveryCost: +this.delivery,
+        salePercent: +this.clientSale,
+        sumSale: this.sumSale,
+        sumPayCustom: this.sumPayCustom,
+        comment: this.comment,
+        orderBouquet: this.orderBouquet,
+        bouquetCount: +this.bouquetCount,
+        ...model,
+      };
 
-        const props = {
-          floristId: this.florist,
-          clientId: this.clientId || 0,
-          orderId: this.order,
-          totalCost: this.sumPay / +this.bouquetCount,
-          decorPercent: +this.decorPercent,
-          decorCost: this.sumDecor + this.sumDecorAdditional,
-          deliveryCost: +this.delivery,
-          salePercent: +this.clientSale,
-          sumSale: this.sumSale,
-          sumPayCustom: this.sumPayCustom,
-          payment: {
-            paymentTypeId: this.typePay,
-            amount:
-              this.secondTypePay !== PaymentTypes.CASH &&
-              this.typePay === PaymentTypes.CASH
-                ? +this.sumClient - +this.sumChange
-                : +this.sumPay,
-            clientId: this.clientId,
-            description: '',
-          },
-          secondPayment: this.partlyPayment
-            ? {
-                paymentTypeId: this.secondTypePay,
-                amount:
-                  this.secondTypePay === PaymentTypes.CASH
-                    ? +this.secondSumClient - +this.sumChange
-                    : +this.secondSumClient,
-                clientId: this.clientId,
-                description: '',
-              }
-            : null,
-          comment: this.comment,
-          orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount,
-        };
-
-        setTimeout(() => {
-          this.dialogPay = false;
-          this.$emit('saveProps', props);
-        }, 1000);
-      }
+      setTimeout(() => {
+        this.$emit('saveProps', props);
+      }, 1000);
     },
     updateProps: function updateProps() {
       const props = {
@@ -651,6 +645,7 @@ export default {
           clientId: this.clientId,
           description: '',
         },
+        prePayment: this.prePayment,
         comment: this.comment,
         orderBouquet: this.orderBouquet,
         sumDecorAdditional: this.sumDecorAdditional,
@@ -660,8 +655,7 @@ export default {
       this.$emit('updateProps', props);
     },
     checkCard() {
-      this.check = !this.check;
-      this.$emit('checkCard', this.sumPay);
+      this.$emit('checkCard');
     },
     priceRound: function priceRound(sum) {
       return +sum;
@@ -678,14 +672,9 @@ export default {
         this.comment = this.propsDefault.comment;
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
+        this.bouquetCount = this.propsDefault.bouquetCount;
       }
     },
-  },
-  updated() {
-    // if ((this.salePersent === null || this.salePersent === '')
-    //   && (this.sumFlowers + this.sumDecor) >= 5000) {
-    //   this.salePersent = 10;
-    // }
   },
   created() {
     this.setValueDefault();

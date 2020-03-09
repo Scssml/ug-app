@@ -1,9 +1,6 @@
 <template>
   <v-dialog v-model="dialogPay" persistent max-width="420px">
     <v-card>
-      <v-alert :value="createdSuccess" type="success" class="my-0">
-        Букет создан
-      </v-alert>
       <v-form ref="form" lazy-validation>
         <v-card-title class="px-4">
           <span class="headline">Оплата заказа</span>
@@ -13,47 +10,50 @@
           <v-text-field
             label="Сумма заказа"
             readonly
-            :value="sumOrder"
-            v-if="!isEmptySum"
+            v-model.number="orderPrice"
+            v-if="!isPaymentOnBalance"
           ></v-text-field>
           <v-text-field
             label="К оплате"
             readonly
-            :value="sumPay"
-            v-if="!isEmptySum"
-          ></v-text-field>
-          <v-text-field
-            label="Предоплата"
-            readonly
-            :value="prePayment"
-            v-if="!isEmptySum"
+            v-model.number="toPay"
+            v-if="!isPaymentOnBalance"
           ></v-text-field>
           <v-text-field
             label="К оплате"
             v-model.number="sumPayCustom"
-            v-if="isEmptySum"
+            v-if="isPaymentOnBalance"
+          ></v-text-field>
+          <v-text-field
+            label="Предоплата"
+            readonly
+            v-model.number="prePayment"
+            v-if="!isPaymentOnBalance"
           ></v-text-field>
           <v-text-field
             label="Сумма"
             :rules="[v => validateTotalSum(v) || 'Заполните поле']"
-            v-model="sumClient"
-            v-if="!isEmptySum && (partlyPayment || typePay === 1)"
+            v-model.number="sum"
+            v-if="canEnterPaymentSum"
             @keyup="handleFirstSumChange"
             ref="firstSum"
           ></v-text-field>
-
           <v-select
             label="Способ оплаты"
-            :items="typePayList"
+            :items="filteredPaymentTypes"
             :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
             v-model="typePay"
           ></v-select>
-          <v-checkbox label="Частичная" v-model="partlyPayment" />
+          <v-checkbox
+            label="Частичная"
+            v-model="partlyPayment"
+            v-if="!hidePartialPayment"
+          />
           <v-select
             label="Второй способ оплаты"
-            :items="typePayList"
+            :items="filteredPaymentTypes"
             :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
@@ -63,20 +63,20 @@
           <v-text-field
             label="Вторая сумма"
             :rules="[v => validateTotalSum(v) || 'Заполните поле']"
-            v-model="secondSumClient"
-            v-if="!isEmptySum && secondTypePay"
+            v-model.number="secondSum"
+            v-if="!isPaymentOnBalance && secondTypePay"
             ref="secondSum"
             @keyup="handleSecondSumChange"
           ></v-text-field>
           <v-text-field
             label="Сдача"
             readonly
-            :value="sumChange"
-            v-if="!isEmptySum && (partlyPayment || typePay === 1)"
+            v-model.number="surrender"
+            v-if="!isPaymentOnBalance && (partlyPayment || typePay === 1)"
           ></v-text-field>
         </v-card-text>
         <v-card-actions class="px-4 pb-4">
-          <v-btn @click.native="dialogPay = false">Отмена</v-btn>
+          <v-btn @click="handleCancelButtonClick">Отмена</v-btn>
           <v-spacer></v-spacer>
           <v-btn color="info" @click="submitForm" :loading="btnLoad"
             >Оплатить
@@ -93,30 +93,6 @@ import { ClientTypes, PaymentTypes } from '../constants';
 export default {
   name: 'CreatePaymentModal',
   props: {
-    sumFlowers: {
-      type: Number,
-      required: true,
-    },
-    sumDecor: {
-      type: Number,
-      required: true,
-    },
-    sumDecorAdditional: {
-      type: Number,
-      required: true,
-    },
-    sumSale: {
-      type: Number,
-      required: true,
-    },
-    delivery: {
-      type: Number,
-      required: true,
-    },
-    bouquetCount: {
-      type: Number,
-      required: true,
-    },
     prePayment: {
       type: Number,
       required: true,
@@ -133,38 +109,40 @@ export default {
       type: Object,
       required: true,
     },
+    orderPrice: {
+      type: Number,
+      required: true,
+    },
+    toPay: {
+      type: Number,
+      required: true,
+    },
+    hidePartialPayment: {
+      type: Boolean,
+    },
+    isPaymentOnBalance: {
+      type: Boolean,
+    },
   },
   data() {
     return {
       typePay: null,
       secondTypePay: null,
       partlyPayment: false,
-      sumClient: 0,
-      secondSumClient: 0,
+      sum: 0,
+      secondSum: 0,
       btnLoad: false,
       dialogPay: false,
     };
   },
   computed: {
-    sumOrder: function() {
+    canEnterPaymentSum() {
       return (
-        this.sumFlowers +
-        +this.sumDecor +
-        +this.sumDecorAdditional -
-        this.sumSale
-      ).toFixed();
-    },
-    sumPay: function() {
-      return +(+this.sumOrder + +this.delivery).toFixed() * +this.bouquetCount;
-    },
-    isEmptySum() {
-      return !(
-        this.sumFlowers > 0 ||
-        this.sumDecorAdditional > 0 ||
-        this.delivery > 0
+        !this.isPaymentOnBalance &&
+        (this.partlyPayment || this.typePay === PaymentTypes.CASH)
       );
     },
-    typePayList() {
+    filteredPaymentTypes() {
       return this.paymentTypesList.filter(item => {
         if (
           item.id === PaymentTypes.PRESENT &&
@@ -178,15 +156,19 @@ export default {
           : item.id != PaymentTypes.RETURN;
       });
     },
-    sumChange: function() {
-      const sum = +this.sumClient + +this.secondSumClient - +this.sumPay;
+    surrender: function() {
+      const surrender = +this.sum + +this.secondSum - +this.toPay;
 
-      return sum > 0 ? sum : 0;
+      return surrender > 0 ? surrender : 0;
     },
   },
   methods: {
-    validateTotalSum(v) {
-      return +this.sumClient + +this.secondSumClient >= this.sumPay;
+    handleCancelButtonClick() {
+      this.btnLoad = false;
+      this.dialogPay = false;
+    },
+    validateTotalSum() {
+      return +this.sum + +this.secondSum >= this.toPay;
     },
     handleSecondSumChange() {
       this.$refs.firstSum.validate();
@@ -197,26 +179,16 @@ export default {
     submitForm: function submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        this.createdSuccess = true;
         this.btnLoad = true;
 
         const props = {
-          floristId: this.florist,
-          clientId: this.clientId,
-          orderId: this.order,
-          totalCost: this.sumPay / +this.bouquetCount,
-          decorPercent: +this.decorPercent,
-          decorCost: this.sumDecor + this.sumDecorAdditional,
-          deliveryCost: this.delivery,
-          salePercent: +this.clientSale,
-          sumSale: this.sumSale,
           payment: {
             paymentTypeId: this.typePay,
             amount:
               this.secondTypePay !== PaymentTypes.CASH &&
               this.typePay === PaymentTypes.CASH
-                ? +this.sumClient - +this.sumChange
-                : +this.sumPay,
+                ? +this.sum - +this.surrender
+                : +this.toPay,
             clientId: this.clientId,
             description: '',
           },
@@ -225,25 +197,15 @@ export default {
                 paymentTypeId: this.secondTypePay,
                 amount:
                   this.secondTypePay === PaymentTypes.CASH
-                    ? +this.secondSumClient - +this.sumChange
-                    : +this.secondSumClient,
+                    ? +this.secondSum - +this.surrender
+                    : +this.secondSum,
                 clientId: this.clientId,
                 description: '',
               }
             : null,
-          comment: this.comment,
-          orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount,
         };
 
-        if (this.sumFlowers === 0) {
-          props.payment.amount = this.sumPayCustom;
-        }
-
-        setTimeout(() => {
-          this.dialogPay = false;
-          this.$emit('saveProps', props);
-        }, 1000);
+        this.$emit('onPay', props);
       }
     },
   },

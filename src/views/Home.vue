@@ -420,6 +420,9 @@ export default {
     },
   },
   methods: {
+    saveCardsToLocalStorage(cards = this.cardsList) {
+      localStorage.setItem('cardsList', JSON.stringify(this.cardsList));
+    },
     handlePayButtonClick() {
       this.$refs.createPaymentModel.dialogPay = true;
     },
@@ -478,7 +481,7 @@ export default {
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
           elem.success !== true,
       );
-      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+      this.saveCardsToLocalStorage(cardNoEmpty);
     },
     addCard: function addCard() {
       this.cardsList.push({
@@ -495,6 +498,7 @@ export default {
         'isChecked',
         !this.cardsList[index].isChecked,
       );
+      localStorage.setItem('cardsList', JSON.stringify(this.cardsList));
     },
     saveProps: function saveProps(index, props) {
       const item = this.cardsList[index];
@@ -569,7 +573,7 @@ export default {
                 (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
                 elem.success !== true,
             );
-            localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+            this.saveCardsToLocalStorage(cardNoEmpty);
 
             const findIndex = this.checkCardList.findIndex(
               card => card.index === index,
@@ -606,7 +610,7 @@ export default {
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
           elem.success !== true,
       );
-      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+      this.saveCardsToLocalStorage(cardNoEmpty);
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);
@@ -616,7 +620,7 @@ export default {
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
           elem.success !== true,
       );
-      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+      this.saveCardsToLocalStorage(cardNoEmpty);
     },
     deleteItem(index) {
       const item = this.cardsList[index];
@@ -627,15 +631,9 @@ export default {
           (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
           elem.success !== true,
       );
-      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-      const findIndex = this.checkCardList.findIndex(
-        card => card.index === index,
-      );
-
-      if (findIndex + 1) {
-        this.checkCardList.splice(findIndex, 1);
-      }
+      this.cardsList = this.cardsList.filter(c => c.index !== index);
+      this.saveCardsToLocalStorage();
     },
     deleteCheckCards() {
       const checkCards = this.checkCardList.slice();

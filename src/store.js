@@ -2,21 +2,11 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
 import router from './router';
+import { BouquetCardsStore } from './views/CreateBouquet/store';
 
 axios.defaults.baseURL = process.env.VUE_APP_API_PREFIX;
 
 Vue.use(Vuex);
-
-// axios.interceptors.response.use(undefined, err =>
-//   new Promise((resolve) => {
-//     if (err.response.status === 401) {
-//       this.$store.dispatch('logout');
-//       router.push('/login');
-//       console.log(err.response);
-//       resolve();
-//     }
-//     throw err;
-//   }));
 
 export default new Vuex.Store({
   state: {
@@ -445,5 +435,8 @@ export default new Vuex.Store({
           });
       });
     },
+  },
+  modules: {
+    bouquetCards: BouquetCardsStore,
   },
 });

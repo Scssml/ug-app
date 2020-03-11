@@ -85,10 +85,8 @@
           hide-details
           v-model.number="decorPercent"
           class="scs-small"
-          @change="updateProps()"
           type="number"
           min="0"
-          @keyup="handleNumberFieldKeyUp($event, 'decorPercent')"
         ></v-text-field>
       </v-flex>
       <v-flex xs6>
@@ -299,9 +297,11 @@
 <script>
 import Autosuggest from './Autosuggest';
 import gql from 'graphql-tag';
+import { mapState, mapMutations } from 'vuex';
 
 import { ClientTypes, PaymentTypes } from '../constants';
 import CreatePaymentModal from './CreatePaymentModal';
+import { CHANGE_BOUQUET_CARD } from '../views/CreateBouquet/mutation-types'
 
 export default {
   name: 'CreatedBouquetCard',
@@ -333,6 +333,10 @@ export default {
     check: {
       type: Boolean,
     },
+    id: {
+      type: String,
+      required: true,
+    }
   },
   data() {
     return {
@@ -342,7 +346,6 @@ export default {
       client: {},
       clientId: 0,
       order: 0,
-      decorPercent: 20,
       delivery: 0,
       comment: '',
       sumDecorAdditional: 0,
@@ -424,6 +427,22 @@ export default {
     },
   },
   computed: {
+    ...mapState({
+      card(state) {
+        return state.bouquetCards.cards.find(c => c.id === this.id)
+      }
+    }),
+    decorPercent: {
+      get() {
+        return this.card.decorPercent
+      },
+      set(decorPercent) {
+        this.update({
+          id: this.id,
+          decorPercent
+        })
+      }
+    },
     isPaymentOnBalance() {
       return !(
         this.sumFlowers > 0 ||
@@ -553,6 +572,9 @@ export default {
     },
   },
   methods: {
+    ...mapMutations({
+      update: CHANGE_BOUQUET_CARD
+    }),
     handlePaymentModelOpenButtonClick() {
       console.log(this.$refs.cardPaymentModel.dialogPay);
       this.$refs.cardPaymentModel.dialogPay = true;
@@ -660,24 +682,6 @@ export default {
     priceRound: function priceRound(sum) {
       return +sum;
     },
-    setValueDefault: function setValueDefault() {
-      if (Object.keys(this.propsDefault).length > 0) {
-        this.florist = this.propsDefault.floristId;
-        this.clientId = this.propsDefault.clientId;
-        this.client = this.propsDefault.client;
-        this.order = this.propsDefault.orderId;
-        this.decorPercent = this.propsDefault.decorPercent;
-        this.delivery = this.propsDefault.deliveryCost;
-        this.salePersent = this.propsDefault.salePercent;
-        this.comment = this.propsDefault.comment;
-        this.orderBouquet = this.propsDefault.orderBouquet;
-        this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
-        this.bouquetCount = this.propsDefault.bouquetCount;
-      }
-    },
-  },
-  created() {
-    this.setValueDefault();
   },
 };
 </script>

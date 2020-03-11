@@ -62,15 +62,12 @@
           class="scroll-y pa-0 right-block"
         >
           <v-layout row v-scroll:#scroll-block-top="onScroll">
-            <template v-for="(item, index) in cardsList">
+            <template v-for="(item, index) in bouquetCards">
               <v-flex :key="index" v-if="!item.success">
                 <created-bouquet-card
+                  :id="item.id"
                   :florists-list="floristsList"
                   :payment-types-list="paymentTypesList"
-                  :sumFlowers="item.sum"
-                  :propsDefault="item.props"
-                  :goods="item.goods"
-                  :check="item.isChecked"
                   @saveProps="saveProps(index, $event)"
                   @updateProps="updateProps(index, $event)"
                   @copy="copyItem(index)"
@@ -215,7 +212,9 @@ import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 import PaymentDay from './Pays/paymentDay.vue';
 import gql from 'graphql-tag';
+import { mapState } from 'vuex'
 import CreatePaymentModal from '../components/CreatePaymentModal';
+import {ADD_BOUQUET_CARD} from './CreateBouquet/mutation-types'
 
 export default {
   name: 'Home',
@@ -334,6 +333,9 @@ export default {
     },
   },
   computed: {
+    ...mapState({
+      bouquetCards: state => state.bouquetCards.cards
+    }),
     totalOrderPrice() {
       const totalSum = this.checkedCards.reduce(
         (sum, item) => sum + +item.sum,
@@ -484,12 +486,7 @@ export default {
       this.saveCardsToLocalStorage(cardNoEmpty);
     },
     addCard: function addCard() {
-      this.cardsList.push({
-        sum: 0,
-        success: false,
-        props: {},
-        goods: [],
-      });
+      this.$store.commit(ADD_BOUQUET_CARD);
     },
     checkCard(index) {
       this.cardsList[index].index = index;

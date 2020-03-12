@@ -63,9 +63,10 @@
         >
           <v-layout row v-scroll:#scroll-block-top="onScroll">
             <template v-for="(item, index) in bouquetCards">
-              <v-flex :key="index" v-if="!item.success">
+              <v-flex :key="item.id">
                 <created-bouquet-card
                   :id="item.id"
+                  :index="index"
                   :florists-list="floristsList"
                   :payment-types-list="paymentTypesList"
                   @saveProps="saveProps(index, $event)"

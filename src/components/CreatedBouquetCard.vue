@@ -95,7 +95,7 @@
           solo
           flat
           hide-details
-          v-model.number="prePayment"
+          v-model.number="prepayment"
           class="scs-small"
           readonly
         ></v-text-field>
@@ -104,11 +104,11 @@
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
       <v-text-field
-        label="0"
+        label="Стоимость товара"
         solo
         flat
         hide-details
-        :value="sumFlowers"
+        v-model.number="goodsCost"
         class="scs-small"
         readonly
       ></v-text-field>
@@ -122,12 +122,10 @@
             solo
             flat
             hide-details
-            v-model.number="delivery"
+            v-model.number="deliveryCost"
             class="scs-small"
-            @change="updateProps()"
             type="number"
             min="0"
-            @keyup="handleNumberFieldKeyUp($event, 'delivery')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -140,7 +138,6 @@
             hide-details
             v-model="comment"
             class="scs-small"
-            @change="updateProps()"
           ></v-text-field>
         </div>
       </v-flex>
@@ -150,11 +147,11 @@
       <v-flex xs6>
         <div class="px-0" style="height: 30px;">
           <v-text-field
-            label="0"
+            label="Оформление"
             solo
             flat
             hide-details
-            :value="sumDecor"
+            v-model.number="decorCost"
             class="scs-small"
             readonly
           ></v-text-field>
@@ -168,11 +165,8 @@
             flat
             hide-details
             v-model.number="sumDecorAdditional"
-            de
             class="scs-small"
-            @input="updateProps()"
             type="number"
-            @keyup="handleNumberFieldKeyUp($event, 'sumDecorAdditional')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -298,10 +292,12 @@
 import Autosuggest from './Autosuggest';
 import gql from 'graphql-tag';
 import { mapState, mapMutations } from 'vuex';
+import {mapFields} from 'vuex-map-fields'
 
 import { ClientTypes, PaymentTypes } from '../constants';
 import CreatePaymentModal from './CreatePaymentModal';
 import { CHANGE_BOUQUET_CARD } from '../views/CreateBouquet/mutation-types'
+import { mapDynamicFields } from '../helpers';
 
 export default {
   name: 'CreatedBouquetCard',
@@ -336,6 +332,10 @@ export default {
     id: {
       type: String,
       required: true,
+    },
+    index: {
+      type: Number,
+      required: true,
     }
   },
   data() {
@@ -346,9 +346,6 @@ export default {
       client: {},
       clientId: 0,
       order: 0,
-      delivery: 0,
-      comment: '',
-      sumDecorAdditional: 0,
       salePersent: null,
       dialogPay: false,
       sumClient: 0,
@@ -426,155 +423,7 @@ export default {
       },
     },
   },
-  computed: {
-    ...mapState({
-      card(state) {
-        return state.bouquetCards.cards.find(c => c.id === this.id)
-      }
-    }),
-    decorPercent: {
-      get() {
-        return this.card.decorPercent
-      },
-      set(decorPercent) {
-        this.update({
-          id: this.id,
-          decorPercent
-        })
-      }
-    },
-    isPaymentOnBalance() {
-      return !(
-        this.sumFlowers > 0 ||
-        this.sumDecorAdditional > 0 ||
-        this.delivery > 0
-      );
-    },
-    orderPrice() {
-      return (
-        this.sumFlowers +
-        +this.sumDecor +
-        +this.sumDecorAdditional -
-        this.sumSale
-      );
-    },
-    toPay() {
-      return (+this.orderPrice + +this.delivery) * +this.bouquetCount;
-    },
-    autosuggestValue() {
-      return this.client.name
-        ? `${this.client.name} (${this.client.bill})`
-        : '';
-    },
-    prePayment() {
-      let prePayment = 0;
-
-      if (this.order > 0 && this.clientOrdersList.length) {
-        const order = this.clientOrdersList.find(
-          item => item.id === this.order,
-        );
-
-        prePayment = order ? +order.prePayment : 0;
-      }
-
-      return prePayment;
-    },
-    orderBouquets() {
-      const orderSelected = this.clientOrdersList.find(
-        item => item.id === this.order,
-      );
-      let orderList = [];
-
-      if (orderSelected) {
-        orderList = orderSelected.bouquets.map(item => {
-          item.fullName = `${item.name} - ${item.count}шт`;
-          return item;
-        });
-      }
-
-      return orderList;
-    },
-    sumDecor: function decorSum() {
-      let sum = 0;
-      if (this.sumDecorCustom !== '') {
-        sum = this.sumDecorCustom;
-      } else {
-        sum = Math.ceil(this.sumFlowers * (this.decorPercent / 100));
-      }
-      return this.priceRound(sum);
-    },
-    sumSale: function sumSale() {
-      const sum = Math.ceil(
-        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
-          (this.clientSale / 100),
-      );
-      return this.priceRound(sum);
-    },
-    sumOrder: function sumPay() {
-      let sum = this.sumFlowers;
-      sum += this.sumDecor;
-      sum += +this.delivery;
-      sum += +this.sumDecorAdditional;
-      sum -= this.sumSale;
-      return +sum.toFixed();
-    },
-    sumPay: function sumPay() {
-      let sum = this.sumFlowers;
-      sum += this.sumDecor;
-      sum += +this.delivery;
-      sum += +this.sumDecorAdditional;
-      sum -= this.sumSale;
-
-      return (
-        +sum.toFixed() * +this.bouquetCount -
-        +this.delivery * +this.bouquetCount +
-        +this.delivery
-      );
-    },
-    isEmptySum() {
-      let emptySum = true;
-      if (this.sumFlowers > 0) emptySum = false;
-      if (this.sumDecorAdditional > 0) emptySum = false;
-      if (this.delivery > 0) emptySum = false;
-
-      return emptySum;
-    },
-    sumChange: function surrender() {
-      const sum = +this.sumClient + +this.secondSumClient - +this.sumPay;
-
-      return sum > 0 ? sum : 0;
-    },
-    activePayBtn: function activePayBtn() {
-      const active = this.florist !== '' ? 1 : 0;
-      return active;
-    },
-    clientSale: function clientSale() {
-      const client = this.client;
-
-      let salePersent = 0;
-
-      if (client) {
-        if (this.clientSaleCustom !== '') {
-          salePersent = this.clientSaleCustom;
-        } else if (client !== 0 && client.discountPercent > 0) {
-          salePersent = client.discountPercent;
-        } else if (
-          this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
-          3000
-        ) {
-          salePersent = 5;
-        } else {
-          salePersent = null;
-        }
-      }
-
-      return salePersent;
-    },
-  },
   methods: {
-    ...mapMutations({
-      update: CHANGE_BOUQUET_CARD
-    }),
     handlePaymentModelOpenButtonClick() {
       console.log(this.$refs.cardPaymentModel.dialogPay);
       this.$refs.cardPaymentModel.dialogPay = true;
@@ -681,6 +530,128 @@ export default {
     },
     priceRound: function priceRound(sum) {
       return +sum;
+    },
+  },
+  computed: {
+    ...mapState({
+      card(state) {
+        return state.bouquetCards.cards.find(c => c.id === this.id)
+      }
+    }),
+    ...mapDynamicFields('cards[]',['decorPercent', 'prepayment', 'goodsCost', 'deliveryCost', 'comment', 'additionalDecorCost', 'decorCost'], 'index'),
+    isPaymentOnBalance() {
+      return !(
+              this.sumFlowers > 0 ||
+              this.sumDecorAdditional > 0 ||
+              this.delivery > 0
+      );
+    },
+    orderPrice() {
+      return (
+              this.sumFlowers +
+              +this.sumDecor +
+              +this.sumDecorAdditional -
+              this.sumSale
+      );
+    },
+    toPay() {
+      return (+this.orderPrice + +this.delivery) * +this.bouquetCount;
+    },
+    autosuggestValue() {
+      return this.client.name
+              ? `${this.client.name} (${this.client.bill})`
+              : '';
+    },
+    orderBouquets() {
+      const orderSelected = this.clientOrdersList.find(
+              item => item.id === this.order,
+      );
+      let orderList = [];
+
+      if (orderSelected) {
+        orderList = orderSelected.bouquets.map(item => {
+          item.fullName = `${item.name} - ${item.count}шт`;
+          return item;
+        });
+      }
+
+      return orderList;
+    },
+    sumDecor: function decorSum() {
+      let sum = 0;
+      if (this.sumDecorCustom !== '') {
+        sum = this.sumDecorCustom;
+      } else {
+        sum = Math.ceil(this.sumFlowers * (this.decorPercent / 100));
+      }
+      return this.priceRound(sum);
+    },
+    sumSale: function sumSale() {
+      const sum = Math.ceil(
+              (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
+              (this.clientSale / 100),
+      );
+      return this.priceRound(sum);
+    },
+    sumOrder: function sumPay() {
+      let sum = this.sumFlowers;
+      sum += this.sumDecor;
+      sum += +this.delivery;
+      sum += +this.sumDecorAdditional;
+      sum -= this.sumSale;
+      return +sum.toFixed();
+    },
+    sumPay: function sumPay() {
+      let sum = this.sumFlowers;
+      sum += this.sumDecor;
+      sum += +this.delivery;
+      sum += +this.sumDecorAdditional;
+      sum -= this.sumSale;
+
+      return (
+              +sum.toFixed() * +this.bouquetCount -
+              +this.delivery * +this.bouquetCount +
+              +this.delivery
+      );
+    },
+    isEmptySum() {
+      let emptySum = true;
+      if (this.sumFlowers > 0) emptySum = false;
+      if (this.sumDecorAdditional > 0) emptySum = false;
+      if (this.delivery > 0) emptySum = false;
+
+      return emptySum;
+    },
+    sumChange: function surrender() {
+      const sum = +this.sumClient + +this.secondSumClient - +this.sumPay;
+
+      return sum > 0 ? sum : 0;
+    },
+    activePayBtn: function activePayBtn() {
+      const active = this.florist !== '' ? 1 : 0;
+      return active;
+    },
+    clientSale: function clientSale() {
+      const client = this.client;
+
+      let salePersent = 0;
+
+      if (client) {
+        if (this.clientSaleCustom !== '') {
+          salePersent = this.clientSaleCustom;
+        } else if (client !== 0 && client.discountPercent > 0) {
+          salePersent = client.discountPercent;
+        } else if (
+                this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
+                3000
+        ) {
+          salePersent = 5;
+        } else {
+          salePersent = null;
+        }
+      }
+
+      return salePersent;
     },
   },
 };

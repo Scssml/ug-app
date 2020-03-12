@@ -1,4 +1,5 @@
 import nanoId from 'nanoid';
+import { getField, updateField } from 'vuex-map-fields';
 
 import * as MutationTypes from './mutation-types';
 
@@ -26,7 +27,12 @@ export const BouquetCardsStore = {
   state: {
     cards: [],
   },
+  getters: {
+    getField,
+  },
+
   mutations: {
+    updateField,
     [MutationTypes.ADD_BOUQUET_CARD]: state => {
       state.cards.push(initialCardState());
     },

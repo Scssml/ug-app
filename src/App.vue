@@ -147,10 +147,21 @@ export default {
 .fade-enter, .fade-leave-to { opacity: 0; }
 .fade-enter-active { transition: opacity .5s ease-in-out .5s; }
 .fade-leave-active { transition: opacity .5s ease-in-out; }
+.print-visible { display: none; }
+
+.report
+  table
+    width: 100%
+    border-collapse: collapse
+
+    td, th
+      padding: 5px
+      border: 1px solid #ccc
 
 @media print
   .print-btn { display: none; }
   .print-hidden { display: none; }
+  .print-visible { display: block; }
 
 @media (max-width: 959px)
   main.v-content { padding: 0 !important; }

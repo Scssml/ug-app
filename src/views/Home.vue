@@ -39,9 +39,15 @@
       v-if="!loadingDialog"
       :payments-list="paymentsList"
       ref="paymentDayRef"
+      class="print-hidden"
     ></payment-day>
 
-    <v-layout row wrap v-if="!loadingDialog">
+    <v-layout
+      row
+      wrap
+      v-if="!loadingDialog"
+      class="print-hidden"
+    >
       <v-flex xs4>
         <v-card flat v-for="(item, index) in propsBouquet" :key="index">
           <div
@@ -98,6 +104,7 @@
       wrap
       style="min-height: 100px; height: 528px; overflow-y: scroll;"
       v-if="!loadingDialog"
+      class="print-hidden"
     >
       <v-flex xs4>
         <v-layout row wrap>
@@ -149,6 +156,11 @@
             <v-card flat>
               <div class="py-1 px-1 text-xs-center" style="height: 30px;">
                 Цена
+                <v-icon
+                  left
+                  @click="printPage()"
+                  title="Печать прайс-листа"
+                >print</v-icon>
               </div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
@@ -241,6 +253,21 @@
         </v-form>
       </v-card>
     </v-dialog>
+
+    <div class="report print-visible">
+      <table>
+        <tr>
+          <td>Наименование</td>
+          <td>Цена</td>
+        </tr>
+        <template v-for="(item, index) in priceList">
+          <tr :key="index">
+            <td>{{ item.name }}</td>
+            <td>{{ item.price }}</td>
+          </tr>
+        </template>
+      </table>
+    </div>
   </v-container>
 </template>
 
@@ -367,6 +394,11 @@ export default {
     }
   },
   computed: {
+    priceList() {
+      const findIndex = this.goodsList.findIndex(item => item.name === 'Амбрелла');
+      const priceList = this.goodsList.slice(0, findIndex + 1);
+      return priceList;
+    },
     goods() {
       for (let good of this.goodsList.filter(g => g.originalBalance)) {
         good.stockBalance = good.originalBalance;
@@ -661,7 +693,10 @@ export default {
       return rawErrors.reduce((acc, msg) => {
         return [...acc, ...Object.values(msg.constraints)];
       }, []);
-    }
+    },
+    printPage() {
+      window.print();
+    },
   },
   mounted() {
     this.$store.commit("setShowGoodsList", []);

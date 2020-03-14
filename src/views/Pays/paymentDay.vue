@@ -120,8 +120,8 @@
 </template>
 
 <script>
-import { PaymentTypes } from '../../constants';
-import gql from 'graphql-tag';
+import { PaymentTypes } from "../../constants";
+import gql from "graphql-tag";
 
 const startCurrentDate = new Date();
 startCurrentDate.setHours(0, 0, 0, 0);
@@ -141,13 +141,13 @@ export default {
   props: {
     paymentsList: {
       type: Array,
-      required: true,
-    },
+      required: true
+    }
   },
   data() {
     return {
       dateNow: new Date(),
-      dateYesterday: '',
+      dateYesterday: "",
       createdSuccess: false,
       dialog: false,
       sumEncashment: 0,
@@ -164,7 +164,7 @@ export default {
       terminalUg2: 0,
       tinkoff: 0,
       gazprom: 0,
-      expenses: 0,
+      expenses: 0
     };
   },
   apollo: {
@@ -200,7 +200,7 @@ export default {
                   _and: [
                     { creation_date: { _gte: $todayStartDate } }
                     { creation_date: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeBeforeReturnId: { _eq: $cashType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -462,7 +462,7 @@ export default {
                   _and: [
                     { creation_date: { _gte: $prevStartDate } }
                     { creation_date: { _lte: $prevEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { paymentTypeBeforeReturnId: { _eq: $cashType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -518,69 +518,69 @@ export default {
         ug2Type: PaymentTypes.UG2,
         tinkoffType: PaymentTypes.TINKOFF,
         gazpromType: PaymentTypes.GAZPROM,
-        expensesType: PaymentTypes.EXPENSES,
+        expensesType: PaymentTypes.EXPENSES
       },
       update({
         allSumPayCash: {
           aggregate: {
-            sum: { amount: allSumPayCash },
-          },
+            sum: { amount: allSumPayCash }
+          }
         },
         allSumPayTerminal: {
           aggregate: {
-            sum: { amount: allSumPayTerminal },
-          },
+            sum: { amount: allSumPayTerminal }
+          }
         },
         allSumPayCard: {
           aggregate: {
-            sum: { amount: allSumPayCard },
-          },
+            sum: { amount: allSumPayCard }
+          }
         },
         allSumPayYandex: {
           aggregate: {
-            sum: { amount: allSumPayYandex },
-          },
+            sum: { amount: allSumPayYandex }
+          }
         },
         allSumEncashment: {
           aggregate: {
-            sum: { amount: allSumEncashment },
-          },
+            sum: { amount: allSumEncashment }
+          }
         },
         terminalUg2: {
           aggregate: {
-            sum: { amount: terminalUg2 },
-          },
+            sum: { amount: terminalUg2 }
+          }
         },
         tinkoff: {
           aggregate: {
-            sum: { amount: tinkoff },
-          },
+            sum: { amount: tinkoff }
+          }
         },
         gazprom: {
           aggregate: {
-            sum: { amount: gazprom },
-          },
+            sum: { amount: gazprom }
+          }
         },
         expenses: {
           aggregate: {
-            sum: { amount: expenses },
-          },
+            sum: { amount: expenses }
+          }
         },
         allSumPayCashPrevDay: {
           aggregate: {
-            sum: { amount: allSumPayCashPrevDay },
-          },
+            sum: { amount: allSumPayCashPrevDay }
+          }
         },
         allSumEncashmentPrevDay: {
           aggregate: {
-            sum: { amount: allSumEncashmentPrevDay },
-          },
+            sum: { amount: allSumEncashmentPrevDay }
+          }
         },
         allSumReturn: {
           aggregate: {
-            sum: { amount: allSumReturn },
-          },
-        },
+            sum: { amount: allSumReturn }
+          }
+        }
       }) {
         this.allSumPayCashPrevDay = allSumPayCashPrevDay || 0;
         this.allSumPayCash = allSumPayCash || 0;
@@ -606,7 +606,7 @@ export default {
         this.allSumEncashment -
         this.expenses
       );
-    },
+    }
   },
   methods: {
     refreshPayments() {
@@ -616,19 +616,19 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const itemParams = {
-          type: 'payments',
+          type: "payments",
           props: {
             paymentType: {
               id: 8,
-              name: 'Инкассация',
+              name: "Инкассация",
               isActive: true,
-              code: 'collection',
+              code: "collection"
             },
-            amount: this.sumEncashment,
-          },
+            amount: this.sumEncashment
+          }
         };
 
-        this.$store.dispatch('addItem', itemParams).then(() => {
+        this.$store.dispatch("addItem", itemParams).then(() => {
           this.createdSuccess = true;
           this.refreshPayments();
 

@@ -164,7 +164,7 @@
             solo
             flat
             hide-details
-            v-model.number="sumDecorAdditional"
+            v-model.number="additionalDecorCost"
             class="scs-small"
             type="number"
           ></v-text-field>
@@ -180,14 +180,13 @@
             solo
             flat
             hide-details
-            :value="clientSale"
-            :background-color="clientSale > 0 ? 'deep-orange lighten-4' : ''"
+            v-model.number="discountPercent"
+            :background-color="
+              discountPercent > 0 ? 'deep-orange lighten-4' : ''
+            "
             class="scs-small"
-            @input="clientSaleCustom = $event"
-            @change="updateProps()"
             type="number"
             min="0"
-            @keyup="handleNumberFieldKeyUp($event, 'clientSaleCustom')"
           ></v-text-field>
         </div>
       </v-flex>
@@ -198,7 +197,7 @@
             solo
             flat
             hide-details
-            :value="sumSale"
+            v-model.number="discountCost"
             class="scs-small"
             readonly
           ></v-text-field>
@@ -212,54 +211,65 @@
         solo
         flat
         hide-details
-        :value="sumPay"
+        v-model.number="totalCost"
         class="scs-small"
         readonly
       ></v-text-field>
     </div>
     <v-divider></v-divider>
-    <div class="px-0 text-xs-center" style="height: 40px;">
-      <v-btn color="info" @click="handlePaymentModelOpenButtonClick" small>
-        Оплатить
-      </v-btn>
-      <v-btn
-        @click.native="dialogClear = true"
-        flat
-        small
-        color="error"
-        class="mx-0"
-        title="Удалить"
-      >
-        <v-icon dark>clear</v-icon>
-      </v-btn>
-      <v-btn
-        @click.native="$emit('copy')"
-        flat
-        small
-        color="warning"
-        class="mx-0"
-        title="Скопировать"
-      >
-        <v-icon dark>library_add</v-icon>
-      </v-btn>
-      <div class="pr-0 input-min" style="height: 30px;">
-        <v-text-field
-          label="Кол-во"
-          solo
-          flat
-          hide-details
-          v-model="bouquetCount"
-          class="scs-small text-lg-right"
-          title="Количество"
-          type="number"
-          @change="updateProps()"
-        ></v-text-field>
-      </div>
-      <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
-        <v-icon dark v-if="check" title="Убрать">check_box</v-icon>
-        <v-icon dark v-else title="Выбрать">check_box_outline_blank</v-icon>
-      </v-btn>
-    </div>
+    <v-container fluid class="pa-0" justify-center align-center>
+      <v-layout row style="height: 40px;">
+        <v-flex xs4>
+          <v-btn color="info" @click="handlePaymentModelOpenButtonClick" small>
+            Оплатить
+          </v-btn>
+        </v-flex>
+        <v-flex xs2>
+          <v-btn
+            @click.native="dialogClear = true"
+            flat
+            small
+            color="error"
+            class="mx-0"
+            title="Удалить"
+          >
+            <v-icon dark>clear</v-icon>
+          </v-btn>
+        </v-flex>
+        <v-flex xs2>
+          <v-btn
+            @click.native="$emit('copy')"
+            flat
+            small
+            color="warning"
+            class="mx-0"
+            title="Скопировать"
+          >
+            <v-icon dark>library_add</v-icon>
+          </v-btn>
+        </v-flex>
+        <v-flex xs2>
+          <v-text-field
+            label="Кол-во"
+            solo
+            flat
+            class="scs-medium"
+            style="height: 40px;"
+            v-model.number="bouquetCount"
+            title="Количество"
+            type="number"
+          ></v-text-field>
+        </v-flex>
+        <v-flex xs2>
+          <v-checkbox
+            color="primary"
+            style="height: 40px;"
+            class="mx-0 my-0 py-0 pt-2 pl-2"
+            v-model="isChecked"
+          />
+        </v-flex>
+      </v-layout>
+    </v-container>
     <v-divider></v-divider>
     <create-payment-modal
       :sum-pay-custom="sumPayCustom"
@@ -292,11 +302,11 @@
 import Autosuggest from './Autosuggest';
 import gql from 'graphql-tag';
 import { mapState, mapMutations } from 'vuex';
-import {mapFields} from 'vuex-map-fields'
+import { mapFields } from 'vuex-map-fields';
 
 import { ClientTypes, PaymentTypes } from '../constants';
 import CreatePaymentModal from './CreatePaymentModal';
-import { CHANGE_BOUQUET_CARD } from '../views/CreateBouquet/mutation-types'
+import { CHANGE_BOUQUET_CARD } from '../views/CreateBouquet/mutation-types';
 import { mapDynamicFields } from '../helpers';
 
 export default {
@@ -336,7 +346,7 @@ export default {
     index: {
       type: Number,
       required: true,
-    }
+    },
   },
   data() {
     return {
@@ -353,7 +363,6 @@ export default {
       dialogClear: false,
       sumDecorCustom: '',
       clientSaleCustom: '',
-      bouquetCount: 1,
       orderBouquet: null,
       clientOrdersList: [],
       clientsList: [],
@@ -535,23 +544,40 @@ export default {
   computed: {
     ...mapState({
       card(state) {
-        return state.bouquetCards.cards.find(c => c.id === this.id)
-      }
+        return state.bouquetCards.cards.find(c => c.id === this.id);
+      },
     }),
-    ...mapDynamicFields('cards[]',['decorPercent', 'prepayment', 'goodsCost', 'deliveryCost', 'comment', 'additionalDecorCost', 'decorCost'], 'index'),
+    ...mapDynamicFields(
+      'cards[]',
+      [
+        'decorPercent',
+        'prepayment',
+        'goodsCost',
+        'deliveryCost',
+        'comment',
+        'additionalDecorCost',
+        'decorCost',
+        'discountPercent',
+        'discountCost',
+        'totalCost',
+        'bouquetCount',
+        'isChecked',
+      ],
+      'index',
+    ),
     isPaymentOnBalance() {
       return !(
-              this.sumFlowers > 0 ||
-              this.sumDecorAdditional > 0 ||
-              this.delivery > 0
+        this.sumFlowers > 0 ||
+        this.sumDecorAdditional > 0 ||
+        this.delivery > 0
       );
     },
     orderPrice() {
       return (
-              this.sumFlowers +
-              +this.sumDecor +
-              +this.sumDecorAdditional -
-              this.sumSale
+        this.sumFlowers +
+        +this.sumDecor +
+        +this.sumDecorAdditional -
+        this.sumSale
       );
     },
     toPay() {
@@ -559,12 +585,12 @@ export default {
     },
     autosuggestValue() {
       return this.client.name
-              ? `${this.client.name} (${this.client.bill})`
-              : '';
+        ? `${this.client.name} (${this.client.bill})`
+        : '';
     },
     orderBouquets() {
       const orderSelected = this.clientOrdersList.find(
-              item => item.id === this.order,
+        item => item.id === this.order,
       );
       let orderList = [];
 
@@ -588,8 +614,8 @@ export default {
     },
     sumSale: function sumSale() {
       const sum = Math.ceil(
-              (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
-              (this.clientSale / 100),
+        (this.sumFlowers + this.sumDecor + this.sumDecorAdditional) *
+          (this.clientSale / 100),
       );
       return this.priceRound(sum);
     },
@@ -609,9 +635,9 @@ export default {
       sum -= this.sumSale;
 
       return (
-              +sum.toFixed() * +this.bouquetCount -
-              +this.delivery * +this.bouquetCount +
-              +this.delivery
+        +sum.toFixed() * +this.bouquetCount -
+        +this.delivery * +this.bouquetCount +
+        +this.delivery
       );
     },
     isEmptySum() {
@@ -631,28 +657,28 @@ export default {
       const active = this.florist !== '' ? 1 : 0;
       return active;
     },
-    clientSale: function clientSale() {
-      const client = this.client;
-
-      let salePersent = 0;
-
-      if (client) {
-        if (this.clientSaleCustom !== '') {
-          salePersent = this.clientSaleCustom;
-        } else if (client !== 0 && client.discountPercent > 0) {
-          salePersent = client.discountPercent;
-        } else if (
-                this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
-                3000
-        ) {
-          salePersent = 5;
-        } else {
-          salePersent = null;
-        }
-      }
-
-      return salePersent;
-    },
+    // clientSale: function clientSale() {
+    //   const client = this.client;
+    //
+    //   let salePersent = 0;
+    //
+    //   if (client) {
+    //     if (this.clientSaleCustom !== '') {
+    //       salePersent = this.clientSaleCustom;
+    //     } else if (client !== 0 && client.discountPercent > 0) {
+    //       salePersent = client.discountPercent;
+    //     } else if (
+    //       this.sumFlowers + this.sumDecor + this.sumDecorAdditional >=
+    //       3000
+    //     ) {
+    //       salePersent = 5;
+    //     } else {
+    //       salePersent = null;
+    //     }
+    //   }
+    //
+    //   return salePersent;
+    // },
   },
 };
 </script>

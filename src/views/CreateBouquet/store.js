@@ -19,6 +19,7 @@ const initialCardState = () => ({
   discountPercent: 0,
   discountCost: 0,
   totalCost: 0,
+  bouquetCount: 1,
   selectedGoods: [],
   isChecked: false,
 });

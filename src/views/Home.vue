@@ -213,9 +213,9 @@ import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 import PaymentDay from './Pays/paymentDay.vue';
 import gql from 'graphql-tag';
-import { mapState } from 'vuex'
+import { mapState } from 'vuex';
 import CreatePaymentModal from '../components/CreatePaymentModal';
-import {ADD_BOUQUET_CARD} from './CreateBouquet/mutation-types'
+import { ADD_BOUQUET_CARD } from './CreateBouquet/mutation-types';
 
 export default {
   name: 'Home',
@@ -335,7 +335,7 @@ export default {
   },
   computed: {
     ...mapState({
-      bouquetCards: state => state.bouquetCards.cards
+      bouquetCards: state => state.bouquetCards.cards,
     }),
     totalOrderPrice() {
       const totalSum = this.checkedCards.reduce(
@@ -676,6 +676,26 @@ export default {
     input {
       max-height: 30px;
       padding: 5px 0;
+    }
+    .v-select__selection--comma {
+      margin: 6px 4px 6px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 116px;
+      text-overflow: ellipsis;
+      display: block;
+    }
+  }
+}
+
+.scs-medium {
+  &.v-text-field {
+    .v-input__control {
+      min-height: 40px;
+    }
+    input {
+      max-height: 40px;
+      padding: 0px 0;
     }
     .v-select__selection--comma {
       margin: 6px 4px 6px 0;

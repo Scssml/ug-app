@@ -113,7 +113,7 @@
                 <autosuggest
                   :suggestions="suggestions"
                   placeholder="Клиенты"
-                  :value="client.name"
+                  :value="client && client.name"
                   @onChange="onInputChange"
                   @onSelect="onSelected"
                   class="mt-3 view-filter"
@@ -181,9 +181,10 @@
             </td>
             <td>{{ new Date(props.item.creationDate).toLocaleString() }}</td>
             <td>
-              {{ props.item.client.name }}
-              <br />{{ props.item.client.phone }} <br />Баланс:
-              {{ props.item.client.bill }}
+              {{ props.item.client && props.item.client.name }}
+              <br />{{ props.item.client && props.item.client.phone }}
+              <br />Баланс:
+              {{ props.item.client && props.item.client.bill }}
             </td>
             <td>{{ props.item.amount }}</td>
             <td>{{ props.item.paymentType.name }}</td>

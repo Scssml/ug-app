@@ -530,7 +530,7 @@ export default {
                   isActive: true,
                   code: "balance"
                 },
-                amount: props.sumPayCustom,
+                amount: props.payment.amount,
                 clientId: props.payment.clientId,
                 description: props.comment,
                 decorCost: props.decorCost,

@@ -42,12 +42,7 @@
       class="print-hidden"
     ></payment-day>
 
-    <v-layout
-      row
-      wrap
-      v-if="!loadingDialog"
-      class="print-hidden"
-    >
+    <v-layout row wrap v-if="!loadingDialog" class="print-hidden">
       <v-flex xs4>
         <v-card flat v-for="(item, index) in propsBouquet" :key="index">
           <div
@@ -156,11 +151,9 @@
             <v-card flat>
               <div class="py-1 px-1 text-xs-center" style="height: 30px;">
                 Цена
-                <v-icon
-                  left
-                  @click="printPage()"
-                  title="Печать прайс-листа"
-                >print</v-icon>
+                <v-icon left @click="printPage()" title="Печать прайс-листа"
+                  >print</v-icon
+                >
               </div>
               <v-divider></v-divider>
               <template v-for="(item, index) in goodsList">
@@ -395,7 +388,9 @@ export default {
   },
   computed: {
     priceList() {
-      const findIndex = this.goodsList.findIndex(item => item.name === 'Амбрелла');
+      const findIndex = this.goodsList.findIndex(
+        item => item.name === "Амбрелла"
+      );
       const priceList = this.goodsList.slice(0, findIndex + 1);
       return priceList;
     },
@@ -521,11 +516,7 @@ export default {
         new Promise((res, rej) => {
           let emptySum = true;
 
-          if (
-            item.goods.length > 0 ||
-            props.decorCost > 0 ||
-            props.deliveryCost > 0
-          ) {
+          if (item.goods.length > 0) {
             emptySum = false;
           }
 
@@ -541,7 +532,9 @@ export default {
                 },
                 amount: props.sumPayCustom,
                 clientId: props.payment.clientId,
-                description: props.comment
+                description: props.comment,
+                decorCost: props.decorCost,
+                deliveryCost: props.deliveryCost
               }
             };
 
@@ -696,7 +689,7 @@ export default {
     },
     printPage() {
       window.print();
-    },
+    }
   },
   mounted() {
     this.$store.commit("setShowGoodsList", []);

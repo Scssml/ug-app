@@ -706,7 +706,7 @@ export default {
             amount:
               this.secondTypePay !== PaymentTypes.CASH &&
               this.typePay === PaymentTypes.CASH
-                ? +this.sumClient - +this.sumChange
+                ? (+this.sumClient || +this.sumPayCustom || 0) - +this.sumChange
                 : +this.sumPay !== 0
                 ? +this.sumPay
                 : +this.sumPayCustom || 0,

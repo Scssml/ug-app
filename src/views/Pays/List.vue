@@ -187,7 +187,13 @@
               {{ props.item.client && props.item.client.bill }}
             </td>
             <td>{{ props.item.amount }}</td>
-            <td>{{ props.item.paymentType.name }}</td>
+            <td>
+              {{ props.item.paymentType.name }}
+              <template v-if="props.item.paymentType.id === 7">
+                <br>{{ props.item.paymentTypeBeforeReturn.name }}
+              </template>
+            </td>
+            <td>{{ props.item.manager.name }}</td>
             <td>{{ props.item.description }}</td>
             <td class="text-xs-right" style="width: 110px;">
               <v-icon @click="editItem(props.item.id)" title="Просмотр">
@@ -298,6 +304,12 @@ export default {
           sortable: true
         },
         {
+          text: "Менеджер",
+          align: "left",
+          value: "manager.name",
+          sortable: true
+        },
+        {
           text: "Комментарий",
           align: "left",
           value: "description",
@@ -362,7 +374,14 @@ export default {
               phone
               bill
             }
+            manager {
+              name
+            }
             paymentType {
+              id
+              name
+            }
+            paymentTypeBeforeReturn {
               name
             }
             creationDate: creation_date

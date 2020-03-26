@@ -391,7 +391,11 @@ export default {
         //   return good;
         // });
 
-        const purchaseGoods = this.goodsList.map((item) => {
+        const goodsList = this.goodsList.filter((item) => {
+          return (+item.price !== +item.oldPrice || +item.count !== +item.oldCount);
+        });
+
+        const purchaseGoods = goodsList.map((item) => {
           const good = {
             estimate: item.count,
             newPrice: item.price,
@@ -423,20 +427,22 @@ export default {
         });
 
         this.goodsList.forEach((elem) => {
-          const propsGood = Object.assign({}, elem);
-          propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
-          delete propsGood.id;
-          delete propsGood.count;
+          if (+elem.price !== +elem.oldPrice || +elem.count !== +elem.oldCount) {
+            const propsGood = Object.assign({}, elem);
+            propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
+            delete propsGood.id;
+            delete propsGood.count;
 
-          propsGood.price = +propsGood.price;
+            propsGood.price = +propsGood.price;
 
-          const goodParams = {
-            type: 'goods',
-            props: propsGood,
-            id: elem.id,
-          };
+            const goodParams = {
+              type: 'goods',
+              props: propsGood,
+              id: elem.id,
+            };
 
-          this.$store.dispatch('updateItem', goodParams);
+            this.$store.dispatch('updateItem', goodParams);
+          }
         });
       }
     },

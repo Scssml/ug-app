@@ -189,6 +189,12 @@ export default new Router({
       beforeEnter: ifManager,
     },
     {
+      path: '/reports/graphQL/',
+      name: 'repprtsGrapgQL',
+      component: () => import('./views/Reports/graphQL.vue'),
+      beforeEnter: ifManager,
+    },
+    {
       path: '/reviews/',
       name: 'reviews',
       component: () => import('./views/Reviews/List.vue'),

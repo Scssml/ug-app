@@ -128,7 +128,7 @@ export default {
       const { id } = this.props.item;
 
       return axios.put(`/goods/${id}`, data);
-    }
+    },
   },
   mounted() {
     this.color = this.props.item.color;

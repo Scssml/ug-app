@@ -76,6 +76,18 @@
                 :loading="loadingBtn"
               >Создать</v-btn>
             </v-flex>
+            <v-spacer></v-spacer>
+            <v-flex
+              xs2
+              class="px-2 text-xs-right"
+            >
+              <v-btn
+                color="primary"
+                dark
+                to="graphQL/"
+                class="mt-3"
+              >GraphQL</v-btn>
+            </v-flex>
           </v-layout>
         </v-form>
       </v-card-title>
@@ -148,23 +160,6 @@ export default {
     printPage() {
       window.print();
     },
-    createdReportGraphQL() {
-      const itemParams = {
-        type: 'v1/graphql',
-        data: {
-          query: 'query MyQuery{orders(where:{orderStatusId:{_eq:"1"}}){id,orderStatusId,client{phone,name}}}',
-          variables: null,
-          operationName: 'MyQuery',
-        },
-      };
-
-      this.$store.dispatch('getGraphQL', itemParams).then((response) => {
-        console.log(response);
-      });
-    },
-  },
-  mounted() {
-    // this.createdReportGraphQL();
   },
 };
 </script>

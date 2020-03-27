@@ -520,9 +520,13 @@ export default {
       return prePayment;
     },
     orderBouquets() {
-      const orderSelected = this.clientOrdersList.find(
-        item => item.id === this.order
-      );
+      let orderSelected = null;
+
+      if (!!this.clientOrdersList && this.clientOrdersList.length) {
+        orderSelected = this.clientOrdersList.find(
+          item => item.id === this.order
+        );
+      }
       let orderList = [];
 
       if (orderSelected) {

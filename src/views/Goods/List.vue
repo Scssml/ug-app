@@ -426,24 +426,24 @@ export default {
           }, 1000);
         });
 
-        this.goodsList.forEach((elem) => {
-          if (+elem.price !== +elem.oldPrice || +elem.count !== +elem.oldCount) {
-            const propsGood = Object.assign({}, elem);
-            propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
-            delete propsGood.id;
-            delete propsGood.count;
+        // this.goodsList.forEach((elem) => {
+        //   if (+elem.price !== +elem.oldPrice || +elem.count !== +elem.oldCount) {
+        //     const propsGood = Object.assign({}, elem);
+        //     propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
+        //     delete propsGood.id;
+        //     delete propsGood.count;
 
-            propsGood.price = +propsGood.price;
+        //     propsGood.price = +propsGood.price;
 
-            const goodParams = {
-              type: 'goods',
-              props: propsGood,
-              id: elem.id,
-            };
+        //     const goodParams = {
+        //       type: 'goods',
+        //       props: propsGood,
+        //       id: elem.id,
+        //     };
 
-            this.$store.dispatch('updateItem', goodParams);
-          }
-        });
+        //     this.$store.dispatch('updateItem', goodParams);
+        //   }
+        // });
       }
     },
     closeDialog() {

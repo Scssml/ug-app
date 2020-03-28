@@ -87,6 +87,12 @@
                 to="graphQL/"
                 class="mt-3"
               >GraphQL</v-btn>
+              <v-btn
+                color="primary"
+                dark
+                to="goods/"
+                class="mt-3"
+              >Товары</v-btn>
             </v-flex>
           </v-layout>
         </v-form>

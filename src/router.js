@@ -195,6 +195,12 @@ export default new Router({
       beforeEnter: ifManager,
     },
     {
+      path: '/reports/goods/',
+      name: 'repprtsGoods',
+      component: () => import('./views/Reports/goods.vue'),
+      beforeEnter: ifManager,
+    },
+    {
       path: '/reviews/',
       name: 'reviews',
       component: () => import('./views/Reviews/List.vue'),

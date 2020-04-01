@@ -53,13 +53,22 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
 import format from "date-fns/format";
 import { ru } from "date-fns/locale";
 
 export default {
   props: {
-    report: {
-      type: Array,
+    dateStart: {
+      type: String,
+      required: true,
+    },
+    dateEnd: {
+      type: String,
+      required: true,
+    },
+    goodId: {
+      type: Number,
       required: true,
     },
   },
@@ -75,7 +84,86 @@ export default {
         'Статус',
         'Менеджер',
       ],
+      orderBouquetsList: [],
+      report: [],
     };
+  },
+  apollo: {
+    orderBouquetsList: {
+      query: gql`
+        query orderBouquetsList(
+          $goodId: bigint,
+          $dateStart: timestamptz,
+          $dateEnd: timestamptz
+        ) {
+          orderBouquetsList: bouquets(
+            where: {
+              _and: [
+                { bouquetGoodsMappings: { good: { id: { _eq: $goodId } } } }
+                { created_at: { _gte: $dateStart } }
+                { created_at: { _lte: $dateEnd } }
+                { orderBouquetId: { _is_null: false } }
+              ]
+            },
+            order_by: { created_at: asc }
+          ) {
+            orderBouquetId
+          }
+        }
+      `,
+      variables() {
+        return {
+          goodId: this.goodId,
+          dateStart: `${this.dateStart} 00:00:00`,
+          dateEnd: `${this.dateEnd} 23:59:59`,
+        };
+      },
+    },
+    report: {
+      query: gql`
+        query report(
+          $orderBouquetsId: [bigint!],
+        ) {
+          report: orders(
+            where: { orderBouquets: { id: { _in: $orderBouquetsId } } },
+            order_by: { created_at: asc }
+          ) {
+            id
+            clientName
+            courier {
+              name
+            }
+            created_at
+            deliveryDate
+            deliveryTime
+            deliveryType {
+              name
+            }
+            orderBouquets {
+              name
+              count
+            }
+            orderCost
+            orderStatus {
+              name
+            }
+            createdBy {
+              name
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          orderBouquetsId: this.orderBouquetsId,
+        };
+      },
+    },
+  },
+  computed: {
+    orderBouquetsId() {
+      return this.orderBouquetsList.map(item => item.orderBouquetId);
+    },
   },
   methods: {
     formatDate(date, dateFormat) {

@@ -30,6 +30,7 @@
                 v-model.number="data.goodId"
                 hide-details
                 class="pr-4"
+                @change="validateForm()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -44,6 +45,7 @@
                 v-model="data.type"
                 :rules="[v => !!v || 'Заполните поле']"
                 hide-details
+                @change="validateForm()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -72,6 +74,7 @@
                 <v-date-picker
                   v-model="data.dateStart"
                   @input="dataStartPicker = false"
+                  @change="validateForm()"
                   no-title
                   scrollable
                   locale="ru-ru"
@@ -106,6 +109,7 @@
                 <v-date-picker
                   v-model="data.dateEnd"
                   @input="dataEndPicker = false"
+                  @change="validateForm()"
                   no-title
                   locale="ru-ru"
                   scrollable
@@ -114,18 +118,6 @@
                 ></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-flex
-              xs2
-              class="px-2"
-            >
-              <v-btn
-                color="primary"
-                dark
-                @click="submitForm"
-                class="mt-3"
-                :loading="loadingBtn"
-              >Создать</v-btn>
-            </v-flex>
           </v-layout>
         </v-form>
       </v-card-title>
@@ -133,16 +125,27 @@
       <v-card-text
         class="report"
       >
-        <template v-if="report">
+        <template v-if="validate">
           <good-bouquets
-            :report="report"
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            :good-id="data.goodId"
             v-if="data.type === 'bouquets'"
           ></good-bouquets>
 
           <good-orders
-            :report="report"
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            :good-id="data.goodId"
             v-if="data.type === 'orders'"
           ></good-orders>
+
+          <good-purchases
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            :good-id="data.goodId"
+            v-if="data.type === 'purchases'"
+          ></good-purchases>
         </template>
       </v-card-text>
 
@@ -158,7 +161,6 @@
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-      v-if="report"
     >Распечатать</v-btn>
   </v-container>
 </template>
@@ -167,11 +169,13 @@
 import gql from "graphql-tag";
 import goodBouquets from "./Goods/bouquets.vue";
 import goodOrders from "./Goods/orders.vue";
+import goodPurchases from "./Goods/purchases.vue";
 
 export default {
   components: {
     goodBouquets,
     goodOrders,
+    goodPurchases,
   },
   data() {
     return {
@@ -184,10 +188,10 @@ export default {
         goodId: '',
       },
       reportType: [
-        // {
-        //   name: 'Операции',
-        //   id: 'courier_stats',
-        // },
+        {
+          name: 'Операции',
+          id: 'purchases',
+        },
         {
           name: 'Букеты',
           id: 'bouquets',
@@ -197,9 +201,8 @@ export default {
           id: 'orders',
         },
       ],
-      report: '',
-      loadingBtn: false,
       goodsList: [],
+      validate: false,
     };
   },
   apollo: {
@@ -218,135 +221,14 @@ export default {
     },
   },
   methods: {
-    submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        this.report = '';
-        this.loadingBtn = true;
-
-        if (this.data.type === 'bouquets') {
-          this.getReportBouquets();
-        } else if (this.data.type === 'orders') {
-          this.getReportOrders();
-        }
-      }
-    },
-    getReportBouquets() {
-      this.$apollo.query({
-        query: gql`
-          query {
-            reportBouquets: bouquets(
-              where: {
-                _and: [
-                  { bouquetGoodsMappings: { good: { id: { _eq: "${this.data.goodId}" } } } }
-                  { created_at: { _gte: "${this.data.dateStart} 00:00:00" } }
-                  { created_at: { _lte: "${this.data.dateEnd} 23:59:59" } }
-                ]
-              },
-              order_by: { created_at: asc }
-            ) {
-              id
-              florist {
-                name
-                id
-              }
-              client {
-                name
-                id
-              }
-              orderBouquet {
-                id
-                orderId
-                name
-                count
-              }
-              bouquetGoodsMappings {
-                good {
-                  name
-                  id
-                }
-                goodsCount
-              }
-              user {
-                id
-                name
-              }
-              totalCost
-              created_at
-            }
-          }
-        `,
-      }).then((response) => {
-        this.report = response.data.reportBouquets;
-        this.loadingBtn = false;
-      });
-    },
-    getReportOrders() {
-      this.$apollo.query({
-        query: gql`
-          query {
-            orderBouquetsId: bouquets(
-              where: {
-                _and: [
-                  { bouquetGoodsMappings: { good: { id: { _eq: "${this.data.goodId}" } } } }
-                  { created_at: { _gte: "${this.data.dateStart} 00:00:00" } }
-                  { created_at: { _lte: "${this.data.dateEnd} 23:59:59" } }
-                  { orderBouquetId: { _is_null: false } }
-                ]
-              },
-              order_by: { created_at: asc }
-            ) {
-              orderBouquetId
-            }
-          }
-        `,
-      }).then((response) => {
-        const orderBouquetsId = response.data.orderBouquetsId.map(item => item.orderBouquetId);
-
-        this.$apollo.query({
-          query: gql`
-            query {
-              reportOrders: orders(
-                where: { orderBouquets: { id: { _in: [${orderBouquetsId}] } } },
-                order_by: { created_at: asc }
-              ) {
-                id
-                clientName
-                courier {
-                  name
-                }
-                created_at
-                deliveryDate
-                deliveryTime
-                deliveryType {
-                  name
-                }
-                orderBouquets {
-                  name
-                  count
-                }
-                orderCost
-                orderStatus {
-                  name
-                }
-                createdBy {
-                  name
-                }
-              }
-            }
-          `,
-        }).then((responseOrders) => {
-          this.report = responseOrders.data.reportOrders;
-          this.loadingBtn = false;
-        });
-      });
+    validateForm() {
+      setTimeout(() => {
+        this.validate = this.$refs.form.validate();
+      }, 300);
     },
     printPage() {
       window.print();
     },
-  },
-  mounted() {
-    // this.createdReportGraphQL();
   },
 };
 </script>

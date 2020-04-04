@@ -255,7 +255,9 @@
         </tr>
         <template v-for="(item, index) in priceList">
           <tr :key="index">
-            <td>{{ item.name }}</td>
+            <td
+              :style="item.color ? `background-color: ${item.color};` : ''"
+            >{{ item.name }}</td>
             <td>{{ item.price }}</td>
           </tr>
         </template>
@@ -538,10 +540,37 @@ export default {
               }
             };
 
-            this.$store
-              .dispatch("addItem", itemParams)
-              .then(res)
-              .catch(rej);
+            this.$apollo.mutate({
+              mutation: gql`mutation createPayment (
+                $paymentTypeId: Int!,
+                $clientId: Int!,
+                $price: Float!,
+                $comment: String,
+                $managerId: Int!,
+              ) {
+                createPayment(input: {
+                  paymentTypeId: $paymentTypeId,
+                  price: $price,
+                  clientId: $clientId,
+                  managerId: $managerId,
+                  comment: $comment,
+                }) {
+                  id
+                }
+              }`,
+              variables: {
+                paymentTypeId: props.payment.paymentTypeId,
+                clientId: props.payment.clientId,
+                price: props.payment.amount + props.decorCost + props.deliveryCost,
+                comment: props.comment,
+                managerId: this.$store.getters.getAuthUser,
+              },
+            });
+
+            // this.$store
+            //   .dispatch("addItem", itemParams)
+            //   .then(res)
+            //   .catch(rej);
           } else {
             const newBouqet = props;
 

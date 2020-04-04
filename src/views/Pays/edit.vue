@@ -21,7 +21,7 @@
       >
         <v-text-field
           label="Дата"
-          :value="editedItem.creationDate"
+          :value="editedItem.created_at"
           readonly
         ></v-text-field>
         <v-text-field
@@ -64,6 +64,10 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+
 export default {
   props: {
     id: {
@@ -78,22 +82,62 @@ export default {
       createdSuccess: false,
     };
   },
-  methods: {
-    getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'payments',
+  apollo: {
+    paymentsList: {
+      query: gql`
+        query paymentsList(
+          $id: bigint
+        ) {
+          paymentsList: payments(
+            where: {
+              id: { _eq: $id }
+            }
+          ) {
+            id
+            created_at
+            client {
+              name
+              phone
+            }
+            amount
+            paymentType {
+              name
+            }
+            description
+          }
+        }
+      `,
+      variables() {
+        return {
           id: this.id,
         };
-
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-          this.loading = false;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      },
+      update({ paymentsList }) {
+        this.editedItem = paymentsList.shift();
+        this.editedItem.created_at = this.formatDate(this.editedItem.created_at, 'dd.MM.yyyy HH:mm:ss');
+        this.loading = false;
+      },
     },
+  },
+  methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
+    },
+    // getItem() {
+    //   if (this.id) {
+    //     const itemParams = {
+    //       type: 'payments',
+    //       id: this.id,
+    //     };
+
+    //     this.$store.dispatch('getItem', itemParams).then((response) => {
+    //       this.editedItem = response;
+    //       this.loading = false;
+    //     }).catch(() => {
+    //       console.log('error');
+    //     });
+    //   }
+    // },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
@@ -121,7 +165,7 @@ export default {
     },
   },
   mounted() {
-    this.getItem();
+    // this.getItem();
   },
 };
 </script>

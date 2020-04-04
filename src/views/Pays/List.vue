@@ -188,9 +188,9 @@
             </td>
             <td>{{ props.item.amount }}</td>
             <td>
-              {{ props.item.paymentType.name }}
-              <template v-if="props.item.paymentType.id === 7">
-                <br>{{ props.item.paymentTypeBeforeReturn.name }}
+              {{ props.item.paymentType && props.item.paymentType.name }}
+              <template v-if="props.item.paymentType && props.item.paymentType.id === 7">
+                <br>{{ props.item.parent.paymentType.name }}
               </template>
             </td>
             <td>{{ props.item.manager.name }}</td>
@@ -281,7 +281,7 @@ export default {
         {
           text: "Дата",
           align: "left",
-          value: "creation_date",
+          value: "created_at",
           filterable: false,
           sortable: true
         },
@@ -361,8 +361,8 @@ export default {
                 { managerId: $managerId }
                 { paymentTypeId: $paymentTypeId }
                 { clientId: { _eq: $clientId } }
-                { creation_date: { _gte: $startDate } }
-                { creation_date: { _lte: $endDate } }
+                { created_at: { _gte: $startDate } }
+                { created_at: { _lte: $endDate } }
               ]
             }
             limit: $limit
@@ -381,10 +381,12 @@ export default {
               id
               name
             }
-            paymentTypeBeforeReturn {
-              name
+            parent {
+              paymentType {
+                name
+              }
             }
-            creationDate: creation_date
+            creationDate: created_at
             description
             amount
           }

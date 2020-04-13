@@ -605,7 +605,8 @@ export default {
         deliveryTimeOfDay: 0,
         dateStart: null,
         dateEnd: null,
-        createdBy: 0
+        createdBy: 0,
+        bitrix: false,
       },
       loadingData: [
         {
@@ -685,6 +686,7 @@ export default {
           $createdBy: bigint
           $deliveryTimeOfDay: bigint
           $clientId: bigint
+          $bitrix: Int_comparison_exp
         ) {
           ordersList: orders(
             limit: $limit
@@ -697,6 +699,7 @@ export default {
                 { createdById: { _eq: $createdBy } }
                 { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
                 { clientId: { _eq: $clientId } }
+                { bitrix: $bitrix }
               ]
             }
             order_by: { ${this.pagination.sortBy}: ${
@@ -773,6 +776,7 @@ export default {
                 { createdById: { _eq: $createdBy } }
                 { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
                 { clientId: { _eq: $clientId } }
+                { bitrix: $bitrix }
               ]
             }
           ) {
@@ -787,8 +791,12 @@ export default {
         return {
           offset: +this.page * +this.take,
           limit: +this.take,
-          startDate: this.filter.dateStart,
-          endDate: this.filter.dateEnd,
+          startDate: this.filter.dateStart
+            ? this.filter.dateStart
+            : undefined,
+          endDate: this.filter.dateEnd
+            ? this.filter.dateEnd
+            : undefined,
           clientId: this.filter.clientItem
             ? this.filter.clientItem.id
             : undefined,
@@ -799,7 +807,9 @@ export default {
           deliveryTimeOfDay:
             this.filter.deliveryTimeOfDay !== 0
               ? this.filter.deliveryTimeOfDay
-              : undefined
+              : undefined,
+          bitrix:
+            this.filter.bitrix ? { _gte: 0 } : undefined,
         };
       },
       update({ ordersList, ordersCount }) {
@@ -945,7 +955,7 @@ export default {
         const today = new Date();
 
         const year = today.getFullYear();
-        const month = today.getMonth();
+        const month = (`0${(today.getMonth() + 1)}`).slice(-2);
         const date = today.getDate();
 
         return {
@@ -1167,11 +1177,13 @@ export default {
     setFilterDateNow() {
       this.filter.dateStart = this.dateNowStr;
       this.filter.dateEnd = this.dateNowStr;
+      this.filter.bitrix = false;
       this.page = 0;
     },
     setFilterDateWeek() {
       this.filter.dateStart = this.getWeekStartDate();
       this.filter.dateEnd = this.getWeekEndDate();
+      this.filter.bitrix = false;
       this.page = 0;
     },
     setFilterDateMonth() {
@@ -1195,24 +1207,27 @@ export default {
 
       this.filter.dateStart = dateStart;
       this.filter.dateEnd = dateEnd;
+      this.filter.bitrix = false;
       this.page = 0;
     },
     setFilter14February() {
       const date = new Date();
       this.filter.dateStart = `${date.getFullYear()}-03-06`;
       this.filter.dateEnd = `${date.getFullYear()}-03-06`;
+      this.filter.bitrix = false;
       this.page = 0;
     },
     setFilter8March() {
       const date = new Date();
       this.filter.dateStart = `${date.getFullYear()}-03-08`;
       this.filter.dateEnd = `${date.getFullYear()}-03-08`;
+      this.filter.bitrix = false;
       this.page = 0;
     },
     setFilterNewOrderSite() {
       this.filter.dateStart = "";
       this.filter.dateEnd = "";
-      this.filter.orderSourceType = 2;
+      this.filter.bitrix = true;
       this.filter.orderStatus = 1;
       this.page = 0;
     },

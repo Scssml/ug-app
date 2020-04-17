@@ -661,7 +661,7 @@ import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import inside from 'point-in-geopolygon';
 import { getDistance } from 'geolib';
 import DeliveryMap from './deliveryMap.vue';
-import AutocompleteAddress from '../../components/AutocompleteAddress.vue';
+import AutocompleteAddress from '../../components/AutocompleteAddressYandex.vue';
 import geocoder from 'geocoder';
 
 const baseCoordinates = [53.186104, 50.160200];

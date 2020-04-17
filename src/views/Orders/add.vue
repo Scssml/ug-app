@@ -577,7 +577,7 @@
 
 <script>
 import { yandexMap, ymapMarker } from "vue-yandex-maps";
-import AutocompleteAddress from "../../components/AutocompleteAddress.vue";
+import AutocompleteAddress from "../../components/AutocompleteAddressYandex.vue";
 import inside from "point-in-geopolygon";
 import DeliveryMap from "./deliveryMap.vue";
 import { getDistance } from "geolib";

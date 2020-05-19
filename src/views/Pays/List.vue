@@ -189,7 +189,7 @@
             <td>{{ props.item.amount }}</td>
             <td>
               {{ props.item.paymentType && props.item.paymentType.name }}
-              <template v-if="props.item.paymentType && props.item.paymentType.id === 7">
+              <template v-if="props.item.paymentType && props.item.paymentType.id === 7 && props.item.parent">
                 <br>{{ props.item.parent.paymentType.name }}
               </template>
             </td>

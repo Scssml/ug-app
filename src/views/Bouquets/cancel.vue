@@ -44,6 +44,8 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+
 export default {
   props: {
     id: {
@@ -53,30 +55,63 @@ export default {
   },
   data() {
     return {
-      loading: true,
       propsItem: {},
       editedItem: {
         description: null,
       },
       createdSuccess: false,
+      loading: true,
     };
   },
-  methods: {
-    getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'bouquets',
+  apollo: {
+    floristsList: {
+      query: gql`
+        query bouquetsList(
+          $id: bigint
+        ) {
+          bouquetsList: bouquets(
+            where: {
+              id: { _eq: $id }
+            }
+          ) {
+            id
+            client {
+              id
+              name
+              bill
+            }
+            clientId
+            decorCost
+            decorPercent
+            deliveryCost
+            sumDecorAdditional
+            floristId
+            orderBouquetId
+            salePercent
+            sumSale
+            totalCost
+            bouquetGoodsMappings {
+              goodId
+              goodsCount
+              good {
+                price
+              }
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
           id: this.id,
         };
-
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.propsItem = response;
-          this.loading = false;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      },
+      update({ bouquetsList }) {
+        this.propsItem = bouquetsList.shift();
+        this.loading = false;
+      },
     },
+  },
+  methods: {
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
@@ -85,16 +120,24 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-
-        const itemParams = {
-          type: 'bouquets',
+        const propsService = {
           id: this.id,
-          props: propsItem,
+          managerId: this.$store.getters.getAuthUser,
+          comment: this.editedItem.description,
         };
 
-        this.$store.dispatch('deleteItem', itemParams).then(() => {
+        this.$apollo.mutate({
+          mutation: gql`mutation returnService (
+            $props: ReturnService!
+          ) {
+            returnService(input: $props) {
+              id
+            }
+          }`,
+          variables: {
+            props: propsService,
+          },
+        }).then(() => {
           this.createdSuccess = true;
 
           this.createdBouquet();
@@ -102,6 +145,8 @@ export default {
           setTimeout(() => {
             this.$emit('cancel');
           }, 1000);
+        }).catch((error) => {
+          console.error(error);
         });
       }
     },
@@ -110,59 +155,40 @@ export default {
       cardsList = (cardsList !== null) ? cardsList : [];
       const item = this.propsItem;
 
-      const index = cardsList.findIndex(card => card.props.order === item.id);
-
       const itemProps = {
         client: item.client,
-        clientId: item.client.id,
+        clientId: item.clientId,
         decorCost: item.decorCost,
         decorPercent: item.decorPercent,
         deliveryCost: item.deliveryCost,
-        sumDecorAdditional: 0,
-        floristId: (item.florist) ? item.florist.id : 0,
+        sumDecorAdditional: item.sumDecorAdditional,
+        floristId: item.floristId,
         orderId: 0,
-        payment: {
-          amount: item.payments[0].amount,
-          clientId: item.client.id,
-          description: item.payments[0].description,
-          paymentTypeId: item.payments[0].paymentType.id,
-        },
         salePercent: item.salePercent,
         sumSale: item.sumSale,
-        totalCost: item.payments[0].amount,
+        totalCost: item.totalCost,
       };
-      const itemGoods = item.goods.map((elem) => {
+      const itemGoods = item.bouquetGoodsMappings.map((elem) => {
         return {
-          id: elem.good.id,
-          name: elem.good.name,
-          price: elem.good.price,
-          sortIndex: elem.good.sortIndex,
-          stockBalance: elem.good.stockBalance + elem.count,
-          originalBalance: elem.good.stockBalance + elem.count,
-          value: elem.count,
+          id: elem.goodId,
+          value: elem.goodsCount,
         };
       });
-      const itemSum = item.goods.reduce((sum, elem) => {
-        const goodSum = elem.good.price * elem.count;
+      const itemSum = item.bouquetGoodsMappings.reduce((sum, elem) => {
+        const goodSum = elem.good.price * elem.goodsCount;
         return sum + goodSum;
       }, 0);
 
-      if (index === -1) {
-        cardsList.push({
-          sum: itemSum,
-          success: false,
-          props: itemProps,
-          goods: itemGoods,
-        });
-      } else {
-        cardsList[index].props.clientId = item.client.id;
-      }
+      cardsList.push({
+        sum: itemSum,
+        success: false,
+        props: itemProps,
+        goods: itemGoods,
+      });
+
       localStorage.setItem('cardsList', JSON.stringify(cardsList));
       this.$router.push({ path: '/', query: { selectOrder: item.id } });
     },
-  },
-  mounted() {
-    this.getItem();
   },
 };
 </script>

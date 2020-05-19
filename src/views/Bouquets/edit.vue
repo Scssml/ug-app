@@ -49,6 +49,12 @@
               readonly
             ></v-text-field>
             <v-text-field
+              label="Оформление (дополнительное)"
+              :value="editedItem.sumDecorAdditional"
+              readonly
+              v-if="editedItem.sumDecorAdditional"
+            ></v-text-field>
+            <v-text-field
               label="Скидка"
               :value="`${editedItem.sumSale} (${editedItem.salePercent}%)`"
               readonly
@@ -61,15 +67,15 @@
             <v-textarea
               label="Комментарий к доставке"
               auto-grow
-              :value="editedItem.comment"
+              :value="editedItem.deliveryComment"
               row-height="15"
               readonly
             ></v-textarea>
             <v-text-field
               label="Заказ"
-              :value="editedItem.orderId"
+              :value="editedItem.orderBouquet.orderId"
               readonly
-              v-if="editedItem.orderId"
+              v-if="editedItem.orderBouquet"
             ></v-text-field>
             <v-text-field
               label="Букет из заказа"
@@ -82,8 +88,8 @@
               auto-grow
               row-height="10"
               :rules="[v => !!v || 'Заполните поле']"
-              v-model="place"
-              v-if="editedItem.orderId && editedItem.orderBouquet"
+              v-model="editedItem.orderBouquet.place"
+              v-if="editedItem.orderBouquet"
             ></v-textarea>
           </v-flex>
 
@@ -99,7 +105,7 @@
               >
                 <v-text-field
                   label="Дата"
-                  :value="payment.creationDate"
+                  :value="payment.created_at"
                   readonly
                 ></v-text-field>
                 <v-text-field
@@ -118,7 +124,7 @@
                   :value="payment.description"
                   row-height="20"
                   readonly
-                  v-if="payment.paymentType.id === 7"
+                  v-if="payment.description"
                 ></v-textarea>
               </v-card>
             </template>
@@ -131,7 +137,7 @@
             <p class="title mb-4">Товары</p>
             <v-data-table
               :headers="headersTableGoods"
-              :items="editedItem.goods"
+              :items="editedItem.bouquetGoodsMappings"
               hide-actions
               no-data-text="Товаров не найдено"
               no-results-text="Товаров не найдено"
@@ -139,7 +145,7 @@
               <template slot="items" slot-scope="props">
                 <td>{{ props.item.good.name }}</td>
                 <td>{{ props.item.good.price }}</td>
-                <td>{{ props.item.count }}</td>
+                <td>{{ props.item.goodsCount }}</td>
               </template>
             </v-data-table>
           </v-flex>
@@ -162,10 +168,14 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+
 export default {
   props: {
-    bouquet: {
-      type: Object,
+    id: {
+      type: Number,
       required: true,
     },
   },
@@ -195,55 +205,82 @@ export default {
       place: '',
     };
   },
-  methods: {
-    getItem() {
-      this.editedItem = Object.assign({}, this.bouquet);
-      this.loading = false;
-      this.place = this.editedItem.orderBouquet.place;
-      this.getOrder();
-      // if (this.id) {
-      //   const itemParams = {
-      //     type: 'bouquets',
-      //     id: this.id,
-      //   };
-
-      //   this.$store.dispatch('getItem', itemParams).then((response) => {
-      //     this.editedItem = response;
-      //     this.loading = false;
-      //   }).catch(() => {
-      //     console.log('error');
-      //   });
-      // }
+  apollo: {
+    floristsList: {
+      query: gql`
+        query bouquetsList(
+          $id: bigint
+        ) {
+          bouquetsList: bouquets(
+            where: {
+              id: { _eq: $id }
+            }
+          ) {
+            id
+            client {
+              name
+              phone
+            }
+            florist {
+              name
+            }
+            user {
+              name
+            }
+            decorCost
+            decorPercent
+            sumDecorAdditional
+            sumSale
+            salePercent
+            deliveryCost
+            deliveryComment
+            orderBouquet {
+              orderId
+              name
+              count
+              place
+            }
+            payments {
+              created_at
+              amount
+              paymentType {
+                name
+              }
+              description
+            }
+            bouquetGoodsMappings {
+              good {
+                price
+                name
+              }
+              goodsCount
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.id,
+        };
+      },
+      update({ bouquetsList }) {
+        this.editedItem = bouquetsList.shift();
+        this.editedItem.payments = this.editedItem.payments.map((item) => {
+          item.created_at = this.formatDate(item.created_at, 'dd.MM.yyyy HH:mm:ss');
+          return item;
+        });
+        this.loading = false;
+      },
     },
+  },
+  methods: {
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
       this.$emit('cancel');
     },
-    getOrder() {
-      if (this.editedItem.orderId) {
-        const itemParams = {
-          type: 'orders',
-          id: this.editedItem.orderId,
-        };
-
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          const props = response;
-          props.addressee = (props.addressee) ? +props.addressee.id : null;
-          props.client = (props.client) ? +props.client.id : 0;
-          props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
-          props.clientType = (props.clientType) ? +props.clientType.id : 0;
-          props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
-          props.responsible = (props.responsible) ? +props.responsible.id : null;
-          props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
-          props.courier = (props.courier) ? +props.courier.id : null;
-          props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
-
-          this.order = props;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
     },
     submitForm() {
       const validate = this.$refs.form.validate();
@@ -283,9 +320,6 @@ export default {
         // });
       }
     },
-  },
-  mounted() {
-    this.getItem();
   },
 };
 </script>

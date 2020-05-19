@@ -30,7 +30,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!loadingDialog">
+    <template>
       <v-card>
         <v-card-title>
           <v-text-field
@@ -76,14 +76,34 @@
           no-data-text="Флористов не найдено"
           no-results-text="Флористов не найдено"
           :search="search"
+          :pagination.sync="pagination"
+          :loading="!!$apollo.queries.floristsList.loading"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th
+                v-for="header in props.headers"
+                :key="header.text"
+                class="text-xs-left column"
+                :class="[
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                @click="header.sortable ? changeSort(header.value) : ''"
+              >
+                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.address }}</td>
             <td>{{ props.item.phone }}</td>
             <td class="text-xs-right">
-              {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
+              {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
             <td class="text-xs-right" style="width: 110px;">
               <v-icon
@@ -104,6 +124,36 @@
             </td>
           </template>
         </v-data-table>
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
+            <v-text-field
+              label="Количество на странице"
+              v-model.number="take"
+              hide-details
+              @change="changeShowElem()"
+            ></v-text-field>
+          </v-flex>
+          <v-flex xs10 class="text-xs-right px-3">
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="page === 0"
+              @click="prevPage()"
+            >
+              <v-icon dark>keyboard_arrow_left</v-icon>
+            </v-btn>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="floristsList.length < take"
+              @click="nextPage()"
+            >
+              <v-icon dark>keyboard_arrow_right</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
       </v-card>
     </template>
   </v-container>
@@ -113,6 +163,7 @@
 import FloristEdit from './edit.vue';
 import FloristAdd from './add.vue';
 import FloristDelete from './delete.vue';
+import gql from "graphql-tag";
 
 export default {
   name: 'Florists',
@@ -127,7 +178,7 @@ export default {
         {
           title: 'Получение флористов',
           error: false,
-          loading: true,
+          loading: false,
           color: 'cyan',
           id: 'florists',
         },
@@ -170,12 +221,76 @@ export default {
       editedId: 0,
       floristsList: [],
       deleteId: 0,
+      take: 20,
+      page: 0,
+      pagination: {
+        sortBy: 'id',
+        rowsPerPage: -1,
+        descending: true,
+      },
     };
+  },
+  apollo: {
+    floristsList: {
+      query: gql`
+        query FloristsList(
+          $limit: Int
+          $offset: Int
+          $orderBy: [florists_order_by!]
+        ) {
+          floristsList: florists(
+            order_by: $orderBy
+            limit: $limit
+            offset: $offset
+          ) {
+            id
+            active
+            address
+            name
+            phone
+          }
+        }
+      `,
+      variables() {
+        return {
+          offset: this.page * this.take,
+          limit: this.take,
+          orderBy: this.orderBy
+        };
+      }
+    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return (loadData.length === this.loadingData.length) ? 0 : 1;
+    },
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split(".");
+      let sortObject = {};
+      const sortOrder = this.pagination.descending
+        ? "desc_nulls_last"
+        : "asc_nulls_last";
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder
+            }
+          }
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder
+          }
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
     },
   },
   methods: {
@@ -200,7 +315,6 @@ export default {
       });
     },
     closeDialog() {
-      this.getFloristsList();
       this.dialogForm = false;
       this.editedId = 0;
       this.deleteId = 0;
@@ -213,9 +327,26 @@ export default {
       this.deleteId = +id;
       this.dialogForm = true;
     },
-  },
-  mounted() {
-    this.getFloristsList();
+    changeShowElem() {
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
+      this.page = 0;
+    },
+    prevPage() {
+      this.page -= 1;
+    },
+    nextPage() {
+      this.page += 1;
+    },
+    changeSort(column) {
+      this.floristsList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
   },
 };
 </script>

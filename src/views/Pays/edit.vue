@@ -39,6 +39,18 @@
           :value="editedItem.paymentType.name"
           readonly
         ></v-text-field>
+        <v-text-field
+          v-if="editedItem.parent && editedItem.paymentType.id === 7"
+          label="Предыдущая оплата"
+          :value="editedItem.parent.name"
+          readonly
+        ></v-text-field>
+        <v-text-field
+          v-if="editedItem.parent && editedItem.paymentType.id === 7"
+          label="Дата предыдущей оплаты"
+          :value="editedItem.parent.created_at"
+          readonly
+        ></v-text-field>
         <v-textarea
           label="Комментарий"
           auto-grow
@@ -101,9 +113,14 @@ export default {
             }
             amount
             paymentType {
+              id
               name
             }
             description
+            paymentTypeBeforeReturn {
+              created_at
+              name
+            }
           }
         }
       `,
@@ -115,6 +132,9 @@ export default {
       update({ paymentsList }) {
         this.editedItem = paymentsList.shift();
         this.editedItem.created_at = this.formatDate(this.editedItem.created_at, 'dd.MM.yyyy HH:mm:ss');
+        if (this.editedItem.parent) {
+          this.editedItem.parent.created_at = this.formatDate(this.editedItem.parent.created_at, 'dd.MM.yyyy HH:mm:ss');
+        }
         this.loading = false;
       },
     },

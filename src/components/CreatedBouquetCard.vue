@@ -700,7 +700,8 @@ export default {
           orderId: this.order,
           totalCost: this.sumPay / +this.bouquetCount,
           decorPercent: +this.decorPercent,
-          decorCost: this.sumDecor + this.sumDecorAdditional,
+          decorCost: this.sumDecor,
+          sumDecorAdditional: this.sumDecorAdditional,
           deliveryCost: +this.delivery,
           salePercent: +this.clientSale,
           sumSale: this.sumSale,
@@ -783,6 +784,7 @@ export default {
         this.comment = this.propsDefault.comment;
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
+        this.clientSaleCustom = this.propsDefault.salePercent;
       }
     }
   },

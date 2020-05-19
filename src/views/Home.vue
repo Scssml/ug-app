@@ -267,57 +267,57 @@
 </template>
 
 <script>
-import CreatedBouquetCard from "../components/CreatedBouquetCard.vue";
-import SelectCountGoods from "../components/SelectCountGoods.vue";
-import PaymentDay from "./Pays/paymentDay.vue";
-import gql from "graphql-tag";
+import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
+import SelectCountGoods from '../components/SelectCountGoods.vue';
+import PaymentDay from './Pays/paymentDay.vue';
+import gql from 'graphql-tag';
 
 export default {
-  name: "Home",
+  name: 'Home',
   components: {
-    "created-bouquet-card": CreatedBouquetCard,
-    "select-count-goods": SelectCountGoods,
-    PaymentDay
+    'created-bouquet-card': CreatedBouquetCard,
+    'select-count-goods': SelectCountGoods,
+    PaymentDay,
   },
   data() {
     return {
-      dateNow: "",
-      dateYesterday: "",
+      dateNow: '',
+      dateYesterday: '',
       loadingData: [
         {
-          title: "Получение флористов",
+          title: 'Получение флористов',
           error: false,
           loading: true,
-          color: "cyan",
-          id: "florists"
+          color: 'cyan',
+          id: 'florists',
         },
         {
-          title: "Получение товаров",
+          title: 'Получение товаров',
           error: false,
           loading: true,
-          color: "blue-grey",
-          id: "goods"
+          color: 'blue-grey',
+          id: 'goods',
         },
         {
-          title: "Получение оплат",
+          title: 'Получение оплат',
           error: false,
           loading: false,
-          color: "deep-orange",
-          id: "payments"
-        }
+          color: 'deep-orange',
+          id: 'payments',
+        },
       ],
       offsetLeft: 0,
       propsBouquet: [
-        "Флорист",
-        "Клиент",
-        "Заказ | Букет",
-        "Cтавка на оформление, % | Предоплата",
-        "Сумма товара",
-        "Доставка | Комментарий",
-        "Оформление",
-        "Ставка на скидку, % | Сумма скидки",
-        "Всего к оплате | Кол-во",
-        ""
+        'Флорист',
+        'Клиент',
+        'Заказ | Букет',
+        'Cтавка на оформление, % | Предоплата',
+        'Сумма товара',
+        'Доставка | Комментарий',
+        'Оформление',
+        'Ставка на скидку, % | Сумма скидки',
+        'Всего к оплате | Кол-во',
+        '',
       ],
       cardsList: [],
       floristsList: [],
@@ -331,8 +331,8 @@ export default {
       typePay: null,
       paymentsPagination: {
         page: 0,
-        limit: 200
-      }
+        limit: 200,
+      },
     };
   },
   apollo: {
@@ -346,16 +346,19 @@ export default {
         }
       `,
       result() {
-        this.handleLoadingSuccess("florists", "Флористы получены!");
+        this.handleLoadingSuccess('florists', 'Флористы получены!');
       },
       error() {
-        this.handleLoadingFailed("florists", "Ошибка получения флористов!");
-      }
+        this.handleLoadingFailed('florists', 'Ошибка получения флористов!');
+      },
     },
     goodsList: {
       query: gql`
         query {
-          goodsList: goods(order_by: { sortIndex: desc }) {
+          goodsList: goods(
+            order_by: { sortIndex: desc }
+            where: { active: { _eq: true } }
+          ) {
             id
             name
             price
@@ -365,17 +368,17 @@ export default {
         }
       `,
       result() {
-        this.handleLoadingSuccess("goods", "Товары получены!");
+        this.handleLoadingSuccess('goods', 'Товары получены!');
       },
       error() {
-        this.handleLoadingFailed("goods", "Ошибка получения товаров!");
+        this.handleLoadingFailed('goods', 'Ошибка получения товаров!');
       },
       update({ goodsList }) {
         return goodsList.map(g => ({
           ...g,
-          originalBalance: g.stockBalance
+          originalBalance: g.stockBalance,
         }));
-      }
+      },
     },
     paymentTypesList: {
       query: gql`
@@ -385,38 +388,36 @@ export default {
             name
           }
         }
-      `
-    }
+      `,
+    },
   },
   computed: {
     priceList() {
-      const findIndex = this.goodsList.findIndex(
-        item => item.name === "Амбрелла"
-      );
+      const findIndex = this.goodsList.findIndex(item => item.name === 'Амбрелла');
       const priceList = this.goodsList.slice(0, findIndex + 1);
       return priceList;
     },
     goods() {
-      for (let good of this.goodsList.filter(g => g.originalBalance)) {
+      for (const good of this.goodsList.filter(g => g.originalBalance)) {
         good.stockBalance = good.originalBalance;
       }
 
-      for (let good of this.goodsList) {
+      for (const good of this.goodsList) {
         const goodCardsSum = this.cardsList.reduce((acc, card) => {
           const { value } = card.goods.find(g => g.id === good.id) || {
-            value: 0
+            value: 0,
           };
 
           return acc + value;
         }, 0);
 
-        good.stockBalance = good.stockBalance - goodCardsSum;
+        good.stockBalance -= goodCardsSum;
       }
 
       return this.goodsList;
     },
     typePayList() {
-      return this.paymentTypesList.filter(item => {
+      return this.paymentTypesList.filter((item) => {
         if (this.client) {
           return item.id !== 5;
         }
@@ -435,9 +436,7 @@ export default {
       }, 0);
     },
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     showGoodsList() {
@@ -447,7 +446,7 @@ export default {
         goodsList = showGoodsList;
       }
       return goodsList;
-    }
+    },
   },
   methods: {
     refreshPayments() {
@@ -466,8 +465,8 @@ export default {
     onScroll: function onScroll(e) {
       const scroll = e.target.scrollLeft;
 
-      if (e.target.id === "scroll-block-top") {
-        document.getElementById("scroll-block-bottom").scrollLeft = scroll;
+      if (e.target.id === 'scroll-block-top') {
+        document.getElementById('scroll-block-bottom').scrollLeft = scroll;
       } else {
         // document.getElementById('scroll-block-top').scrollLeft = scroll;
       }
@@ -482,158 +481,122 @@ export default {
       item.goods = goods;
       this.$set(this.cardsList, index, item);
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     addCard: function addCard() {
       this.cardsList.push({
         sum: 0,
         success: false,
         props: {},
-        goods: []
+        goods: [],
       });
     },
     checkCard(indexCard, sumPay) {
-      const findIndex = this.checkCardList.findIndex(
-        item => item.index === indexCard
-      );
+      const findIndex = this.checkCardList.findIndex(item => item.index === indexCard);
 
       if (findIndex + 1) {
         this.checkCardList.splice(findIndex, 1);
       } else {
         this.checkCardList.push({
           index: indexCard,
-          sum: sumPay
+          sum: sumPay,
         });
       }
     },
     saveProps: function saveProps(index, props) {
-      const item = this.cardsList[index];
+      const cardItem = this.cardsList[index];
 
       if (props) {
-        new Promise((res, rej) => {
-          let emptySum = true;
+        let emptySum = true;
 
-          if (item.goods.length > 0) {
-            emptySum = false;
-          }
+        if (cardItem.goods.length > 0) {
+          emptySum = false;
+        }
 
-          if (emptySum) {
-            const itemParams = {
-              type: "payments",
-              props: {
-                paymentType: {
-                  id: props.payment.paymentTypeId,
-                  name: "На баланс",
-                  isActive: true,
-                  code: "balance"
-                },
-                amount: props.payment.amount,
-                clientId: props.payment.clientId,
-                description: props.comment,
-                decorCost: props.decorCost,
-                deliveryCost: props.deliveryCost
-              }
-            };
+        const goods = cardItem.goods.map(item => ({
+          count: item.value,
+          goodId: item.id,
+        }));
 
-            this.$apollo.mutate({
-              mutation: gql`mutation createPayment (
-                $paymentTypeId: Int!,
-                $clientId: Int!,
-                $price: Float!,
-                $comment: String,
-                $managerId: Int!,
-              ) {
-                createPayment(input: {
-                  paymentTypeId: $paymentTypeId,
-                  price: $price,
-                  clientId: $clientId,
-                  managerId: $managerId,
-                  comment: $comment,
-                }) {
-                  id
-                }
-              }`,
-              variables: {
-                paymentTypeId: props.payment.paymentTypeId,
-                clientId: props.payment.clientId,
-                price: props.payment.amount + props.decorCost + props.deliveryCost,
-                comment: props.comment,
-                managerId: this.$store.getters.getAuthUser,
-              },
-            });
+        const propsService = {
+          clientID: props.payment.clientId,
+          userID: this.$store.getters.getAuthUser,
+          payments: [
+            {
+              paymentTypeId: props.payment.paymentTypeId,
+              price: props.payment.amount,
+              comment: props.payment.description,
+            },
+          ],
+          floristID: props.floristId,
+        };
 
-            // this.$store
-            //   .dispatch("addItem", itemParams)
-            //   .then(res)
-            //   .catch(rej);
-          } else {
-            const newBouqet = props;
-
-            newBouqet.goods = item.goods.map(elem => {
-              const good = {
-                goodId: elem.id,
-                count: elem.value
-              };
-              return good;
-            });
-
-            const bouquetParams = {
-              type: "bouquets",
-              props: newBouqet
-            };
-
-            this.$store
-              .dispatch("addItem", bouquetParams)
-              .then(res)
-              .catch(rej);
-          }
-        })
-          .then(() => {
-            item.success = true;
-            this.$set(this.cardsList, index, item);
-
-            this.refreshPayments();
-
-            item.goods.forEach(elem => {
-              const findGood = this.goodsList.find(good => good.id === elem.id);
-              findGood.store -= elem.value;
-            });
-
-            const cardNoEmpty = this.cardsList.filter(
-              elem =>
-                (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-                elem.success !== true
-            );
-            localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
-
-            const findIndex = this.checkCardList.findIndex(
-              card => card.index === index
-            );
-
-            if (findIndex + 1) {
-              this.checkCardList.splice(findIndex, 1);
-            }
-          })
-          .catch(err => {
-            this.$refs.createBouquetCard[0] &&
-              (this.$refs.createBouquetCard[0].btnLoad = false);
-            err &&
-              err.message &&
-              this.getErrors(err.message).forEach(msg => {
-                this.$notify({
-                  group: "global",
-                  title: "Ошибка валидации!",
-                  text: msg,
-                  type: "error",
-                  duration: -1
-                });
-              });
+        if (props.secondPayment) {
+          propsService.payments.push({
+            paymentTypeId: props.secondPayment.paymentTypeId,
+            price: props.secondPayment.amount,
+            comment: props.secondPayment.description,  
           });
+        }
+
+        if (emptySum && (props.decorCost || props.deliveryCost)) {
+          propsService.decorPrice = (props.decorCost) ? props.decorCost : null;
+          propsService.deliveryPrice = (props.deliveryCost) ? props.deliveryCost : null;
+        } else if (!emptySum) {
+          propsService.decorPrice = props.decorCost;
+          propsService.deliveryPrice = props.deliveryCost;
+          propsService.additionalDecorPrice = props.sumDecorAdditional;
+          propsService.decorPercent = props.decorPercent;
+          propsService.deliveryComment = props.comment;
+          propsService.salePercent = props.salePercent;
+          propsService.salePrice = props.sumSale;
+          propsService.serviceGoods = goods;
+          propsService.totalCost = props.totalCost;
+          propsService.orderBouquetID = props.orderBouquet;
+        }
+
+        this.$apollo.mutate({
+          mutation: gql`mutation createService (
+            $props: NewService!
+          ) {
+            createService(input: $props) {
+              id
+            }
+          }`,
+          variables: {
+            props: propsService,
+          },
+         }).then(() => {
+          cardItem.success = true;
+          this.$set(this.cardsList, index, cardItem);
+
+          this.refreshPayments();
+
+          const cardNoEmpty = this.cardsList.filter(elem =>
+            (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+              elem.success !== true);
+          localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+
+          const findIndex = this.checkCardList.findIndex(card => card.index === index);
+
+          if (findIndex + 1) {
+            this.checkCardList.splice(findIndex, 1);
+          }
+        }).catch((error) => {
+          // this.getErrors(error).forEach((msg) => {
+          //   this.$notify({
+          //     group: 'global',
+          //     title: 'Ошибка валидации!',
+          //     text: msg,
+          //     type: 'error',
+          //     duration: -1,
+          //   });
+          // });
+          console.error(error);
+        });
       }
     },
     updateProps: function updateProps(index, props) {
@@ -641,37 +604,29 @@ export default {
       item.props = props;
       this.$set(this.cardsList, index, item);
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     copyItem(index) {
       const item = Object.assign({}, this.cardsList[index]);
       this.cardsList.push(item);
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
     },
     deleteItem(index) {
       const item = this.cardsList[index];
       item.success = true;
 
-      const cardNoEmpty = this.cardsList.filter(
-        elem =>
-          (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-          elem.success !== true
-      );
-      localStorage.setItem("cardsList", JSON.stringify(cardNoEmpty));
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-      const findIndex = this.checkCardList.findIndex(
-        card => card.index === index
-      );
+      const findIndex = this.checkCardList.findIndex(card => card.index === index);
 
       if (findIndex + 1) {
         this.checkCardList.splice(findIndex, 1);
@@ -681,7 +636,7 @@ export default {
       this.createdSuccess = true;
       const checkCards = this.checkCardList.slice();
 
-      checkCards.forEach(item => {
+      checkCards.forEach((item) => {
         const card = this.cardsList[item.index];
 
         let sumPay = card.sum;
@@ -693,7 +648,7 @@ export default {
           paymentTypeId: this.typePay,
           amount: sumPay,
           clientId: card.props.clientId,
-          description: ""
+          description: '',
         };
 
         card.props.typePay = this.typePay;
@@ -707,37 +662,35 @@ export default {
     deleteCheckCards() {
       const checkCards = this.checkCardList.slice();
 
-      checkCards.forEach(item => {
+      checkCards.forEach((item) => {
         this.deleteItem(item.index);
       });
     },
     getErrors(rawErrors) {
-      return rawErrors.reduce((acc, msg) => {
-        return [...acc, ...Object.values(msg.constraints)];
-      }, []);
+      return rawErrors.reduce((acc, msg) => [...acc, ...Object.values(msg.constraints)], []);
     },
     printPage() {
       window.print();
-    }
+    },
   },
   mounted() {
-    this.$store.commit("setShowGoodsList", []);
+    this.$store.commit('setShowGoodsList', []);
 
     const dateNow = new Date();
-    const dateNowStr = dateNow.toISOString().split("T")[0];
+    const dateNowStr = dateNow.toISOString().split('T')[0];
     this.dateNow = `${dateNowStr} 23:59:59`;
     dateNow.setDate(dateNow.getDate() - 1);
-    const dateYesterdayStr = dateNow.toISOString().split("T")[0];
+    const dateYesterdayStr = dateNow.toISOString().split('T')[0];
     this.dateYesterday = `${dateYesterdayStr} 00:00:00`;
 
-    const cardsList = JSON.parse(localStorage.getItem("cardsList"));
+    const cardsList = JSON.parse(localStorage.getItem('cardsList'));
     this.cardsList = cardsList !== null ? cardsList : [];
     const addCountElem = 1 - this.cardsList.length;
 
     for (let i = 0; i < addCountElem; i += 1) {
       this.addCard();
     }
-  }
+  },
 };
 </script>
 

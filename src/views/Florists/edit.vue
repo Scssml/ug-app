@@ -25,7 +25,7 @@
         ></v-text-field>
         <v-checkbox
           label="Активность"
-          v-model="editedItem.isActive"
+          v-model="editedItem.active"
           color="primary"
         ></v-checkbox>
         <v-text-field
@@ -54,6 +54,8 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+
 export default {
   props: {
     id: {
@@ -66,6 +68,36 @@ export default {
       editedItem: {},
       createdSuccess: false,
     };
+  },
+  apollo: {
+    floristsList: {
+      query: gql`
+        query floristsList(
+          $id: bigint
+        ) {
+          floristsList: florists(
+            where: {
+              id: { _eq: $id }
+            }
+          ) {
+            id
+            active
+            address
+            name
+            phone
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.id,
+        };
+      },
+      update({ floristsList }) {
+        this.editedItem = floristsList.shift();
+        this.loading = false;
+      },
+    },
   },
   methods: {
     getItem() {
@@ -107,9 +139,6 @@ export default {
         });
       }
     },
-  },
-  mounted() {
-    this.getItem();
   },
 };
 </script>

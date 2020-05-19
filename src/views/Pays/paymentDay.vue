@@ -191,15 +191,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $cashType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $cashType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -218,15 +218,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $terminalType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $terminalType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -245,15 +245,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $cardType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $cardType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -272,15 +272,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $yandexType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $yandexType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -299,15 +299,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $encashmentType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $encashmentType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -326,15 +326,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $ug2Type } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $ug2Type } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -353,15 +353,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $tinkoffType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $tinkoffType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -380,15 +380,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $gazpromType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $gazpromType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -407,15 +407,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $expensesType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $expensesType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -434,8 +434,8 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $todayStartDate } }
-                    { creation_date: { _lte: $todayEndDate } }
+                    { created_at: { _gte: $todayStartDate } }
+                    { created_at: { _lte: $todayEndDate } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -453,15 +453,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $prevStartDate } }
-                    { creation_date: { _lte: $prevEndDate } }
+                    { created_at: { _gte: $prevStartDate } }
+                    { created_at: { _lte: $prevEndDate } }
                     { paymentTypeId: { _eq: $cashType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $prevStartDate } }
-                    { creation_date: { _lte: $prevEndDate } }
+                    { created_at: { _gte: $prevStartDate } }
+                    { created_at: { _lte: $prevEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $cashType } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
@@ -480,15 +480,15 @@ export default {
               _or: [
                 {
                   _and: [
-                    { creation_date: { _gte: $prevStartDate } }
-                    { creation_date: { _lte: $prevEndDate } }
+                    { created_at: { _gte: $prevStartDate } }
+                    { created_at: { _lte: $prevEndDate } }
                     { paymentTypeId: { _eq: $encashmentType } }
                   ]
                 }
                 {
                   _and: [
-                    { creation_date: { _gte: $prevStartDate } }
-                    { creation_date: { _lte: $prevEndDate } }
+                    { created_at: { _gte: $prevStartDate } }
+                    { created_at: { _lte: $prevEndDate } }
                     { paymentTypeBeforeReturnId: { _eq: $cardType } }
                     { paymentTypeId: { _eq: $encashmentType } }
                   ]

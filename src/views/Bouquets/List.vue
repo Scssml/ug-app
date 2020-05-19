@@ -219,11 +219,11 @@
           <v-dialog
             v-model="dialogForm"
             persistent
-            :max-width="editDialog ? '1200px' : '420px'"
+            :max-width="editDialog ? '1200px' : '520px'"
           >
             <bouquet-edit
               v-if="editedId && editDialog"
-              :bouquet="bouquetsList.find(item => item.id === editedId)"
+              :id="editedId"
               @cancel="closeDialog()"
             ></bouquet-edit>
 
@@ -232,6 +232,12 @@
               :id="editedId"
               @cancel="closeDialog()"
             ></bouquet-cancel>
+
+            <bouquet-change-client
+              v-if="editedId && changeClientDialog"
+              :id="editedId"
+              @cancel="closeDialog()"
+            ></bouquet-change-client>
           </v-dialog>
         </v-card-title>
 
@@ -293,7 +299,7 @@
                 props.item.payments.map(p => p.paymentType.name).join(", ")
               }}
             </td>
-            <td class="text-xs-right" style="width: 160px;">
+            <td class="text-xs-right" style="width: 200px;">
               <v-btn
                 flat
                 icon
@@ -312,6 +318,15 @@
                 title="Просмотр"
               >
                 <v-icon>visibility</v-icon>
+              </v-btn>
+              <v-btn
+                flat
+                icon
+                @click="changeClientItem(props.item.id)"
+                class="mx-0"
+                title="Смена клиента"
+              >
+                <v-icon>loop</v-icon>
               </v-btn>
               <v-btn
                 flat
@@ -366,6 +381,7 @@
 <script>
 import BouquetEdit from "./edit.vue";
 import BouquetCancel from "./cancel.vue";
+import BouquetChangeClient from "./changeClient.vue";
 import Autosuggest from "../../components/Autosuggest";
 import gql from "graphql-tag";
 
@@ -374,7 +390,8 @@ export default {
   components: {
     BouquetEdit,
     BouquetCancel,
-    Autosuggest
+    Autosuggest,
+    BouquetChangeClient,
   },
   data() {
     return {
@@ -436,6 +453,7 @@ export default {
       dialogForm: false,
       editDialog: false,
       cancelDialog: false,
+      changeClientDialog: false,
       editedId: 0,
       bouquetsList: [],
       usersList: [],
@@ -448,6 +466,7 @@ export default {
       take: 20,
       page: 0,
       tableLoading: false,
+      skipQuery: false,
       selectedClientId: 0,
       selectedManagerId: 0,
       client: {},
@@ -514,7 +533,7 @@ export default {
             }
             payments {
               amount
-              creationDate: creation_date
+              creationDate: created_at
               paymentType {
                 name
               }
@@ -549,7 +568,10 @@ export default {
           limit: this.take,
           orderBy: this.orderBy
         };
-      }
+      },
+      skip() {
+        return this.skipQuery;
+      },
     },
     paymentTypes: {
       query: gql`
@@ -761,6 +783,7 @@ export default {
       this.editedId = 0;
       this.cancelDialog = false;
       this.editDialog = false;
+      this.changeClientDialog = false;
     },
     editItem(id) {
       this.editedId = +id;
@@ -771,6 +794,11 @@ export default {
       this.editedId = +id;
       this.dialogForm = true;
       this.cancelDialog = true;
+    },
+    changeClientItem(id) {
+      this.editedId = +id;
+      this.dialogForm = true;
+      this.changeClientDialog = true;
     },
     changeShowElem() {
       localStorage.setItem("countElemPage", this.take);

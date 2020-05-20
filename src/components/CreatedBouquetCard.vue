@@ -413,7 +413,10 @@ export default {
       sumPayCustom: 0,
       createdSuccess: false,
       florist: 0,
-      client: {},
+      client: {
+        name: 'Розничный покупатель',
+        bill: '-'
+      },
       clientId: 0,
       order: 0,
       decorPercent: 20,
@@ -775,7 +778,7 @@ export default {
     setValueDefault: function setValueDefault() {
       if (Object.keys(this.propsDefault).length > 0) {
         this.florist = this.propsDefault.floristId;
-        this.clientId = this.propsDefault.clientId;
+        this.clientId = (this.propsDefault.clientId) ? this.propsDefault.clientId : 0;
         this.client = this.propsDefault.client;
         this.order = this.propsDefault.orderId;
         this.decorPercent = this.propsDefault.decorPercent;

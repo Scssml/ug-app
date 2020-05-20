@@ -531,8 +531,11 @@ export default {
               comment: props.payment.description,
             },
           ],
-          floristID: props.floristId,
         };
+
+        if (props.floristId) {
+          propsService.floristID = props.floristId;
+        }
 
         if (props.secondPayment) {
           propsService.payments.push({

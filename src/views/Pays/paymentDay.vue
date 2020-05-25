@@ -89,7 +89,8 @@
       </v-flex>
     </v-layout>
 
-    <v-btn color="info" @click="dialog = true">Сдать инкассацию</v-btn>
+    <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn>
+    <v-btn color="info" small @click="dialogCloseDay = true">Закрыть день</v-btn>
 
     <v-dialog v-model="dialog" persistent max-width="420px">
       <v-card>
@@ -114,6 +115,20 @@
             <v-btn color="info" @click="submit()">Оплатить</v-btn>
           </v-card-actions>
         </v-form>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="dialogCloseDay" persistent max-width="320px">
+      <v-card>
+        <v-card-title class="px-4">
+          <span class="headline">Закрыть день?</span>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-actions class="px-4 py-3">
+          <v-btn @click.native="dialogCloseDay = false">Отмена</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="info" @click="closeDay()">Закрыть</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -147,9 +162,10 @@ export default {
   data() {
     return {
       dateNow: new Date(),
-      dateYesterday: "",
+      dateYesterday: '',
       createdSuccess: false,
       dialog: false,
+      dialogCloseDay: false,
       sumEncashment: 0,
       queryValue: 0,
 
@@ -164,7 +180,8 @@ export default {
       terminalUg2: 0,
       tinkoff: 0,
       gazprom: 0,
-      expenses: 0
+      expenses: 0,
+      walletsList: [],
     };
   },
   apollo: {
@@ -595,7 +612,17 @@ export default {
         this.gazprom = gazprom || 0;
         this.expenses = expenses || 0;
       }
-    }
+    },
+    walletsList: {
+      query: gql`
+        query {
+          walletsList: wallets {
+            id
+            name
+          }
+        }
+      `,
+    },
   },
   computed: {
     cashNow() {
@@ -611,6 +638,34 @@ export default {
   methods: {
     refreshPayments() {
       this.$apollo.queries.queryValue.refetch();
+    },
+    closeDay() {
+      const props = {
+        closedBy: this.$store.getters.getAuthUser,
+        walletId: null,
+      };
+
+      this.walletsList.forEach((item) => {
+        const propsCloseDay = Object.assign({}, props);
+        propsCloseDay.walletId = item.id;
+
+        this.$apollo.mutate({
+          mutation: gql`mutation closeDay (
+            $props: CloseDay
+          ) {
+            closeDay(input: $props) {
+              id
+            }
+          }`,
+          variables: {
+            props: propsCloseDay,
+          },
+        }).then(() => {
+          this.dialogCloseDay = false;
+        }).catch((error) => {
+          console.error(error);
+        });
+      });
     },
     submit() {
       const validate = this.$refs.form.validate();
@@ -650,7 +705,7 @@ export default {
   left: 0;
   z-index: 1;
   background: #fff;
-  width: 260px;
+  width: 322px;
   padding: 9px 10px;
   border: 1px solid #ccc;
 }

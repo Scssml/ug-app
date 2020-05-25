@@ -78,9 +78,15 @@
             </v-flex>
             <v-spacer></v-spacer>
             <v-flex
-              xs2
+              xs3
               class="px-2 text-xs-right"
             >
+              <v-btn
+                color="primary"
+                dark
+                to="closeDay/"
+                class="mt-3"
+              >Закрытие дня</v-btn>
               <v-btn
                 color="primary"
                 dark

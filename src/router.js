@@ -201,6 +201,12 @@ export default new Router({
       beforeEnter: ifManager,
     },
     {
+      path: '/reports/closeDay/',
+      name: 'repprtsCloseDay',
+      component: () => import('./views/Reports/CloseDay/closeDay.vue'),
+      beforeEnter: ifManager,
+    },
+    {
       path: '/reviews/',
       name: 'reviews',
       component: () => import('./views/Reviews/List.vue'),

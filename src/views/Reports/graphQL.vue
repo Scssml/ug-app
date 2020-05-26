@@ -29,6 +29,7 @@
                 v-model="data.type"
                 :rules="[v => !!v || 'Заполните поле']"
                 hide-details
+                @change="validateForm()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -57,6 +58,7 @@
                 <v-date-picker
                   v-model="data.dateStart"
                   @input="dataStartPicker = false"
+                  @change="validateForm()"
                   no-title
                   scrollable
                   locale="ru-ru"
@@ -91,6 +93,7 @@
                 <v-date-picker
                   v-model="data.dateEnd"
                   @input="dataEndPicker = false"
+                  @change="validateForm()"
                   no-title
                   locale="ru-ru"
                   scrollable
@@ -99,26 +102,44 @@
                 ></v-date-picker>
               </v-menu>
             </v-flex>
-            <v-flex
-              xs2
-              class="px-2"
-            >
-              <v-btn
-                color="primary"
-                dark
-                @click="submitForm"
-                class="mt-3"
-                :loading="loadingBtn"
-              >Создать</v-btn>
-            </v-flex>
           </v-layout>
         </v-form>
       </v-card-title>
 
       <v-card-text
+        class="report"
+      >
+        <template v-if="validate">
+          <courier-stat
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            v-if="data.type === 'courier_stats'"
+          ></courier-stat>
+
+          <florist-stat
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            v-if="data.type === 'florist_stats'"
+          ></florist-stat>
+
+          <client-stat
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            v-if="data.type === 'client_stat'"
+          ></client-stat>
+
+          <manager-stat
+            :date-start="data.dateStart"
+            :date-end="data.dateEnd"
+            v-if="data.type === 'manager_stat'"
+          ></manager-stat>
+        </template>
+      </v-card-text>
+
+      <!-- <v-card-text
         v-html="report"
         class="report"
-      ></v-card-text>
+      ></v-card-text> -->
     </v-card>
 
     <br>
@@ -127,15 +148,24 @@
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
-      v-if="report"
     >Распечатать</v-btn>
   </v-container>
 </template>
 
 <script>
 import gql from "graphql-tag";
+import courierStat from "./GraphQL/courier.vue";
+import floristStat from "./GraphQL/florist.vue";
+import clientStat from "./GraphQL/client.vue";
+import managerStat from "./GraphQL/manager.vue";
 
 export default {
+  components: {
+    courierStat,
+    floristStat,
+    clientStat,
+    managerStat,
+  },
   data() {
     return {
       dataStartPicker: false,
@@ -163,65 +193,18 @@ export default {
           id: 'manager_stat',
         },
       ],
-      report: '',
-      loadingBtn: false,
+      validate: false,
     };
   },
   methods: {
-    submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        this.report = '';
-        this.loadingBtn = true;
-
-        if (this.data.type === 'courier_stats') {
-          this.getCourierStats();
-        }
-      }
-    },
-    getCourierStats() {
-      this.$apollo.query({
-        query: gql`
-          query {
-            reportCourierStats: courier_stats(
-              args: {
-                start_date: "${this.data.dateStart} 00:00:00", end_date: "${this.data.dateEnd} 23:59:59"
-              }
-            ) {
-              id
-              name
-              totalBouquetPrice
-              totalBouquets
-              totalOrders
-            }
-          }
-        `,
-      }).then((response) => {
-        console.log(response);
-        this.report = response.data.reportCourierStats;
-        this.loadingBtn = false;
-      });
+    validateForm() {
+      setTimeout(() => {
+        this.validate = this.$refs.form.validate();
+      }, 300);
     },
     printPage() {
       window.print();
     },
-    createdReportGraphQL() {
-      const itemParams = {
-        type: 'v1/graphql',
-        data: {
-          query: 'query MyQuery{orders(where:{orderStatusId:{_eq:"1"}}){id,orderStatusId,client{phone,name}}}',
-          variables: null,
-          operationName: 'MyQuery',
-        },
-      };
-
-      this.$store.dispatch('getGraphQL', itemParams).then((response) => {
-        console.log(response);
-      });
-    },
-  },
-  mounted() {
-    // this.createdReportGraphQL();
   },
 };
 </script>

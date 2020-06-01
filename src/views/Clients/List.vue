@@ -118,7 +118,7 @@
               {{ props.item.clientType.name }}
             </td>
             <td>
-              <template v-for="(item, index) in props.item.responsible">
+              <template v-for="(item, index) in props.item.reference">
                 <p :key="index">
                   {{ item.name }}
                   <br />{{ item.phone }}
@@ -126,7 +126,7 @@
               </template>
             </td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
-            <td class="text-xs-right">{{ props.item.discountPercent }}</td>
+            <td class="text-xs-right">{{ props.item.sale }}</td>
             <td class="text-xs-right">
               {{ !!props.item.active ? "Да" : "Нет" }}
             </td>
@@ -264,7 +264,7 @@ export default {
           text: "Ответственный",
           align: "left",
           value: "reference.name",
-          sortable: true
+          sortable: false
         },
         {
           text: "Счет",
@@ -345,7 +345,7 @@ export default {
               phone
             }
             bill
-            discountPercent: sale
+            sale
             active
           }
         }

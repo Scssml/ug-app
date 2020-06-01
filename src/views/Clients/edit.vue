@@ -206,6 +206,7 @@ export default {
           clientsList: clients(
             where: {
               typeId: { _eq: 2 }
+              deleted_at: { _is_null: true }
             }
           ) {
             id

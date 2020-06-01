@@ -48,7 +48,12 @@
             </v-flex>
           </v-layout>
           <v-spacer></v-spacer>
-
+          <v-btn
+            color="primary"
+            dark
+            class="mb-2"
+            @click="moveDebt()"
+          >Переброска средств</v-btn>
           <v-dialog
             v-model="dialogForm"
             persistent
@@ -75,6 +80,10 @@
                 :id="deleteId"
                 @cancel="closeDialog()"
               ></client-delete>
+              <move-debt
+                v-else-if="popupMoveDebt"
+                @cancel="closeDialog()"
+              ></move-debt>
               <client-add v-else @cancel="closeDialog()"></client-add>
             </template>
           </v-dialog>
@@ -209,6 +218,7 @@ import ClientEdit from "./edit.vue";
 import ClientAdd from "./add.vue";
 import ClientDelete from "./delete.vue";
 import ClientPrint from "./printAct.vue";
+import MoveDebt from "./moveDebt.vue";
 import gql from "graphql-tag";
 
 export default {
@@ -217,7 +227,8 @@ export default {
     ClientEdit,
     ClientAdd,
     ClientDelete,
-    ClientPrint
+    ClientPrint,
+    MoveDebt,
   },
   data() {
     return {
@@ -305,7 +316,8 @@ export default {
       page: 0,
       tableLoading: false,
       selectedClientType: 0,
-      selectedClientName: ""
+      selectedClientName: "",
+      popupMoveDebt: false,
     };
   },
   apollo: {
@@ -434,6 +446,7 @@ export default {
       this.editedId = 0;
       this.deleteId = 0;
       this.printedId = null;
+      this.popupMoveDebt = false;
     },
     editItem(id) {
       this.editedId = +id;
@@ -445,6 +458,10 @@ export default {
     },
     printedItem(id) {
       this.printedId = +id;
+      this.dialogForm = true;
+    },
+    moveDebt() {
+      this.popupMoveDebt = true;
       this.dialogForm = true;
     },
     showOrders(id, name) {

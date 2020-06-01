@@ -263,7 +263,7 @@ export default {
         {
           text: "Ответственный",
           align: "left",
-          value: "responsible.name",
+          value: "reference.name",
           sortable: true
         },
         {

@@ -118,10 +118,10 @@
               {{ props.item.clientType.name }}
             </td>
             <td>
-              <template v-for="(item, index) in props.item.reference">
-                <p :key="index">
-                  {{ item.name }}
-                  <br />{{ item.phone }}
+              <template v-if="props.item.reference">
+                <p>
+                  {{ props.item.reference.name }}
+                  <br />{{ props.item.reference.phone }}
                 </p>
               </template>
             </td>

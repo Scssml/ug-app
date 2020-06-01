@@ -325,6 +325,7 @@ export default {
             where: {
               clientType: { id: { _eq: $clientTypeId } }
               _or: [{ name: { _ilike: $clientName } }, { phone: { _ilike: $clientName } }]
+              deleted_at: { _is_null: true }
             }
           ) {
             id

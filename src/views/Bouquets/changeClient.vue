@@ -85,6 +85,7 @@ export default {
           clientsList: clients(
             where: {
               _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+              deleted_at: { _is_null: true }
             }
             limit: 50
           ) {

@@ -24,7 +24,7 @@
           :rules="[v => !!v || 'Заполните поле']"
           item-text="name"
           item-value="id"
-          v-model="editedItem.type"
+          v-model="editedItem.typeId"
           hide-details
           class="mb-4"
         ></v-select>
@@ -48,7 +48,7 @@
           class="mb-4"
           no-data-text="Не надено"
           clearable
-          v-if="editedItem.type === 2"
+          v-if="editedItem.typeId === 2"
         ></v-autocomplete>
         <v-text-field
           label="Адрес"
@@ -81,10 +81,11 @@
             slot="activator"
             label="День рождения"
             v-model="editedItem.birthDay"
-            :rules="[v => !!v || 'Заполните поле']"
             prepend-icon="event"
             hide-details
             readonly
+            :rules="[v => !!v || 'Заполните поле']"
+            clearable
           ></v-text-field>
           <v-date-picker
             v-model="editedItem.birthDay"
@@ -103,20 +104,20 @@
         ></v-text-field>
         <v-text-field
           label="Лимит"
-          v-model.number="editedItem.credit"
+          v-model.number="editedItem.limit"
           type="number"
           v-if="isCurrentUserAdmin"
         ></v-text-field>
         <v-text-field
           label="Скидка"
-          v-model.number="editedItem.discountPercent"
+          v-model.number="editedItem.sale"
           type="number"
         ></v-text-field>
-        <v-checkbox
+        <!-- <v-checkbox
           label="Активность"
-          v-model="editedItem.isActive"
+          v-model="editedItem.active"
           color="primary"
-        ></v-checkbox>
+        ></v-checkbox> -->
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -135,6 +136,10 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+
 export default {
   props: {
     id: {
@@ -150,25 +155,80 @@ export default {
       createdSuccess: false,
       clientsList: [],
       currentUserGroup: null,
+      billOld: 0,
     };
   },
-  methods: {
-    getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'clients',
+  apollo: {
+    client: {
+      query: gql`
+        query client(
+          $id: bigint
+        ) {
+          client: clients(
+            where: {
+              id: { _eq: $id }
+            }
+          ) {
+            id
+            typeId
+            name
+            phone
+            address
+            entrance
+            flat
+            floor
+            birthDay
+            bill
+            limit
+            sale
+            referenceId
+            # active
+          }
+        }
+      `,
+      variables() {
+        return {
           id: this.id,
         };
-
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-          this.editedItem.bill = +this.editedItem.bill;
-          this.editedItem.sale = +this.editedItem.sale;
-          this.editedItem.referenceId = +this.editedItem.referenceId;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      },
+      update({ client }) {
+        this.editedItem = client.shift();
+        this.editedItem.birthDay = this.formatDate(this.editedItem.birthDay, 'yyyy-MM-dd');
+        this.loading = false;
+        this.billOld = this.editedItem.bill;
+      },
+    },
+    clientsList: {
+      query: gql`
+        query clientsList(
+          $id: bigint
+        ) {
+          clientsList: clients(
+            where: {
+              typeId: { _eq: 2 }
+            }
+          ) {
+            id
+            name
+            phone
+          }
+        }
+      `,
+    },
+    typeClient: {
+      query: gql`
+        query {
+          typeClient: clientTypes(where: { active: { _eq: true } }) {
+            id
+            name
+          }
+        }
+      `,
+    },
+  },
+  methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
     },
     cancel() {
       this.editedItem = {};
@@ -178,59 +238,70 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
+        const propsClient = Object.assign({}, this.editedItem);
 
-        propsItem.sale = propsItem.discountPercent;
+        if (this.billOld === propsClient.bill) {
+          this.$apollo.mutate({
+            mutation: gql`mutation {
+              updateClient(input:{
+                address: "${propsClient.address}"
+                entrance: "${propsClient.entrance}"
+                flat: "${propsClient.flat}"
+                floor: "${propsClient.floor}"
+                id: ${propsClient.id}
+                limit: ${propsClient.limit}
+                name: "${propsClient.name}"
+                phone: "${propsClient.phone}"
+                referenceId: ${propsClient.referenceId}
+                sale: ${propsClient.sale}
+                typeId: ${propsClient.typeId}
+                birthDay: "${propsClient.birthDay}T00:00:00Z"
+              }) {
+                id
+              }
+            }`,
+          }).then(() => {
+            this.createdSuccess = true;
 
-        propsItem.referenceId = (propsItem.type === 2) ? propsItem.referenceId : null;
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          }).catch((error) => {
+            console.error(error);
+          });
+        } else {
+          this.$apollo.mutate({
+            mutation: gql`mutation {
+              updateClient(input:{
+                address: "${propsClient.address}"
+                entrance: "${propsClient.entrance}"
+                flat: "${propsClient.flat}"
+                floor: "${propsClient.floor}"
+                id: ${propsClient.id}
+                limit: ${propsClient.limit}
+                name: "${propsClient.name}"
+                phone: "${propsClient.phone}"
+                referenceId: ${propsClient.referenceId}
+                sale: ${propsClient.sale}
+                typeId: ${propsClient.typeId}
+                bill: ${propsClient.bill}
+                birthDay: "${propsClient.birthDay}T00:00:00Z"
+              }) {
+                id
+              }
+            }`,
+          }).then(() => {
+            this.createdSuccess = true;
 
-        const itemParams = {
-          type: 'clients',
-          id: this.id,
-          props: propsItem,
-        };
-
-        this.$store.dispatch('updateItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          }).catch((error) => {
+            console.error(error);
+          });
+        }
+        
       }
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: 'client-type',
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.typeClient = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-          type: 2,
-        },
-      };
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        const clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-        this.clientsList = clientsList.filter(item => item.id !== 0);
-      }).catch(() => {
-        console.log('error');
-      });
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
@@ -245,11 +316,6 @@ export default {
     isCurrentUserAdmin() {
       return this.$store.getters.getAuthUserGroup.code === 'admin';
     },
-  },
-  mounted() {
-    this.getItem();
-    this.getClientTypeList();
-    this.getClientsList();
   },
 };
 </script>

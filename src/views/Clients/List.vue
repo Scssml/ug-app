@@ -339,7 +339,7 @@ export default {
               id
               name
             }
-            responsible {
+            reference {
               id
               name
               phone

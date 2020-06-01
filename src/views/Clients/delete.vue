@@ -27,6 +27,8 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+
 export default {
   props: {
     id: {
@@ -45,16 +47,24 @@ export default {
       this.$emit('cancel');
     },
     submitForm() {
-      const itemParams = {
-        type: 'clients',
-        id: this.id,
-      };
+      const clientId = this.id;
 
-      this.$store.dispatch('deleteItem', itemParams).then(() => {
+      this.$apollo.mutate({
+        mutation: gql`mutation removeClient (
+          $props: Int!
+        ) {
+          removeClient(input: $props)
+        }`,
+        variables: {
+          props: clientId,
+        },
+      }).then(() => {
         this.success = true;
         setTimeout(() => {
           this.$emit('cancel');
         }, 1000);
+      }).catch((error) => {
+        console.error(error);
       });
     },
   },

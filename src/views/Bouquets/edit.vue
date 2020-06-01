@@ -206,7 +206,7 @@ export default {
     };
   },
   apollo: {
-    floristsList: {
+    bouquetsList: {
       query: gql`
         query bouquetsList(
           $id: bigint

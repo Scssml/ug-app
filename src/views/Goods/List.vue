@@ -29,11 +29,11 @@
           <good-delete
             v-if="deleteId"
             :id="deleteId"
-            @cancel="closeDialogAdd()"
+            @cancel="closeDialogAdd($event)"
           ></good-delete>
           <good-add
             v-else
-            @cancel="closeDialogAdd()"
+            @cancel="closeDialogAdd($event)"
           ></good-add>
         </template>
       </v-dialog>
@@ -88,13 +88,21 @@
               </v-flex>
               <v-flex xs3>
                 <!-- <v-text-field
-                                                  label="Компания"
-                                                  v-model="dataEdit.company"
-                                                  hide-details
-                                                  class="pr-4"
-                                                  :rules="[v => !!v || 'Заполните поле']"
-                                                ></v-text-field> -->
-                <v-autocomplete
+                  label="Компания"
+                  v-model="dataEdit.company"
+                  hide-details
+                  class="pr-4"
+                  :rules="[v => !!v || 'Заполните поле']"
+                ></v-text-field> -->
+                <autosuggest
+                  :suggestions="suggestions"
+                  placeholder="Клиенты"
+                  :value="client.name"
+                  @onChange="onInputChange"
+                  @onSelect="onSelected"
+                  class="mt-3 view-filter"
+                />
+                <!-- <v-autocomplete
                   label="Компания"
                   :items="clientsList"
                   :filter="clientsFilter"
@@ -106,7 +114,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                ></v-autocomplete>
+                ></v-autocomplete> -->
               </v-flex>
               <v-flex xs2>
                 <v-btn
@@ -132,6 +140,10 @@
           <v-spacer></v-spacer>
           <v-btn
             color="info"
+            @click="dialogForm = true"
+          >Добавить</v-btn>
+          <v-btn
+            color="info"
             :to="historyLinkPage"
             @click="handleHistoryButtonClick"
             >История</v-btn
@@ -154,15 +166,6 @@
             />
           </template>
         </v-data-table>
-        <v-btn
-          fab
-          color="info"
-          class="mx-4"
-          @click="dialogForm = true"
-          title="Добавить товар"
-        >
-          <v-icon dark>add</v-icon>
-        </v-btn>
       </v-card>
     </template>
   </v-container>
@@ -173,6 +176,8 @@ import GoodAdd from './add.vue';
 import ListItem from './ListItem';
 import { PaymentTypes } from './constants';
 import GoodDelete from './delete.vue';
+import gql from "graphql-tag";
+import Autosuggest from "../../components/Autosuggest";
 
 export default {
   name: 'Goods',
@@ -180,6 +185,7 @@ export default {
     GoodAdd,
     ListItem,
     GoodDelete,
+    Autosuggest,
   },
   data() {
     return {
@@ -195,7 +201,7 @@ export default {
       typeEdit: [],
       dataEdit: {
         type: 0,
-        company: '',
+        company: null,
         purchase: 0,
       },
       search: '',
@@ -204,21 +210,25 @@ export default {
           text: 'Остаток',
           align: 'left',
           value: 'stockBalance',
+          sortable: false,
         },
         {
           text: 'Название',
           align: 'left',
           value: 'name',
+          sortable: false,
         },
         {
           text: 'Сортировка',
           align: 'left',
           value: 'sortIndex',
+          sortable: false,
         },
         {
           text: 'Цена',
           align: 'left',
           value: 'price',
+          sortable: false,
         },
         {
           text: 'Кол-во',
@@ -226,18 +236,116 @@ export default {
           value: 'count',
         },
         {
+          text: 'Цвет',
+          align: 'left',
+          value: 'color',
+          sortable: false,
+        },
+        {
           text: '',
           align: 'right',
-          sortable: false,
           value: 'action',
+          sortable: false,
         },
       ],
       goodsList: [],
       createdSuccess: false,
       dialogForm: false,
-      clientsList: [],
       deleteId: 0,
+      client: {},
+      queryName: '',
+      skipClientsQuery: true,
+      suggestions: [],
+      take: 0,
+      page: 0,
+      loading: true,
     };
+  },
+  apollo: {
+    goods: {
+      query: gql`
+        query goods(
+          $clientTypeId: bigint
+          $clientName: String
+          $limit: Int
+          $offset: Int
+          $orderBy: [clients_order_by!]
+        ) {
+          goods: goods(
+            order_by: { sortIndex: asc }
+            where: {
+              deleted_at: { _is_null: true }
+            }
+            limit: $limit
+            offset: $offset
+          ) {
+            id
+            name
+            price
+            sortIndex
+            stockBalance
+            color
+          }
+        }
+      `,
+      variables() {
+        return {
+          offset: this.page * this.take,
+          limit: this.take,
+        };
+      },
+      update({ goods }) {
+        const loadData = this.loadingData.find(item => item.id === 'goods');
+        loadData.title = 'Товары получены!';
+        loadData.loading = false;
+
+        goods = goods.map((item) => {
+          const good = item;
+          good.count = 0;
+          good.oldPrice = good.price;
+          good.oldCount = good.count;
+          return good;
+        });
+
+        this.goodsList = this.goodsList.concat(goods);
+
+        if (goods.length > 0) {
+          this.loading = false;
+        }
+
+        this.take = (this.take) ? this.take : 20;
+      },
+    },
+    clientsList: {
+      query: gql`
+        query ClientsList($name: String) {
+          clientsList: clients(
+            where: {
+              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
+              deleted_at: { _is_null: true }
+              typeId: { _eq: 4 }
+            }
+            limit: 50
+          ) {
+            id
+            name
+          }
+        }
+      `,
+      update({ clientsList: data }) {
+        this.suggestions = [{ data }];
+
+        return data;
+      },
+      variables() {
+        return {
+          name: this.queryName
+        };
+      },
+      skip() {
+        return this.skipClientsQuery;
+      },
+    },
   },
   computed: {
     isSaveButtonDisabled() {
@@ -273,6 +381,18 @@ export default {
     },
   },
   methods: {
+    onSelected(item) {
+      this.client = item;
+      this.dataEdit.company = item.id;
+    },
+    onInputChange(text) {
+      this.queryName = `%${text}%`;
+      this.skipClientsQuery = false;
+
+      if (text === "") {
+        this.dataEdit.company = null;
+      }
+    },
     calculateRevaluation(goodsList) {
       return goodsList.reduce(
         (sum, item) => sum + (item.price - item.oldPrice) * item.stockBalance,
@@ -299,41 +419,6 @@ export default {
       // return value;
       return eval(value);
     },
-    getGoodsList() {
-      const itemParams = {
-        type: 'goods',
-        sort: {
-          sortIndex: 'asc',
-        },
-        filter: {
-          isActive: true,
-        },
-      };
-
-      const successData = 'Товары получены!';
-      const errorData = 'Ошибка получения товаров!';
-
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.goodsList = response.map((item) => {
-            const good = item;
-            good.count = 0;
-            good.oldPrice = good.price;
-            good.oldCount = good.count;
-            return good;
-          });
-
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
-          loadData.title = successData;
-          loadData.loading = false;
-        })
-        .catch(() => {
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
-          loadData.title = errorData;
-          loadData.error = true;
-        });
-    },
     getPurchaseTypesList() {
       const itemParams = {
         type: 'purchase-types',
@@ -351,36 +436,36 @@ export default {
           console.log('error');
         });
     },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-          typeId: 4,
-        },
-      };
+    // getClientsList() {
+    //   const itemParams = {
+    //     type: 'clients',
+    //     filter: {
+    //       active: true,
+    //       typeId: 4,
+    //     },
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.clientsList = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.clientsList = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // clientsFilter(item, queryText) {
+    //   const textOne = item.name.toLowerCase();
+    //   const textTwo = item.phone.replace(/[^0-9]/gim, '');
+    //   const searchText = queryText.toLowerCase();
 
-      return (
-        textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
-      );
-    },
+    //   return (
+    //     textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
+    //   );
+    // },
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
@@ -449,20 +534,37 @@ export default {
     closeDialog() {
       this.createdSuccess = false;
     },
-    closeDialogAdd() {
-      this.getGoodsList();
+    closeDialogAdd(update) {
       this.dialogForm = false;
       this.deleteId = 0;
+
+      if (update) {
+        this.goodsList = [];
+        this.take = 0;
+      }
     },
     deleteGood(id) {
       this.deleteId = id;
       this.dialogForm = true;
     },
+    scroll() {
+      window.onscroll = () => {
+        const documentScrollTop = document.documentElement.scrollTop;
+        const documentOffsetHeight = document.documentElement.offsetHeight;
+        const windowInnerHeight = window.innerHeight;
+        const bottomOfWindow = documentScrollTop + windowInnerHeight >= documentOffsetHeight - 300;
+
+        if (bottomOfWindow && !this.loading) {
+          this.page += 1;
+          this.loading = true;
+        }
+      };
+    },
   },
   mounted() {
-    this.getGoodsList();
+    this.scroll();
     this.getPurchaseTypesList();
-    this.getClientsList();
+    // this.getClientsList();
   },
 };
 </script>

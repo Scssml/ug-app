@@ -61,6 +61,8 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+
 export default {
   data() {
     return {
@@ -69,6 +71,7 @@ export default {
         price: 0,
         stockBalance: 0,
         sortIndex: 0,
+        color: '',
       },
       createdSuccess: false,
     };
@@ -82,19 +85,28 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
+        const propsGood = Object.assign({}, this.editedItem);
 
-        const itemParams = {
-          type: 'goods',
-          props: propsItem,
-        };
-
-        this.$store.dispatch('addItem', itemParams).then(() => {
+        this.$apollo.mutate({
+          mutation: gql`mutation {
+            createGood(input:{
+              name: "${propsGood.name}"
+              price: ${propsGood.price}
+              sortIndex: ${propsGood.sortIndex}
+              stockBalance: ${propsGood.stockBalance}
+              color: "${propsGood.color}"
+            }) {
+              id
+            }
+          }`,
+        }).then(() => {
           this.createdSuccess = true;
+
           setTimeout(() => {
-            this.$emit('cancel');
+            this.$emit('cancel', true);
           }, 1000);
+        }).catch((error) => {
+          console.error(error);
         });
       }
     },

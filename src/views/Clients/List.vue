@@ -97,7 +97,7 @@
           no-results-text="Клиентов не найдено"
           :search="search"
           :pagination.sync="pagination"
-          :loading="!!$apollo.queries.clientsList.loading"
+          :loading="!!$apollo.queries.clients.loading"
         >
           <template slot="headers" slot-scope="props">
             <tr>
@@ -321,16 +321,16 @@ export default {
     };
   },
   apollo: {
-    clientsList: {
+    clients: {
       query: gql`
-        query ClientsList(
+        query clients(
           $clientTypeId: bigint
           $clientName: String
           $limit: Int
           $offset: Int
           $orderBy: [clients_order_by!]
         ) {
-          clientsList: clients(
+          clients: clients(
             order_by: $orderBy
             limit: $limit
             offset: $offset
@@ -375,7 +375,11 @@ export default {
           limit: this.take,
           orderBy: this.orderBy
         };
-      }
+      },
+      update({ clients }) {
+        // this.clientsList = this.clientsList.concat(clients);
+        this.clientsList = clients;
+      },
     },
     typeClient: {
       query: gql`

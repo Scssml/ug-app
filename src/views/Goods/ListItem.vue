@@ -79,10 +79,8 @@
 </template>
 
 <script>
-import axios from "axios";
+import gql from "graphql-tag";
 import Chrome from "vue-color/src/components/Chrome";
-
-axios.defaults.baseURL = process.env.VUE_APP_API_PREFIX;
 
 export default {
   name: "ListItem",
@@ -99,17 +97,39 @@ export default {
       this.showPicker = true;
     },
     handleClickOutsidePicker() {
-      if (this.showPicker) {
-        this.updateItem({
-          color: this.color.hex
+      if (this.showPicker && this.color.hex) {
+        this.$apollo.mutate({
+          mutation: gql`mutation {
+            updateGood(input: {
+              id: ${this.props.item.id}
+              color: "${this.color.hex}"
+            }) {
+              id
+            }
+          }`,
+        }).then(() => {
+          console.log('success');
+        }).catch((error) => {
+          console.error(error);
         });
       }
 
       this.showPicker = false;
     },
     changeSortIndex(e) {
-      this.updateItem({
-        sortIndex: +e.target.value
+      this.$apollo.mutate({
+        mutation: gql`mutation {
+          updateGood(input: {
+            id: ${this.props.item.id}
+            sortIndex: ${+e.target.value}
+          }) {
+            id
+          }
+        }`,
+      }).then(() => {
+        console.log('success');
+      }).catch((error) => {
+        console.error(error);
       });
     },
     handleItemChange(prop) {
@@ -125,9 +145,28 @@ export default {
       this.$emit("deleteItem", id);
     },
     updateItem(data) {
-      const { id } = this.props.item;
+      let props = {
+        id: this.props.item.id,
+      };
 
-      return axios.put(`/goods/${id}`, data);
+      props = Object.assign(props, data);
+
+      this.$apollo.mutate({
+        mutation: gql`mutation (
+          $props: UpdateGood!
+        ) {
+          updateGood(input: $props) {
+            id
+          }
+        }`,
+        variables: {
+          props,
+        },
+      }).then(() => {
+        console.log('success');
+      }).catch((error) => {
+        console.error(error);
+      });
     },
   },
   mounted() {

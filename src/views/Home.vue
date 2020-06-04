@@ -357,7 +357,7 @@ export default {
         query {
           goodsList: goods(
             order_by: { sortIndex: desc }
-            where: { active: { _eq: true } }
+            where: { deleted_at: { _is_null: true } }
           ) {
             id
             name

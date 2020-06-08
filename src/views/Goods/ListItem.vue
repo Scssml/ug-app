@@ -19,6 +19,7 @@
         hide-details
         v-model="props.item.name"
         class="scs-small"
+        @blur="changeName"
       ></v-text-field>
     </td>
     <td>
@@ -122,6 +123,22 @@ export default {
           updateGood(input: {
             id: ${this.props.item.id}
             sortIndex: ${+e.target.value}
+          }) {
+            id
+          }
+        }`,
+      }).then(() => {
+        console.log('success');
+      }).catch((error) => {
+        console.error(error);
+      });
+    },
+    changeName(e) {
+      this.$apollo.mutate({
+        mutation: gql`mutation {
+          updateGood(input: {
+            id: ${this.props.item.id}
+            name: "${e.target.value}"
           }) {
             id
           }

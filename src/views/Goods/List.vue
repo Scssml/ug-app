@@ -264,20 +264,12 @@ export default {
   apollo: {
     goods: {
       query: gql`
-        query goods(
-          $clientTypeId: bigint
-          $clientName: String
-          $limit: Int
-          $offset: Int
-          $orderBy: [clients_order_by!]
-        ) {
+        query goods {
           goods: goods(
             order_by: { sortIndex: asc }
             where: {
               deleted_at: { _is_null: true }
             }
-            limit: $limit
-            offset: $offset
           ) {
             id
             name
@@ -288,12 +280,12 @@ export default {
           }
         }
       `,
-      variables() {
-        return {
-          offset: this.page * this.take,
-          limit: this.take,
-        };
-      },
+      // variables() {
+      //   return {
+      //     offset: this.page * this.take,
+      //     limit: this.take,
+      //   };
+      // },
       update({ goods }) {
         const loadData = this.loadingData.find(item => item.id === 'goods');
         loadData.title = 'Товары получены!';
@@ -345,6 +337,16 @@ export default {
       skip() {
         return this.skipClientsQuery;
       },
+    },
+    typeEdit: {
+      query: gql`
+        query {
+          typeEdit: purchaseTypes {
+            id
+            name
+          }
+        }
+      `,
     },
   },
   computed: {
@@ -419,62 +421,17 @@ export default {
       // return value;
       return eval(value);
     },
-    getPurchaseTypesList() {
-      const itemParams = {
-        type: 'purchase-types',
-      };
-
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.typeEdit = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    // getClientsList() {
-    //   const itemParams = {
-    //     type: 'clients',
-    //     filter: {
-    //       active: true,
-    //       typeId: 4,
-    //     },
-    //   };
-
-    //   this.$store
-    //     .dispatch('getItemsList', itemParams)
-    //     .then((response) => {
-    //       this.clientsList = response.map((item) => {
-    //         item.id = +item.id;
-    //         return item;
-    //       });
-    //     })
-    //     .catch(() => {
-    //       console.log('error');
-    //     });
-    // },
-    // clientsFilter(item, queryText) {
-    //   const textOne = item.name.toLowerCase();
-    //   const textTwo = item.phone.replace(/[^0-9]/gim, '');
-    //   const searchText = queryText.toLowerCase();
-
-    //   return (
-    //     textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
-    //   );
-    // },
     submitForm() {
       const validate = this.$refs.form.validate();
-      if (validate) {
-        // const goods = this.goodsList.map((item, i) => {
-        //   //this.goodsList[i].stockBalance = +item.stockBalance + +item.count;
-        //   const good = Object.assign({}, item);
-        //   //delete good.count;
-        //   return good;
-        // });
+      if (validate && this.dataEdit.company) {
+        const propsPurchase = {
+          typeId: this.dataEdit.type,
+          purchase: this.dataEdit.purchase,
+          arrival: this.arrival,
+          companyId: this.dataEdit.company,
+          createdByID: this.$store.getters.getAuthUser,
+          purchasedGoods: [],
+        };
 
         const goodsList = this.goodsList.filter((item) => {
           return (+item.price !== +item.oldPrice || +item.count !== +item.oldCount);
@@ -482,53 +439,36 @@ export default {
 
         const purchaseGoods = goodsList.map((item) => {
           const good = {
-            estimate: item.count,
+            goodId: item.id,
+            estimate: +item.count,
             newPrice: item.price,
             oldPrice: item.oldPrice,
             stockQuantity: item.stockBalance,
-            good: item.id,
           };
 
           return good;
         });
 
-        const propsItem = Object.assign({}, this.dataEdit);
-        [propsItem.purchasedGoods, propsItem.arrival] = [
-          purchaseGoods,
-          this.arrival,
-        ];
+        propsPurchase.purchasedGoods = purchaseGoods;
 
-        const itemParams = {
-          type: 'purchase',
-          props: propsItem,
-        };
-
-        this.$store.dispatch('addItem', itemParams).then(() => {
+        this.$apollo.mutate({
+          mutation: gql`mutation createPurchase (
+            $props: NewPurchase!
+          ) {
+            createPurchase(input: $props)
+          }`,
+          variables: {
+            props: propsPurchase,
+          },
+        }).then(() => {
           this.createdSuccess = true;
-          this.getGoodsList();
+
           setTimeout(() => {
-            this.closeDialog();
+            this.$emit('cancel', true);
           }, 1000);
+        }).catch((error) => {
+          console.error(error);
         });
-
-        // this.goodsList.forEach((elem) => {
-        //   if (+elem.price !== +elem.oldPrice || +elem.count !== +elem.oldCount) {
-        //     const propsGood = Object.assign({}, elem);
-        //     propsGood.stockBalance = +propsGood.stockBalance + +propsGood.count;
-        //     delete propsGood.id;
-        //     delete propsGood.count;
-
-        //     propsGood.price = +propsGood.price;
-
-        //     const goodParams = {
-        //       type: 'goods',
-        //       props: propsGood,
-        //       id: elem.id,
-        //     };
-
-        //     this.$store.dispatch('updateItem', goodParams);
-        //   }
-        // });
       }
     },
     closeDialog() {
@@ -562,9 +502,7 @@ export default {
     },
   },
   mounted() {
-    this.scroll();
-    this.getPurchaseTypesList();
-    // this.getClientsList();
+    // this.scroll();
   },
 };
 </script>

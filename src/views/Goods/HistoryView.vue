@@ -45,7 +45,7 @@
             <v-flex>
               <v-text-field
                 label="Дата"
-                :value="purchase.purchaseDate"
+                :value="purchase.created_at"
                 hide-details
                 class="pr-4"
                 readonly
@@ -54,7 +54,7 @@
             <v-flex>
               <v-text-field
                 label="Тип изменения"
-                :value="purchase.type.name"
+                :value="purchase.purchaseType.name"
                 hide-details
                 class="pr-4"
                 readonly
@@ -131,7 +131,7 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.good.name }}</td>
+            <td>{{ props.item.id }}</td>
             <td>{{ props.item.stockQuantity }}</td>
             <td>{{ props.item.estimate }}</td>
             <td>{{ props.item.oldPrice }}</td>
@@ -144,6 +144,10 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+
 export default {
   name: 'HistoryView',
   data() {
@@ -152,7 +156,7 @@ export default {
         {
           title: 'Получение поставок',
           error: false,
-          loading: true,
+          loading: false,
           color: 'indigo',
           id: 'purchase',
         },
@@ -162,7 +166,7 @@ export default {
         {
           text: 'Название',
           align: 'left',
-          value: 'good.name',
+          value: 'id',
         },
         {
           text: 'Было на складе',
@@ -188,6 +192,53 @@ export default {
       purchase: {},
     };
   },
+  apollo: {
+    purchaseList: {
+      query: gql`
+        query purchaseList(
+          $id: bigint
+        ) {
+          purchaseList: purchases(
+            where: {
+              id: { _eq: $id }
+            },
+          ) {
+            id,
+            created_at
+            purchaseType {
+              name
+            }
+            purchase
+            arrival
+            revaluation
+            company {
+              name
+            }
+            createdBy {
+              name
+            }
+            purchasedGoods {
+              id
+              stockQuantity
+              estimate
+              oldPrice
+              newPrice
+              goodId
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.$route.params.id,
+        };
+      },
+      update({ purchaseList }) {
+        this.purchase = purchaseList.shift();
+        this.purchase.created_at = this.formatDate(this.purchase.created_at, 'dd.MM.yyyy HH:mm:ss');
+      },
+    },
+  },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
@@ -203,6 +254,9 @@ export default {
     },
   },
   methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
+    },
     getPurchaseList: function getPurchaseList() {
       const itemParams = {
         type: 'purchase',
@@ -227,9 +281,6 @@ export default {
         loadData.error = true;
       });
     },
-  },
-  mounted() {
-    this.getPurchaseList();
   },
 };
 </script>

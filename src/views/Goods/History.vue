@@ -29,7 +29,6 @@
           <v-select
             label="Товар"
             :items="goods"
-            :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
             v-model.number="purchaseFilter.goodId"
@@ -42,7 +41,6 @@
           <v-select
             label="Тип изменения"
             :items="typeEdit"
-            :rules="[v => !!v || 'Заполните поле']"
             item-text="name"
             item-value="id"
             v-model.number="purchaseFilter.type"
@@ -69,6 +67,7 @@
               prepend-icon="event"
               hide-details
               readonly
+              clearable
             ></v-text-field>
             <v-date-picker
               v-model="purchaseFilter.startDate"
@@ -98,6 +97,7 @@
               prepend-icon="event"
               hide-details
               readonly
+              clearable
             ></v-text-field>
             <v-date-picker
               v-model="purchaseFilter.endDate"
@@ -118,10 +118,31 @@
           no-data-text="Поставок не найдено"
           no-results-text="Поставок не найдено"
           :search="search"
+          :disable-initial-sort="true"
+          :pagination.sync="pagination"
+          :loading="!!$apollo.queries.purchaseList.loading"
         >
+          <template slot="headers" slot-scope="props">
+            <tr>
+              <th
+                v-for="header in props.headers"
+                :key="header.text"
+                class="text-xs-left column"
+                :class="[
+                  'column sortable',
+                  pagination.descending ? 'desc' : 'asc',
+                  header.value === pagination.sortBy ? 'active' : ''
+                ]"
+                @click="header.sortable ? changeSort(header.value) : ''"
+              >
+                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
+                {{ header.text }}
+              </th>
+            </tr>
+          </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.purchaseDate }}</td>
-            <td>{{ props.item.type.name }}</td>
+            <td>{{ props.item.created_at_format }}</td>
+            <td>{{ props.item.purchaseType.name }}</td>
             <td>{{ props.item.purchase }}</td>
             <td>{{ props.item.arrival }}</td>
             <td>{{ markup(props.item) }}%</td>
@@ -148,12 +169,45 @@
             </td>
           </template>
         </v-data-table>
+        <v-layout row wrap justify-space-around class="py-2">
+          <v-flex xs2 class="px-3">
+            <v-text-field
+              label="Количество на странице"
+              v-model.number="take"
+              hide-details
+              @change="changeShowElem()"
+            ></v-text-field>
+          </v-flex>
+          <v-flex xs10 class="text-xs-right px-3">
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="page === 0"
+              @click="prevPage()"
+            >
+              <v-icon dark>keyboard_arrow_left</v-icon>
+            </v-btn>
+            <v-btn
+              small
+              color="info"
+              class="ml-3"
+              :disabled="purchaseList.length < take"
+              @click="nextPage()"
+            >
+              <v-icon dark>keyboard_arrow_right</v-icon>
+            </v-btn>
+          </v-flex>
+        </v-layout>
       </v-card>
     </template>
   </v-container>
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
 import { mapState } from 'vuex';
 
 export default {
@@ -164,18 +218,11 @@ export default {
       goods: [],
       dataStartPicker: null,
       dataEndPicker: null,
-      filter: {
-        startDate: null,
-        endDate: null,
-        type: null,
-        search: null,
-        goodId: null,
-      },
       loadingData: [
         {
           title: 'Получение поставок',
           error: false,
-          loading: true,
+          loading: false,
           color: 'indigo',
           id: 'purchase',
         },
@@ -185,41 +232,49 @@ export default {
         {
           text: 'Дата',
           align: 'left',
-          value: 'date',
+          sortable: true,
+          value: 'created_at',
         },
         {
           text: 'Тип изменения',
           align: 'left',
-          value: 'type',
+          sortable: true,
+          value: 'purchaseType.name',
         },
         {
           text: 'Закупка',
           align: 'left',
+          sortable: true,
           value: 'purchase',
         },
         {
           text: 'Приход',
           align: 'left',
+          sortable: true,
           value: 'arrival',
         },
         {
           text: 'Наценка',
           align: 'left',
+          sortable: false,
           value: 'markup',
         },
         {
           text: 'Переоценка',
           align: 'left',
+          sortable: true,
           value: 'revaluation',
         },
         {
           text: 'Компания',
           align: 'left',
-          value: 'company',
+          sortable: true,
+          value: 'company.name',
         },
         {
           text: 'Менеджер',
           align: 'left',
+          sortable: true,
           value: 'createdBy.name',
         },
         {
@@ -231,7 +286,113 @@ export default {
       ],
       usersList: [],
       purchaseList: [],
+      take: 20,
+      page: 0,
+      pagination: {
+        sortBy: 'created_at',
+        rowsPerPage: -1,
+        descending: true,
+      },
     };
+  },
+  apollo: {
+    typeEdit: {
+      query: gql`
+        query {
+          typeEdit: purchaseTypes {
+            id
+            name
+          }
+        }
+      `,
+    },
+    goods: {
+      query: gql`
+        query goods {
+          goods: goods(
+            order_by: { sortIndex: asc }
+            where: {
+              deleted_at: { _is_null: true }
+            }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    purchaseList: {
+      query: gql`
+        query purchaseList(
+          $goodId: bigint,
+          $dateStart: timestamptz,
+          $dateEnd: timestamptz,
+          $typeId: bigint,
+          $limit: Int,
+          $offset: Int,
+          $orderBy: [purchases_order_by!]
+        ) {
+          purchaseList: purchases(
+            where: {
+              _and: [
+                { 
+                  purchasedGoods: {
+                    goodId: { _eq: $goodId }
+                  }
+                }
+                { typeId: { _eq: $typeId } }
+                { created_at: { _gte: $dateStart } }
+                { created_at: { _lte: $dateEnd } }
+              ]
+            },
+            order_by: $orderBy,
+            limit: $limit,
+            offset: $offset
+          ) {
+            id,
+            created_at
+            purchaseType {
+              name
+            }
+            purchase
+            arrival
+            revaluation
+            company {
+              name
+            }
+            createdBy {
+              name
+            }
+          }
+        }
+      `,
+      variables() {
+        return {
+          goodId: this.purchaseFilter.goodId
+            ? this.purchaseFilter.goodId
+            : undefined,
+          typeId: this.purchaseFilter.type
+            ? this.purchaseFilter.type
+            : undefined,
+          dateStart: this.purchaseFilter.startDate
+            ? `${this.purchaseFilter.startDate} 00:00:00`
+            : undefined,
+          dateEnd: this.purchaseFilter.endDate
+            ? `${this.purchaseFilter.endDate} 23:59:59`
+            : undefined,
+
+          offset: this.page * this.take,
+          limit: this.take,
+          orderBy: this.orderBy,
+        };
+      },
+      update({ purchaseList }) {
+        return purchaseList.map((item) => {
+          item.created_at_format = this.formatDate(item.created_at, 'dd.MM.yyyy HH:mm:ss');
+          return item;
+        });
+      },
+    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
@@ -239,8 +400,58 @@ export default {
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
     ...mapState(['purchaseFilter']),
+    orderBy() {
+      const sortFields = this.pagination.sortBy.split(".");
+      let sortObject = {};
+      const sortOrder = this.pagination.descending
+        ? "desc_nulls_last"
+        : "asc_nulls_last";
+
+      if (sortFields.length === 3) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: {
+              [sortFields[2]]: sortOrder
+            }
+          }
+        };
+      } else if (sortFields.length === 2) {
+        sortObject = {
+          [sortFields[0]]: {
+            [sortFields[1]]: sortOrder
+          }
+        };
+      } else {
+        sortObject[sortFields[0]] = sortOrder;
+      }
+
+      return sortObject;
+    }
   },
   methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
+    },
+    changeSort(column) {
+      this.purchaseList = [];
+      if (this.pagination.sortBy === column) {
+        this.pagination.descending = !this.pagination.descending;
+      } else {
+        this.pagination.sortBy = column;
+        this.pagination.descending = false;
+      }
+    },
+    prevPage() {
+      this.page -= 1;
+    },
+    nextPage() {
+      this.page += 1;
+    },
+    changeShowElem() {
+      localStorage.setItem("countElemPage", this.take);
+      this.$store.commit("setCountElemPage", this.take);
+      this.page = 0;
+    },
     markup(item) {
       let markupVal = 0;
       if (item.arrival !== 0) {
@@ -249,105 +460,14 @@ export default {
 
       return +markupVal.toFixed(2);
     },
-    getGoods() {
-      const itemParams = {
-        type: 'goods',
-        sort: {
-          sortIndex: 'asc',
-        },
-      };
-
-      return this.$store.dispatch('getItemsList', itemParams).then((resp) => {
-        this.goods = resp.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      });
-    },
-    getPurchaseTypesList() {
-      const itemParams = {
-        type: 'purchase-types',
-      };
-
-      return this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.typeEdit = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
     setPurchaseFilter(filterProp) {
       return (value) => {
         this.$store.commit('setPurchaseFilter', {
           filterProp,
           value,
         });
-
-        this.getPurchaseList();
       };
     },
-    getPurchaseList() {
-      const {
-        startDate, endDate, goodId, type,
-      } = this.purchaseFilter;
-      let search = null;
-
-      if (goodId) {
-        const good = this.goods.find(g => g.id === +goodId);
-
-        search = good.name;
-      }
-
-      const itemParams = {
-        type: 'purchase',
-        filter: {
-          type,
-          search,
-        },
-      };
-
-      if (startDate && endDate) {
-        itemParams.filter = {
-          ...itemParams.filter,
-          purchaseDate: [startDate, endDate],
-        };
-      }
-
-      Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
-
-      const successData = 'Закупки получены!';
-      const errorData = 'Ошибка получения закупок!';
-
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.purchaseList = response.map((item) => {
-            const purchase = item;
-            // const dateCreated = purchase.date.split('T')[0];
-            // purchase.date = dateCreated;
-            return purchase;
-          });
-
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
-          loadData.title = successData;
-          loadData.loading = false;
-        })
-        .catch(() => {
-          const loadData = this.loadingData.find(item => item.id === itemParams.type);
-          loadData.title = errorData;
-          loadData.error = true;
-        });
-    },
-  },
-  mounted() {
-    Promise.all([this.getGoods(), this.getPurchaseTypesList()]).then(() => {
-      this.getPurchaseList();
-    });
   },
 };
 </script>

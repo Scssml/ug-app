@@ -72,7 +72,11 @@
       />
     </td>
     <td class="text-xs-right" style="width: 7%;">
-      <v-icon @click="deleteItem(props.item.id)" title="Удалить">
+      <v-icon
+        @click="deleteItem(props.item.id)"
+        title="Удалить"
+        v-if="+props.item.stockBalance === 0"
+      >
         delete
       </v-icon>
     </td>

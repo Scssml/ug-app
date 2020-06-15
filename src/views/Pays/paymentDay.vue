@@ -1,5 +1,15 @@
 <template>
   <div class="statPayBlock">
+    <template v-for="(item, key) in walletsList">
+      <v-layout row wrap align-center :key="key">
+        <v-flex xs7>
+          <b>{{ item.name }}:</b>
+        </v-flex>
+        <v-flex xs5>
+          {{ item.balance }}
+        </v-flex>
+      </v-layout>
+    </template>
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма наличка:</b>
@@ -8,14 +18,14 @@
         {{ allSumPayCash }}
       </v-flex>
     </v-layout>
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Терминал:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumPayTerminal }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Карта:</b>
@@ -24,14 +34,14 @@
         {{ allSumPayCard }}
       </v-flex>
     </v-layout>
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Яндекс:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumPayYandex }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма возвратов:</b>
@@ -48,30 +58,30 @@
         {{ allSumEncashment }}
       </v-flex>
     </v-layout>
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Терминал ЮГ-2:</b>
       </v-flex>
       <v-flex xs5>
         {{ terminalUg2 }}
       </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
+    </v-layout> -->
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Тинькофф:</b>
       </v-flex>
       <v-flex xs5>
         {{ tinkoff }}
       </v-flex>
-    </v-layout>
-    <v-layout row wrap align-center>
+    </v-layout> -->
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Газпром:</b>
       </v-flex>
       <v-flex xs5>
         {{ gazprom }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
     <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Расход:</b>
@@ -230,33 +240,33 @@ export default {
               }
             }
           }
-          allSumPayTerminal: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $terminalType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $terminalType } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
+          # allSumPayTerminal: payments_aggregate(
+          #   where: {
+          #     _or: [
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeId: { _eq: $terminalType } }
+          #         ]
+          #       }
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeBeforeReturnId: { _eq: $terminalType } }
+          #           { paymentTypeId: { _eq: $returnType } }
+          #         ]
+          #       }
+          #     ]
+          #   }
+          # ) {
+          #   aggregate {
+          #     sum {
+          #       amount
+          #     }
+          #   }
+          # }
           allSumPayCard: payments_aggregate(
             where: {
               _or: [
@@ -284,33 +294,33 @@ export default {
               }
             }
           }
-          allSumPayYandex: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $yandexType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $yandexType } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
+          # allSumPayYandex: payments_aggregate(
+          #   where: {
+          #     _or: [
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeId: { _eq: $yandexType } }
+          #         ]
+          #       }
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeBeforeReturnId: { _eq: $yandexType } }
+          #           { paymentTypeId: { _eq: $returnType } }
+          #         ]
+          #       }
+          #     ]
+          #   }
+          # ) {
+          #   aggregate {
+          #     sum {
+          #       amount
+          #     }
+          #   }
+          # }
           allSumEncashment: payments_aggregate(
             where: {
               _or: [
@@ -338,87 +348,87 @@ export default {
               }
             }
           }
-          terminalUg2: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $ug2Type } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $ug2Type } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          tinkoff: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $tinkoffType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $tinkoffType } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          gazprom: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $gazpromType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $gazpromType } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
+          # terminalUg2: payments_aggregate(
+          #   where: {
+          #     _or: [
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeId: { _eq: $ug2Type } }
+          #         ]
+          #       }
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeBeforeReturnId: { _eq: $ug2Type } }
+          #           { paymentTypeId: { _eq: $returnType } }
+          #         ]
+          #       }
+          #     ]
+          #   }
+          # ) {
+          #   aggregate {
+          #     sum {
+          #       amount
+          #     }
+          #   }
+          # }
+          # tinkoff: payments_aggregate(
+          #   where: {
+          #     _or: [
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeId: { _eq: $tinkoffType } }
+          #         ]
+          #       }
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeBeforeReturnId: { _eq: $tinkoffType } }
+          #           { paymentTypeId: { _eq: $returnType } }
+          #         ]
+          #       }
+          #     ]
+          #   }
+          # ) {
+          #   aggregate {
+          #     sum {
+          #       amount
+          #     }
+          #   }
+          # }
+          # gazprom: payments_aggregate(
+          #   where: {
+          #     _or: [
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeId: { _eq: $gazpromType } }
+          #         ]
+          #       }
+          #       {
+          #         _and: [
+          #           { created_at: { _gte: $todayStartDate } }
+          #           { created_at: { _lte: $todayEndDate } }
+          #           { paymentTypeBeforeReturnId: { _eq: $gazpromType } }
+          #           { paymentTypeId: { _eq: $returnType } }
+          #         ]
+          #       }
+          #     ]
+          #   }
+          # ) {
+          #   aggregate {
+          #     sum {
+          #       amount
+          #     }
+          #   }
+          # }
           expenses: payments_aggregate(
             where: {
               _or: [
@@ -543,41 +553,41 @@ export default {
             sum: { amount: allSumPayCash }
           }
         },
-        allSumPayTerminal: {
-          aggregate: {
-            sum: { amount: allSumPayTerminal }
-          }
-        },
+        // allSumPayTerminal: {
+        //   aggregate: {
+        //     sum: { amount: allSumPayTerminal }
+        //   }
+        // },
         allSumPayCard: {
           aggregate: {
             sum: { amount: allSumPayCard }
           }
         },
-        allSumPayYandex: {
-          aggregate: {
-            sum: { amount: allSumPayYandex }
-          }
-        },
+        // allSumPayYandex: {
+        //   aggregate: {
+        //     sum: { amount: allSumPayYandex }
+        //   }
+        // },
         allSumEncashment: {
           aggregate: {
             sum: { amount: allSumEncashment }
           }
         },
-        terminalUg2: {
-          aggregate: {
-            sum: { amount: terminalUg2 }
-          }
-        },
-        tinkoff: {
-          aggregate: {
-            sum: { amount: tinkoff }
-          }
-        },
-        gazprom: {
-          aggregate: {
-            sum: { amount: gazprom }
-          }
-        },
+        // terminalUg2: {
+        //   aggregate: {
+        //     sum: { amount: terminalUg2 }
+        //   }
+        // },
+        // tinkoff: {
+        //   aggregate: {
+        //     sum: { amount: tinkoff }
+        //   }
+        // },
+        // gazprom: {
+        //   aggregate: {
+        //     sum: { amount: gazprom }
+        //   }
+        // },
         expenses: {
           aggregate: {
             sum: { amount: expenses }
@@ -601,24 +611,27 @@ export default {
       }) {
         this.allSumPayCashPrevDay = allSumPayCashPrevDay || 0;
         this.allSumPayCash = allSumPayCash || 0;
-        this.allSumPayTerminal = allSumPayTerminal || 0;
+        // this.allSumPayTerminal = allSumPayTerminal || 0;
         this.allSumPayCard = allSumPayCard || 0;
-        this.allSumPayYandex = allSumPayYandex || 0;
+        // this.allSumPayYandex = allSumPayYandex || 0;
         this.allSumReturn = allSumReturn || 0;
         this.allSumEncashmentPrevDay = allSumEncashmentPrevDay || 0;
         this.allSumEncashment = allSumEncashment || 0;
-        this.terminalUg2 = terminalUg2 || 0;
-        this.tinkoff = tinkoff || 0;
-        this.gazprom = gazprom || 0;
+        // this.terminalUg2 = terminalUg2 || 0;
+        // this.tinkoff = tinkoff || 0;
+        // this.gazprom = gazprom || 0;
         this.expenses = expenses || 0;
       }
     },
     walletsList: {
       query: gql`
         query {
-          walletsList: wallets {
+          walletsList: wallets (
+            order_by: {id: asc}
+          ) {
             id
             name
+            balance
           }
         }
       `,
@@ -638,6 +651,7 @@ export default {
   methods: {
     refreshPayments() {
       this.$apollo.queries.queryValue.refetch();
+      this.$apollo.queries.walletsList.refetch();
     },
     closeDay() {
       const props = {

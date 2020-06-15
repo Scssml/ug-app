@@ -306,6 +306,7 @@ export default {
         }
 
         this.take = (this.take) ? this.take : 20;
+        this.goodsUpdate = false;
       },
     },
     clientsList: {
@@ -462,6 +463,7 @@ export default {
           },
         }).then(() => {
           this.createdSuccess = true;
+          this.$apollo.queries.goods.refetch();
 
           setTimeout(() => {
             this.$emit('cancel', true);
@@ -481,6 +483,13 @@ export default {
       if (update) {
         this.goodsList = [];
         this.take = 0;
+
+        this.$apollo.queries.goods.refetch();
+
+
+        const loadData = this.loadingData.find(item => item.id === 'goods');
+        loadData.title = 'Получение товаров!';
+        loadData.loading = true;
       }
     },
     deleteGood(id) {

@@ -657,6 +657,7 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import inside from 'point-in-geopolygon';
 import { getDistance } from 'geolib';
@@ -746,6 +747,41 @@ export default {
       clientName: '',
       addresseeName: '',
     };
+  },
+  apollo: {
+    clients: {
+      query: gql`
+        query clients(
+          $limit: Int
+          $offset: Int
+          $orderBy: [clients_order_by!]
+        ) {
+          clients: clients(
+            where: {
+              deleted_at: { _is_null: true }
+            }
+          ) {
+            id
+            name
+            phone
+          }
+        }
+      `,
+      update({ clients }) {
+        // this.clientsList = this.clientsList.concat(clients);
+        this.clientsList = clients;
+      },
+    },
+    typeClient: {
+      query: gql`
+        query {
+          typeClient: clientTypes {
+            id
+            name
+          }
+        }
+      `
+    }
   },
   watch: {
     clientName(val) {
@@ -1251,11 +1287,9 @@ export default {
     },
   },
   mounted() {
-    this.getClientsList();
     this.getTsList();
     this.getDeliveryList();
     this.getStatusList();
-    this.getClientTypeList();
     this.getCouriersList();
     this.getItem();
     this.getItemHistory();

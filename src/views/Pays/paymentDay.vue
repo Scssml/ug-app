@@ -1,5 +1,13 @@
 <template>
   <div class="statPayBlock">
+    <v-layout row wrap align-center>
+      <v-flex xs7>
+        <b>Сумма наличка:</b>
+      </v-flex>
+      <v-flex xs5>
+        {{ allSumPayCash }}
+      </v-flex>
+    </v-layout>
     <template v-for="(item, key) in walletsList">
       <v-layout row wrap align-center :key="key">
         <v-flex xs7>
@@ -10,14 +18,6 @@
         </v-flex>
       </v-layout>
     </template>
-    <v-layout row wrap align-center>
-      <v-flex xs7>
-        <b>Сумма наличка:</b>
-      </v-flex>
-      <v-flex xs5>
-        {{ allSumPayCash }}
-      </v-flex>
-    </v-layout>
     <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Терминал:</b>

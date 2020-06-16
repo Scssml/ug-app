@@ -576,6 +576,7 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
 import { yandexMap, ymapMarker } from "vue-yandex-maps";
 import AutocompleteAddress from "../../components/AutocompleteAddressYandex.vue";
 import inside from "point-in-geopolygon";
@@ -670,6 +671,41 @@ export default {
       addresseeName: "",
       isDirty: false
     };
+  },
+  apollo: {
+    clients: {
+      query: gql`
+        query clients(
+          $limit: Int
+          $offset: Int
+          $orderBy: [clients_order_by!]
+        ) {
+          clients: clients(
+            where: {
+              deleted_at: { _is_null: true }
+            }
+          ) {
+            id
+            name
+            phone
+          }
+        }
+      `,
+      update({ clients }) {
+        // this.clientsList = this.clientsList.concat(clients);
+        this.clientsList = clients;
+      },
+    },
+    typeClient: {
+      query: gql`
+        query {
+          typeClient: clientTypes {
+            id
+            name
+          }
+        }
+      `
+    }
   },
   watch: {
     clientName(val) {
@@ -1117,8 +1153,6 @@ export default {
     this.getTsList();
     this.getDeliveryList();
     this.getStatusList();
-    this.getClientsList();
-    this.getClientTypeList();
     this.getCouriersList();
     this.getPaymentTypesList();
   },

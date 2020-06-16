@@ -29,7 +29,6 @@
                 v-model="data.type"
                 :rules="[v => !!v || 'Заполните поле']"
                 hide-details
-                @change="validateForm()"
               ></v-select>
             </v-flex>
             <v-flex
@@ -38,7 +37,7 @@
             >
               <v-menu
                 :close-on-content-click="false"
-                v-model="dataStartPicker"
+                v-model="dataPicker"
                 :nudge-right="40"
                 lazy
                 transition="scale-transition"
@@ -49,84 +48,66 @@
                 <v-text-field
                   slot="activator"
                   label="Дата"
-                  v-model="data.dateStart"
+                  v-model="data.date"
                   prepend-icon="event"
                   hide-details
-                  readonly
                   :rules="[v => !!v || 'Заполните поле']"
+                  readonly
                 ></v-text-field>
                 <v-date-picker
-                  v-model="data.dateStart"
-                  @input="dataStartPicker = false"
-                  @change="validateForm()"
+                  v-model="data.date"
+                  @input="dataPicker = false"
                   no-title
                   scrollable
                   locale="ru-ru"
                   first-day-of-week="1"
-                  :max="!!data.dateEnd ? data.dateEnd : undefined"
                 ></v-date-picker>
               </v-menu>
             </v-flex>
             <v-flex
               xs2
               class="px-2"
-              v-if="data.type === 'interval_report'"
             >
-              <v-menu
-                :close-on-content-click="false"
-                v-model="dataEndPicker"
-                :nudge-right="40"
-                lazy
-                transition="scale-transition"
-                offset-y
-                full-width
-                min-width="290px"
-              >
-                <v-text-field
-                  slot="activator"
-                  label="Дата"
-                  v-model="data.dateEnd"
-                  prepend-icon="event"
-                  hide-details
-                  readonly
-                  :rules="[v => !!v || 'Заполните поле']"
-                ></v-text-field>
-                <v-date-picker
-                  v-model="data.dateEnd"
-                  @input="dataEndPicker = false"
-                  @change="validateForm()"
-                  no-title
-                  locale="ru-ru"
-                  scrollable
-                  first-day-of-week="1"
-                  :min="!!data.dateStart ? data.dateStart : undefined"
-                ></v-date-picker>
-              </v-menu>
+              <v-btn
+                color="primary"
+                dark
+                @click="submitForm"
+                class="mt-3"
+                :loading="loadingBtn"
+              >Создать</v-btn>
+            </v-flex>
+            <v-spacer></v-spacer>
+            <v-flex
+              xs3
+              class="px-2 text-xs-right"
+            >
+              <v-btn
+                color="primary"
+                dark
+                to="closeDay/"
+                class="mt-3"
+              >Закрытие дня</v-btn>
+              <v-btn
+                color="primary"
+                dark
+                to="graphQL/"
+                class="mt-3"
+              >GraphQL</v-btn>
+              <v-btn
+                color="primary"
+                dark
+                to="goods/"
+                class="mt-3"
+              >Товары</v-btn>
             </v-flex>
           </v-layout>
         </v-form>
       </v-card-title>
 
       <v-card-text
-        class="report"
-      >
-        <template v-if="validate">
-          <day-report
-            :date-start="data.dateStart"
-            v-if="data.type === 'day_report'"
-          ></day-report>
-          <interval-report
-            :date-start="data.dateStart"
-            :date-end="data.dateEnd"
-            v-if="data.type === 'interval_report'"
-          ></interval-report>
-        </template>
-      </v-card-text>
-
-      <!-- <v-card-text
         v-html="report"
         class="report"
-      ></v-card-text> -->
+      ></v-card-text>
     </v-card>
 
     <br>
@@ -135,46 +116,58 @@
       dark
       class="mb-4 print-btn"
       @click.prevent="printPage()"
+      v-if="report"
     >Распечатать</v-btn>
   </v-container>
 </template>
 
 <script>
-import dayReport from "./DayReport/dayReport.vue";
-import intervalReport from "./DayReport/intervalReport.vue";
-
 export default {
-  components: {
-    dayReport,
-    intervalReport,
-  },
   data() {
     return {
-      dataStartPicker: false,
-      dataEndPicker: false,
+      dataPicker: false,
       data: {
         type: '',
-        dateStart: '',
-        dateEnd: '',
+        date: '',
       },
       reportType: [
         {
-          name: 'Отчет за день',
-          id: 'day_report',
+          name: 'Заказы за день',
+          id: 'day-orders',
         },
         {
-          name: 'Отчет за интервал',
-          id: 'interval_report',
+          name: 'Оплаты за день',
+          id: 'payment',
+        },
+        {
+          name: 'Отчет за день',
+          id: 'day',
+        },
+        {
+          name: 'Отчет за месяц',
+          id: 'month',
         },
       ],
-      validate: false,
+      report: '',
+      loadingBtn: false,
     };
   },
   methods: {
-    validateForm() {
-      setTimeout(() => {
-        this.validate = this.$refs.form.validate();
-      }, 300);
+    submitForm() {
+      const validate = this.$refs.form.validate();
+      if (validate) {
+        this.report = '';
+        this.loadingBtn = true;
+
+        const itemParams = {
+          type: `print/${this.data.type}/${this.data.date}`,
+        };
+
+        this.$store.dispatch('getItemsList', itemParams).then((response) => {
+          this.report = response;
+          this.loadingBtn = false;
+        });
+      }
     },
     printPage() {
       window.print();

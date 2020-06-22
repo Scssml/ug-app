@@ -45,20 +45,29 @@
         :loading="!!$apollo.queries.closeDaysList.loading"
       >
         <template slot="items" slot-scope="props">
-          <td>{{ props.item.created_at }}</td>
-          <td>{{ props.item.amounts }}</td>
-          <td>{{ props.item.accounting_amounts }}</td>
-          <td class="text-xs-right" style="width: 50px;">
-            <v-btn
-              flat
-              icon
-              @click.prevent="editItem(props.item.id)"
-              class="mx-0"
-              title="Внести данные бухгалтерии"
-            >
-              <v-icon>edit</v-icon>
-            </v-btn>
-          </td>
+          <tr
+            v-if="props.item.amounts !== props.item.accounting_amounts
+              || (
+                props.item.amounts === props.item.accounting_amounts
+                && (userGroup === 'admin' || !props.item.is_closed)
+              )
+            "
+          >
+            <td>{{ props.item.created_at }}</td>
+            <td>{{ props.item.amounts }}</td>
+            <td>{{ props.item.accounting_amounts }}</td>
+            <td class="text-xs-right" style="width: 50px;">
+              <v-btn
+                flat
+                icon
+                @click.prevent="editItem(props.item.id)"
+                class="mx-0"
+                title="Внести данные бухгалтерии"
+              >
+                <v-icon>edit</v-icon>
+              </v-btn>
+            </td>
+          </tr>
         </template>
       </v-data-table>
       <v-layout row wrap justify-space-around class="py-2">
@@ -191,6 +200,7 @@ export default {
               created_at
               id
               accounting_amounts
+              is_closed
             }
           }
         `;
@@ -209,6 +219,11 @@ export default {
         });
       },
     },
+  },
+  computed: {
+    userGroup() {
+      return this.$store.getters.getAuthUserGroup.code;
+    }
   },
   methods: {
     changeShowElem() {

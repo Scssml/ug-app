@@ -24,7 +24,7 @@
     <div class="px-0" style="height: 30px;">
       <autosuggest
         :suggestions="suggestions"
-        placeholder="Клиенты"
+        :placeholder="(clientId === 0) ? 'Розничный покупатель' : 'Клиенты'"
         :value="autosuggestValue"
         @onChange="onInputChange"
         @onSelect="onSelected"
@@ -414,8 +414,8 @@ export default {
       createdSuccess: false,
       florist: 0,
       client: {
-        name: 'Розничный покупатель',
-        bill: '-'
+        name: '',
+        bill: ''
       },
       clientId: 0,
       order: 0,

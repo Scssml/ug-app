@@ -30,7 +30,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!loadingDialog">
+    <template v-if="!$apollo.queries.purchaseList.loading">
       <v-card>
         <v-card-title>
           <v-layout row wrap>
@@ -51,7 +51,9 @@
                 readonly
               ></v-text-field>
             </v-flex>
-            <v-flex>
+            <v-flex
+              v-if="purchase.purchaseType"
+            >
               <v-text-field
                 label="Тип изменения"
                 :value="purchase.purchaseType.name"
@@ -98,7 +100,9 @@
                 readonly
               ></v-text-field>
             </v-flex>
-            <v-flex>
+            <v-flex
+              v-if="purchase.createdBy"
+            >
               <v-text-field
                 label="Менеджер"
                 :value="purchase.createdBy.name"
@@ -131,7 +135,7 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.id }}</td>
+            <td>{{ props.item.good.name }}</td>
             <td>{{ props.item.stockQuantity }}</td>
             <td>{{ props.item.estimate }}</td>
             <td>{{ props.item.oldPrice }}</td>
@@ -218,12 +222,13 @@ export default {
               name
             }
             purchasedGoods {
-              id
+              good {
+                name
+              }
               stockQuantity
               estimate
               oldPrice
               newPrice
-              goodId
             }
           }
         }

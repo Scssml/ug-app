@@ -250,11 +250,13 @@
     <div class="report print-visible">
       <table>
         <tr>
+          <td>Остаток</td>
           <td>Наименование</td>
           <td>Цена</td>
         </tr>
         <template v-for="(item, index) in priceList">
           <tr :key="index">
+            <td>{{ item.stockBalance }}</td>
             <td
               :style="item.color ? `background-color: ${item.color};` : ''"
             >{{ item.name }}</td>
@@ -545,8 +547,9 @@ export default {
           });
         }
 
-        if (emptySum && (props.decorCost || props.deliveryCost)) {
+        if (emptySum && (props.decorCost || props.sumDecorAdditional || props.deliveryCost)) {
           propsService.decorPrice = (props.decorCost) ? props.decorCost : null;
+          propsService.additionalDecorPrice = (props.sumDecorAdditional) ? props.sumDecorAdditional : null;
           propsService.deliveryPrice = (props.deliveryCost) ? props.deliveryCost : null;
         } else if (!emptySum) {
           propsService.decorPrice = props.decorCost;

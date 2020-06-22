@@ -26,14 +26,14 @@
         {{ allSumPayTerminal }}
       </v-flex>
     </v-layout> -->
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Карта:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumPayCard }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
     <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Яндекс:</b>
@@ -99,10 +99,10 @@
       </v-flex>
     </v-layout>
 
-    <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn>
+    <!-- <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn> -->
     <v-btn color="info" small @click="dialogCloseDay = true">Закрыть день</v-btn>
 
-    <v-dialog v-model="dialog" persistent max-width="420px">
+    <!-- <v-dialog v-model="dialog" persistent max-width="420px">
       <v-card>
         <v-alert :value="createdSuccess" type="success" class="my-0">
           Инкассация сдана
@@ -126,7 +126,7 @@
           </v-card-actions>
         </v-form>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <v-dialog v-model="dialogCloseDay" persistent max-width="320px">
       <v-card>
@@ -644,7 +644,8 @@ export default {
         this.allSumEncashmentPrevDay +
         this.allSumPayCash -
         this.allSumEncashment -
-        this.expenses
+        this.expenses +
+        this.allSumReturn
       );
     }
   },

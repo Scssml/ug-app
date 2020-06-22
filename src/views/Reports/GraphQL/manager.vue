@@ -1,6 +1,9 @@
 <template>
   <div>
-    <table v-if="report">
+    <table
+      class="width-auto"
+      v-if="report"
+    >
       <tr>
         <template v-for="(item, index) in tableHeader">
           <th :key="`th-${index}`">{{ item }}</th>

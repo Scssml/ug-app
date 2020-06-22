@@ -227,7 +227,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $todayStartDate } }
                     { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cashType } }
+                    { parent: { paymentTypeId: { _eq: $cashType } } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -281,7 +281,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $todayStartDate } }
                     { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { parent: { paymentTypeId: { _eq: $cardType } } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -335,7 +335,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $todayStartDate } }
                     { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $encashmentType } }
+                    { parent: { paymentTypeId: { _eq: $encashmentType } } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -443,7 +443,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $todayStartDate } }
                     { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $expensesType } }
+                    { parent: { paymentTypeId: { _eq: $expensesType } } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -489,7 +489,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $prevStartDate } }
                     { created_at: { _lte: $prevEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cashType } }
+                    { parent: { paymentTypeId: { _eq: $cashType } } }
                     { paymentTypeId: { _eq: $returnType } }
                   ]
                 }
@@ -516,7 +516,7 @@ export default {
                   _and: [
                     { created_at: { _gte: $prevStartDate } }
                     { created_at: { _lte: $prevEndDate } }
-                    { paymentTypeBeforeReturnId: { _eq: $cardType } }
+                    { parent: { paymentTypeId: { _eq: $encashmentType } } }
                     { paymentTypeId: { _eq: $encashmentType } }
                   ]
                 }
@@ -644,8 +644,7 @@ export default {
         this.allSumEncashmentPrevDay +
         this.allSumPayCash -
         this.allSumEncashment -
-        this.expenses +
-        this.allSumReturn
+        this.expenses
       );
     }
   },

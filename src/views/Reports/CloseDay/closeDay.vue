@@ -30,6 +30,19 @@
                 class="mb-4"
               ></v-select>
             </v-flex>
+             <v-flex
+              xs2
+              class="px-2"
+              v-if="userGroup === 'admin'"
+            >
+              <v-checkbox
+                label="Показывать все"
+                v-model="showAll"
+                color="primary"
+                hide-details
+                class="mb-4"
+              ></v-checkbox>
+            </v-flex>
           </v-layout>
         </v-form>
       </v-card-title>
@@ -49,7 +62,7 @@
             v-if="props.item.amounts !== props.item.accounting_amounts
               || (
                 props.item.amounts === props.item.accounting_amounts
-                && (userGroup === 'admin' || !props.item.is_closed)
+                && ((userGroup === 'admin' && showAll) || !props.item.is_closed)
               )
             "
           >
@@ -167,6 +180,7 @@ export default {
       dialogForm: false,
       editDialog: false,
       editedId: 0,
+      showAll: false,
     };
   },
   apollo: {

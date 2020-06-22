@@ -213,7 +213,7 @@ export default {
   .report {
 
     table {
-      // width: 100%;
+      width: 100%;
       border-collapse: collapse;
 
       td, th {

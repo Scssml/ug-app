@@ -1,34 +1,25 @@
 <template>
   <div>
-    <table v-if="report">
-      <tr>
-        <template v-for="(item, index) in tableHeader">
-          <th :key="`th-${index}`">{{ item }}</th>
-        </template>
-      </tr>
-      <template v-for="(item, index) in report">
-        <tr :key="index">
-          <td>{{ item.date }}</td>
-          <td>{{ item.revenue }}</td>
-          <td>{{ item.cashless }}</td>
-          <td>{{ item.card }}</td>
-          <td>{{ item.terminal }}</td>
-          <td>{{ item.collection }}</td>
-          <td>{{ item.expenses }}</td>
-          <td>{{ item.flowerPurchase }}</td>
-          <td>{{ item.cash }}</td>
-          <td>{{ item.serviceDelivery }}</td>
-          <td>{{ item.serviceDecor }}</td>
-          <td>{{ item.serviceSale }}</td>
-          <td>{{ item.packaging }}</td>
-          <td>{{ item.russianRosa }}</td>
-          <td>{{ item.transport }}</td>
-          <!-- <td>{{ item.avet }}</td> -->
-          <td>{{ item.toPay }}</td>
-          <td>{{ item.toDeliveryPay }}</td>
-        </tr>
-      </template>
-    </table>
+    <template v-if="report">
+      <p>Дата: {{ report.date }}</p>
+      <p>Выручка: {{ report.revenue }}</p>
+      <p>Сумма оплат по каналу Безнал: {{ report.cashless }}</p>
+      <p>Карта: {{ report.card }}</p>
+      <p>Терминал: {{ report.terminal }}</p>
+      <p>Артур: {{ report.collection }}</p>
+      <p>Расходы: {{ report.expenses }}</p>
+      <p>Закупка цветов: {{ report.flowerPurchase }}</p>
+      <p>Наличные: {{ report.cash }}</p>
+      <p>Доставка: {{ report.serviceDelivery }}</p>
+      <p>Оформление: {{ report.serviceDecor }}</p>
+      <p>Скидка: {{ report.serviceSale }}</p>
+      <p>Упаковка: {{ report.packaging }}</p>
+      <p>Роза России: {{ report.russianRosa }}</p>
+      <p>Транспортные расходв: {{ report.transport }}</p>
+      <!-- <p>Авет: {{ report.avet }}</p> -->
+      <p>К оплате: {{ report.toPay }}</p>
+      <p>К оплате дост: {{ report.toDeliveryPay }}</p>
+    </template>
   </div>
 </template>
 
@@ -46,27 +37,7 @@ export default {
   },
   data() {
     return {
-      tableHeader: [
-        'Дата',
-        'Выручка',
-        'Сумма оплат по каналу Безнал',
-        'Карта',
-        'Терминал',
-        'Артур',
-        'Расходы',
-        'Закупка цветов',
-        'Наличные',
-        'Доставка',
-        'Оформление',
-        'Скидка',
-        'Упаковка',
-        'Роза России',
-        'Транспортные расходв',
-        // 'Авет',
-        'К оплате',
-        'К оплате дост',
-      ],
-      report: [],
+      report: {},
     };
   },
   apollo: {
@@ -114,8 +85,7 @@ export default {
       },
       update({ dayReport }) {
         dayReport.date = this.formatDate(dayReport.date, 'dd.MM.yyyy');
-        this.report = [];
-        this.report.push(dayReport);
+        this.report = dayReport;
       },
     },
   },

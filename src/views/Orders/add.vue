@@ -688,6 +688,11 @@ export default {
             id
             name
             phone
+            typeId
+            address
+            entrance
+            flat
+            floor
           }
         }
       `,
@@ -771,7 +776,7 @@ export default {
         this.editedItem.clientName = findClient.name;
         this.editedItem.clientPhone = findClient.phone;
         if (findClient.type !== undefined) {
-          this.editedItem.clientType = findClient.type;
+          this.editedItem.clientType = findClient.typeId;
         }
 
         this.editedItem.address = findClient.address;

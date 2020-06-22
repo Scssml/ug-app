@@ -211,8 +211,12 @@ export default {
   .report {
 
     table {
-      // width: 100%;
+      width: 100%;
       border-collapse: collapse;
+
+      &.width-auto {
+        width: auto;
+      }
 
       td, th {
         padding: 5px;

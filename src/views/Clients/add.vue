@@ -214,7 +214,7 @@ export default {
               sale: ${propsClient.sale}
               typeId: ${propsClient.typeId}
               bill: ${propsClient.bill}
-              birthDay: "${propsClient.birthDay}T00:00:00Z"
+              birthDay: "${this.formatDate(propsClient.birthDay, 'dd-MM-yyyy')}"
             }) {
               id
             }

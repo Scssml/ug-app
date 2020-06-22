@@ -22,6 +22,8 @@
       <p>Брак: {{ report.defect }}</p>
       <p>Приход товаров: {{ report.purchase }}</p>
       <p>Закупка товаров: {{ report.arrival }}</p>
+      <p>Переоценка: {{ report.revaluation }}</p>
+      <p>Товарный остаток: {{ report.commodityBalance }}</p>
       <p>Комиссия: {{ report.commission }}</p>
       <p>К оплате: {{ report.toPay }}</p>
       <p>К оплате дост: {{ report.toDeliveryPay }}</p>

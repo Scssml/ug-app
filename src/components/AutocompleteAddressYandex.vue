@@ -42,6 +42,13 @@ export default {
       objectList: [],
     };
   },
+  watch: {
+    value(newVal) {
+      if (newVal !== this.address) {
+        this.getAddress(this.value);
+      }
+    },
+  },
   methods: {
     getAddress(value) {
       this.objectList = [];

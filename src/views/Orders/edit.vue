@@ -885,7 +885,7 @@ export default {
     updateAddress(data) {
       this.editedItem.address = data.address;
 
-      if (data && data.geo.length === 2 && this.editedItem) {
+      if (data && data.geo[0] && data.geo[1] && this.editedItem) {
         this.editedItem.coordinates = data.geo;
         this.editedItem.coordinates = data.geo;
         this.calculateAndSetDeliveryCost(data.geo);

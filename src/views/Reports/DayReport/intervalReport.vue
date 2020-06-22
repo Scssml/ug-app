@@ -24,6 +24,16 @@
           <td>{{ item.russianRosa }}</td>
           <td>{{ item.transport }}</td>
           <td>{{ item.avet }}</td>
+          <td>{{ item.alic }}</td>
+          <td>{{ item.debt }}</td>
+          <td>{{ item.defect }}</td>
+
+          <!-- <td>{{ item.defect }}</td>
+          <td>{{ item.defect }}</td> -->
+
+          <td>{{ item.revaluation }}</td>
+          <td>{{ item.goodsBalance }}</td>
+          <td>{{ item.commission }}</td>
           <td>{{ item.noPayCash }}</td>
           <td>{{ item.deliveryCost }}</td>
         </tr>
@@ -67,6 +77,14 @@ export default {
         'Роза России',
         'Транспортные расходв',
         'Авет',
+        'Алик',
+        'Долги',
+        'Брак',
+        // 'Приход товаров',
+        // 'Закупка товаров',
+        'Переоценка',
+        'Товарный остаток',
+        'Комиссия',
         'К оплате',
         'К оплате дост',
       ],

@@ -17,6 +17,12 @@
       <p>Роза России: {{ report.russianRosa }}</p>
       <p>Транспортные расходв: {{ report.transport }}</p>
       <!-- <p>Авет: {{ report.avet }}</p> -->
+      <p>Алик: {{ report.alic }}</p>
+      <p>Долги: {{ report.debts }}</p>
+      <p>Брак: {{ report.defect }}</p>
+      <p>Приход товаров: {{ report.purchase }}</p>
+      <p>Закупка товаров: {{ report.arrival }}</p>
+      <p>Комиссия: {{ report.commission }}</p>
       <p>К оплате: {{ report.toPay }}</p>
       <p>К оплате дост: {{ report.toDeliveryPay }}</p>
     </template>

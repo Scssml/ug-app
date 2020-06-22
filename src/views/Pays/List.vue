@@ -403,7 +403,9 @@ export default {
             ? {
                 _eq: this.filter.paymentType
               }
-            : undefined,
+            : {
+              _neq: 15,
+            },
           clientId:
             this.filter.clientId >= 0 && this.filter.clientId !== ""
               ? this.filter.clientId

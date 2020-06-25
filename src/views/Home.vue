@@ -564,36 +564,36 @@ export default {
           propsService.orderBouquetID = props.orderBouquet;
         }
 
-        // this.$apollo.mutate({
-        //   mutation: gql`mutation createService (
-        //     $props: NewService!
-        //   ) {
-        //     createService(input: $props) {
-        //       id
-        //     }
-        //   }`,
-        //   variables: {
-        //     props: propsService,
-        //   },
-        //  }).then(() => {
-        //   cardItem.success = true;
-        //   this.$set(this.cardsList, index, cardItem);
+        this.$apollo.mutate({
+          mutation: gql`mutation createService (
+            $props: NewService!
+          ) {
+            createService(input: $props) {
+              id
+            }
+          }`,
+          variables: {
+            props: propsService,
+          },
+         }).then(() => {
+          cardItem.success = true;
+          this.$set(this.cardsList, index, cardItem);
 
-        //   this.refreshPayments();
+          this.refreshPayments();
 
-        //   const cardNoEmpty = this.cardsList.filter(elem =>
-        //     (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-        //       elem.success !== true);
-        //   localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+          const cardNoEmpty = this.cardsList.filter(elem =>
+            (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+              elem.success !== true);
+          localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-        //   const findIndex = this.checkCardList.findIndex(card => card.index === index);
+          const findIndex = this.checkCardList.findIndex(card => card.index === index);
 
-        //   if (findIndex + 1) {
-        //     this.checkCardList.splice(findIndex, 1);
-        //   }
-        // }).catch((error) => {
-        //   console.error(error);
-        // });
+          if (findIndex + 1) {
+            this.checkCardList.splice(findIndex, 1);
+          }
+        }).catch((error) => {
+          console.error(error);
+        });
       }
     },
     updateProps: function updateProps(index, props) {

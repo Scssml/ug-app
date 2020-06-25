@@ -354,7 +354,7 @@
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
                     @change="
-                      getOrdersList();
+                      skipQuery = false;
                       handleDirty();
                     "
                     no-title
@@ -385,7 +385,6 @@
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
                       @change="
-                        getOrdersList();
                         handleDirty();
                       "
                       hide-details
@@ -669,7 +668,8 @@ export default {
       responsible: undefined,
       clientName: "",
       addresseeName: "",
-      isDirty: false
+      isDirty: false,
+      skipQuery: true,
     };
   },
   apollo: {
@@ -710,7 +710,113 @@ export default {
           }
         }
       `
-    }
+    },
+    tsList: {
+      query: gql`
+        query {
+          tsList: orderSourceTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    deliveryList: {
+      query: gql`
+        query {
+          deliveryList: deliveryTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    statusList: {
+      query: gql`
+        query {
+          statusList: orderStatuses {
+            id
+            name
+          }
+        }
+      `
+    },
+    usersList: {
+      query: gql`
+        query usersList(
+          $id: bigint
+        ) {
+          usersList: users(
+            where: { id: { _eq: $id } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.$store.getters.getAuthUser,
+        };
+      },
+      update({ usersList }) {
+        this.userInfo = usersList.shift();
+        this.editedItem.createdBy = this.$store.getters.getAuthUser
+      },
+    },
+    couriersList: {
+      query: gql`
+        query  {
+          couriersList: users(
+            where: { groupId: { _eq: "4" } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    paymentTypesList: {
+      query: gql`
+        query {
+          paymentTypesList: paymentTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    ordersList: {
+      query: gql`
+        query ordersList(
+          $date: date,
+          $deliveryTimeOfDay: bigint
+        ) {
+          ordersList: orders(
+            where: {
+              deliveryTypeId: { _eq: "2" },
+              orderStatusId: { _in: [1, 2, 3] },
+              deliveryTimeOfDay: { _eq: $deliveryTimeOfDay },
+              deliveryDate: { _eq: $date }
+            }
+          ) {
+            id
+            coordinates
+          }
+        }
+      `,
+      variables() {
+        return {
+          date: this.editedItem.deliveryDate,
+          deliveryTimeOfDay: (this.editedItem.deliveryTimeOfDay)
+            ? this.editedItem.deliveryTimeOfDay
+            : undefined,
+        };
+      },
+      skip() {
+        return this.skipQuery;
+      },
+    },
   },
   watch: {
     clientName(val) {
@@ -738,7 +844,7 @@ export default {
     },
     placemarks() {
       return this.ordersList
-        .filter(item => item.coordinates.length === 2)
+        .filter(item => item.coordinates && item.coordinates.length === 2)
         .map(order => ({
           id: order.id,
           coordinates: order.coordinates,
@@ -867,174 +973,174 @@ export default {
         }
       }
     },
-    getPaymentTypesList() {
-      const itemParams = {
-        type: 'paymentTypes',
-        filter: {
-          isActive: true,
-        },
-      };
+    // getPaymentTypesList() {
+    //   const itemParams = {
+    //     type: 'paymentTypes',
+    //     filter: {
+    //       isActive: true,
+    //     },
+    //   };
 
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.paymentTypesList = response.filter(
-            pt => pt.id !== PaymentTypes.BALANCE
-          );
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getUsersList() {
-      const itemParams = {
-        type: 'login',
-      };
+    //   this.$store
+    //     .dispatch("getItemsList", itemParams)
+    //     .then(response => {
+    //       this.paymentTypesList = response.filter(
+    //         pt => pt.id !== PaymentTypes.BALANCE
+    //       );
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getUsersList() {
+    //   const itemParams = {
+    //     type: 'login',
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.userInfo = response;
-          this.userInfo.id = +this.userInfo.id;
-          this.editedItem.createdBy = +this.userInfo.id;
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getTsList() {
-      const itemParams = {
-        type: 'order-source',
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.userInfo = response;
+    //       this.userInfo.id = +this.userInfo.id;
+    //       this.editedItem.createdBy = +this.userInfo.id;
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getTsList() {
+    //   const itemParams = {
+    //     type: 'order-source',
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.tsList = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getDeliveryList() {
-      const itemParams = {
-        type: 'delivery-type',
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.tsList = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getDeliveryList() {
+    //   const itemParams = {
+    //     type: 'delivery-type',
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.deliveryList = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getStatusList() {
-      const itemParams = {
-        type: 'order-status',
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.deliveryList = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getStatusList() {
+    //   const itemParams = {
+    //     type: 'order-status',
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.statusList = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          isActive: true,
-        },
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.statusList = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getClientsList() {
+    //   const itemParams = {
+    //     type: 'clients',
+    //     filter: {
+    //       isActive: true,
+    //     },
+    //   };
 
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.clientsList = response
-            .map(item => {
-              item.id = +item.id;
-              return item;
-            })
-            .filter(i => i.id !== 0);
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: 'client-type',
-      };
+    //   this.$store
+    //     .dispatch("getItemsList", itemParams)
+    //     .then(response => {
+    //       this.clientsList = response
+    //         .map(item => {
+    //           item.id = +item.id;
+    //           return item;
+    //         })
+    //         .filter(i => i.id !== 0);
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getClientTypeList() {
+    //   const itemParams = {
+    //     type: 'client-type',
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.typeClient = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getCouriersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
-          isActive: true,
-          group: 4,
-        },
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.typeClient = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getCouriersList() {
+    //   const itemParams = {
+    //     type: 'users',
+    //     filter: {
+    //       isActive: true,
+    //       group: 4,
+    //     },
+    //   };
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.couriersList = response.map((item) => {
-            item.id = +item.id;
-            return item;
-          });
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
-    getOrdersList: function getOrdersList() {
-      const itemParams = {
-        type: 'orders',
-        filter: {
-          deliveryDate: this.editedItem.deliveryDate,
-          deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
-          deliveryType: 2,
-          status: [1, 2, 3],
-        },
-      };
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.couriersList = response.map((item) => {
+    //         item.id = +item.id;
+    //         return item;
+    //       });
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
+    // getOrdersList: function getOrdersList() {
+    //   const itemParams = {
+    //     type: 'orders',
+    //     filter: {
+    //       deliveryDate: this.editedItem.deliveryDate,
+    //       deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
+    //       deliveryType: 2,
+    //       status: [1, 2, 3],
+    //     },
+    //   };
 
-      Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
+    //   Object.keys(itemParams.filter).forEach(key => itemParams.filter[key] == null && delete itemParams.filter[key]);
 
-      this.$store
-        .dispatch('getItemsList', itemParams)
-        .then((response) => {
-          this.ordersList = response.orders;
-        })
-        .catch(() => {
-          console.log('error');
-        });
-    },
+    //   this.$store
+    //     .dispatch('getItemsList', itemParams)
+    //     .then((response) => {
+    //       this.ordersList = response.orders;
+    //     })
+    //     .catch(() => {
+    //       console.log('error');
+    //     });
+    // },
     cancel() {
       if (this.isDirty) {
         const exitConfirmation = confirm(unSaveChangesText);
@@ -1154,12 +1260,12 @@ export default {
     window.removeEventListener("beforeunload", this.handleBeforeUnload);
   },
   mounted() {
-    this.getUsersList();
-    this.getTsList();
-    this.getDeliveryList();
-    this.getStatusList();
-    this.getCouriersList();
-    this.getPaymentTypesList();
+    // this.getUsersList();
+    // this.getTsList();
+    // this.getDeliveryList();
+    // this.getStatusList();
+    // this.getCouriersList();
+    // this.getPaymentTypesList();
   },
 };
 </script>

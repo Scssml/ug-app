@@ -99,10 +99,10 @@
       </v-flex>
     </v-layout>
 
-    <!-- <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn> -->
+    <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn>
     <v-btn color="info" small @click="dialogCloseDay = true">Закрыть день</v-btn>
 
-    <!-- <v-dialog v-model="dialog" persistent max-width="420px">
+    <v-dialog v-model="dialog" persistent max-width="420px">
       <v-card>
         <v-alert :value="createdSuccess" type="success" class="my-0">
           Инкассация сдана
@@ -126,7 +126,7 @@
           </v-card-actions>
         </v-form>
       </v-card>
-    </v-dialog> -->
+    </v-dialog>
 
     <v-dialog v-model="dialogCloseDay" persistent max-width="320px">
       <v-card>
@@ -640,8 +640,8 @@ export default {
   computed: {
     cashNow() {
       return (
-        this.allSumPayCashPrevDay -
-        this.allSumEncashmentPrevDay +
+        // this.allSumPayCashPrevDay -
+        // this.allSumEncashmentPrevDay +
         this.allSumPayCash -
         this.allSumEncashment -
         this.expenses
@@ -684,20 +684,30 @@ export default {
     submit() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const itemParams = {
-          type: "payments",
-          props: {
-            paymentType: {
-              id: 8,
-              name: "Инкассация",
-              isActive: true,
-              code: "collection"
+        const propsService = {
+          clientID: 1904,
+          userID: this.$store.getters.getAuthUser,
+          payments: [
+            {
+              paymentTypeId: 8,
+              price: this.sumEncashment,
+              comment: '',
             },
-            amount: this.sumEncashment
-          }
+          ],
         };
 
-        this.$store.dispatch("addItem", itemParams).then(() => {
+        this.$apollo.mutate({
+          mutation: gql`mutation createService (
+            $props: NewService!
+          ) {
+            createService(input: $props) {
+              id
+            }
+          }`,
+          variables: {
+            props: propsService,
+          },
+        }).then(() => {
           this.createdSuccess = true;
           this.refreshPayments();
 
@@ -705,7 +715,32 @@ export default {
             this.dialog = false;
             this.createdSuccess = false;
           }, 1000);
+        }).catch((error) => {
+          console.error(error);
         });
+
+        // const itemParams = {
+        //   type: "payments",
+        //   props: {
+        //     paymentType: {
+        //       id: 8,
+        //       name: "Инкассация",
+        //       isActive: true,
+        //       code: "collection"
+        //     },
+        //     amount: this.sumEncashment
+        //   }
+        // };
+
+        // this.$store.dispatch("addItem", itemParams).then(() => {
+        //   this.createdSuccess = true;
+        //   this.refreshPayments();
+
+        //   setTimeout(() => {
+        //     this.dialog = false;
+        //     this.createdSuccess = false;
+        //   }, 1000);
+        // });
       }
     }
   }

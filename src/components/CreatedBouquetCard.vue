@@ -318,7 +318,13 @@
               item-value="id"
               v-model="typePay"
             ></v-select>
-            <v-checkbox label="Частичная" v-model="partlyPayment" />
+
+            <v-checkbox
+              label="Частичная"
+              v-model="partlyPayment"
+              v-if="!isEmptySum"
+            />
+
             <v-select
               label="Второй способ оплаты"
               :items="typePayList"
@@ -713,12 +719,20 @@ export default {
           payment: {
             paymentTypeId: this.typePay,
             amount:
-              this.secondTypePay !== PaymentTypes.CASH &&
-              this.typePay === PaymentTypes.CASH
-                ? (+this.sumClient || +this.sumPayCustom || 0) - +this.sumChange
-                : +this.sumPay !== 0
-                ? +this.sumPay
-                : +this.sumPayCustom || 0,
+              (this.partlyPayment)
+                ? (this.typePay === PaymentTypes.CASH)
+                  ? +this.sumClient - +this.sumChange
+                  : +this.sumClient
+                : (+this.sumPay !== 0)
+                  ? +this.sumPay
+                  : +this.sumPayCustom,
+
+              // this.secondTypePay !== PaymentTypes.CASH &&
+              // this.typePay === PaymentTypes.CASH
+              //   ? (+this.sumClient || +this.sumPayCustom || 0) - +this.sumChange
+              //   : +this.sumPay !== 0
+              //   ? +this.sumPay
+              //   : +this.sumPayCustom || 0,
             clientId: this.clientId,
             description: ""
           },

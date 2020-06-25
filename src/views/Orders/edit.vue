@@ -345,7 +345,7 @@
                   <v-date-picker
                     v-model="editedItem.deliveryDate"
                     @input="dataPicker = false"
-                    @change="getOrdersList()"
+                    @change="skipQuery = false"
                     no-title
                     scrollable
                     locale="ru-ru"
@@ -381,7 +381,6 @@
                       item-text="name"
                       item-value="id"
                       v-model.number="editedItem.deliveryTimeOfDay"
-                      @change="getOrdersList()"
                       hide-details
                       class="mb-4"
                       :readonly="editedItemReadOnly"
@@ -567,7 +566,6 @@
           >
             <div style="position: relative; height: 100%; overflow: hidden;">
               <delivery-map
-                      :orders-list="ordersList"
                       :delivery-time-of-day-list="this.deliveryTimeOfDayList"
                       :edited-item="editedItem"
                       :zones="deliveryZones"
@@ -746,6 +744,7 @@ export default {
       responsible: undefined,
       clientName: '',
       addresseeName: '',
+      skipQuery: true,
     };
   },
   apollo: {
@@ -786,7 +785,178 @@ export default {
           }
         }
       `
-    }
+    },
+    tsList: {
+      query: gql`
+        query {
+          tsList: orderSourceTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    deliveryList: {
+      query: gql`
+        query {
+          deliveryList: deliveryTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    statusList: {
+      query: gql`
+        query {
+          statusList: orderStatuses {
+            id
+            name
+          }
+        }
+      `
+    },
+    couriersList: {
+      query: gql`
+        query  {
+          couriersList: users(
+            where: { groupId: { _eq: "4" } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    paymentTypesList: {
+      query: gql`
+        query {
+          paymentTypesList: paymentTypes {
+            id
+            name
+          }
+        }
+      `
+    },
+    ordersList: {
+      query: gql`
+        query ordersList(
+          $date: date,
+          $deliveryTimeOfDay: bigint
+        ) {
+          ordersList: orders(
+            where: {
+              deliveryTypeId: { _eq: "2" },
+              orderStatusId: { _in: [1, 2, 3] },
+              deliveryTimeOfDay: { _eq: $deliveryTimeOfDay },
+              deliveryDate: { _eq: $date }
+            }
+          ) {
+            id
+            coordinates
+          }
+        }
+      `,
+      variables() {
+        return {
+          date: this.editedItem.deliveryDate,
+          deliveryTimeOfDay: (this.editedItem.deliveryTimeOfDay)
+            ? this.editedItem.deliveryTimeOfDay
+            : undefined,
+        };
+      },
+      skip() {
+        return this.skipQuery;
+      },
+    },
+    order: {
+      query: gql`
+        query order(
+          $id: bigint,
+        ) {
+          order: orders(
+            where: {
+              id: { _eq: $id },
+            }
+          ) {
+            id
+            isCustomerRecipient
+            client: clientId
+            clientName
+            clientPhone
+            courier: courierId
+            delivery
+            deliveryDate
+            deliveryTime
+            deliveryTimeOfDay
+            createdBy: createdById
+            createdByItem: createdBy {
+              id
+              name
+            }
+            orderSourceType: orderSourceTypeIds
+            description
+            orderCost
+            addressee: addresseeId
+            addresseeName
+            addresseePhone
+            address
+            entrance
+            flat
+            floor
+            orderStatus: orderStatusId
+            clientType: clientTypeId
+            deliveryType: deliveryTypeId
+            deliveryCost
+            incognito
+            coordinates
+            bouquets: orderBouquets {
+              count
+              name
+              place
+              id
+            }
+            responsibleId
+            prePayment
+            alreadyPaid
+            createdAt: created_at
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.id,
+        };
+      },
+      update({ order }) {
+        const item = order.shift();
+
+        this.userInfo = item.createdByItem;
+        delete item.createdByItem;
+
+        item.bouquets = (item.bouquets) ? item.bouquets : [];
+
+
+        if (this.copy) {
+          item.orderStatus = 1;
+          item.courier = null;
+          item.deliveryTimeOfDay = 1;
+          item.deliveryTime = '';
+          item.deliveryDate = '';
+          item.bouquets = item.bouquets.map((elem) => {
+            delete elem.id;
+            return elem;
+          });
+        }
+
+        item.coordsMap = [53.05, 50.101783];
+
+        this.editedItem = item;
+
+        this.skipQuery = false;
+        this.loadOrder = false;
+      },
+    },
   },
   watch: {
     clientName(val) {
@@ -811,7 +981,7 @@ export default {
     },
     placemarks() {
       return this.ordersList
-        .filter(item => item.coordinates.length === 2)
+        .filter(item => item.coordinates && item.coordinates.length === 2)
         .map(order => ({
           id: order.id,
           coordinates: order.coordinates,
@@ -905,21 +1075,21 @@ export default {
         }
       }
     },
-    getPaymentTypesList() {
-      const itemParams = {
-        type: 'paymentTypes',
-        filter: {
-          isActive: true,
-        },
-      };
+    // getPaymentTypesList() {
+    //   const itemParams = {
+    //     type: 'paymentTypes',
+    //     filter: {
+    //       isActive: true,
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        console.log(response);
-        this.paymentTypesList = response;
-      }).catch(() => {
-        console.log('error');
-      });
-    },
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     console.log(response);
+    //     this.paymentTypesList = response;
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     setPointByClientAddress(address) {
       geocoder.geocode(
         address,
@@ -1073,141 +1243,141 @@ export default {
         });
       }
     },
-    getTsList() {
-      const itemParams = {
-        type: 'order-source',
-      };
+    // getTsList() {
+    //   const itemParams = {
+    //     type: 'order-source',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.tsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getDeliveryList() {
-      const itemParams = {
-        type: 'delivery-type',
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.tsList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getDeliveryList() {
+    //   const itemParams = {
+    //     type: 'delivery-type',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.deliveryList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getStatusList() {
-      const itemParams = {
-        type: 'order-status',
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.deliveryList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getStatusList() {
+    //   const itemParams = {
+    //     type: 'order-status',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.statusList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientsList() {
-      const itemParams = {
-        type: 'clients',
-        filter: {
-          active: true,
-        },
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.statusList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getClientsList() {
+    //   const itemParams = {
+    //     type: 'clients',
+    //     filter: {
+    //       active: true,
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.clientsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        }).filter(i => i.id !== 0);
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getClientTypeList() {
-      const itemParams = {
-        type: 'client-type',
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.clientsList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     }).filter(i => i.id !== 0);
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getClientTypeList() {
+    //   const itemParams = {
+    //     type: 'client-type',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.typeClient = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getCouriersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
-          isActive: true,
-          group: 4,
-        },
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.typeClient = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getCouriersList() {
+    //   const itemParams = {
+    //     type: 'users',
+    //     filter: {
+    //       isActive: true,
+    //       group: 4,
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.couriersList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getOrdersList: function getOrdersList() {
-      const itemParams = {
-        type: 'orders',
-        filter: {
-          deliveryDate: this.editedItem.deliveryDate,
-          deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
-          deliveryType: 2,
-          orderStatus: [1, 2, 3],
-        },
-      };
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.couriersList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getOrdersList: function getOrdersList() {
+    //   const itemParams = {
+    //     type: 'orders',
+    //     filter: {
+    //       deliveryDate: this.editedItem.deliveryDate,
+    //       deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
+    //       deliveryType: 2,
+    //       orderStatus: [1, 2, 3],
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.ordersList = response.orders;
-      }).catch(() => {
-        console.log('error');
-      });
-    },
-    getUsersList() {
-      const itemParams = {};
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.ordersList = response.orders;
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
+    // getUsersList() {
+    //   const itemParams = {};
 
-      if (this.copy) {
-        itemParams.type = 'login';
-      } else {
-        itemParams.type = 'users';
-        itemParams.filter = {
-          id: +this.editedItem.createdBy,
-        };
-      }
+    //   if (this.copy) {
+    //     itemParams.type = 'login';
+    //   } else {
+    //     itemParams.type = 'users';
+    //     itemParams.filter = {
+    //       id: +this.editedItem.createdBy,
+    //     };
+    //   }
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        let user = {};
-        if (this.copy) {
-          user = response;
-        } else {
-          [user] = response;
-        }
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     let user = {};
+    //     if (this.copy) {
+    //       user = response;
+    //     } else {
+    //       [user] = response;
+    //     }
 
-        this.userInfo = user;
-        this.userInfo.id = +this.userInfo.id;
-        this.editedItem.createdBy = +this.userInfo.id;
-      }).catch(() => {
-        console.log('error');
-      });
-    },
+    //     this.userInfo = user;
+    //     this.userInfo.id = +this.userInfo.id;
+    //     this.editedItem.createdBy = +this.userInfo.id;
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
@@ -1292,11 +1462,11 @@ export default {
     },
   },
   mounted() {
-    this.getTsList();
-    this.getDeliveryList();
-    this.getStatusList();
-    this.getCouriersList();
-    this.getItem();
+    // this.getTsList();
+    // this.getDeliveryList();
+    // this.getStatusList();
+    // this.getCouriersList();
+    // this.getItem();
     this.getItemHistory();
   },
 };

@@ -8,7 +8,7 @@
     ref="yMaps"
   >
     <template v-for="(item, index) in points" v-if="points.length">
-      <ymap-marker :key="index" marker-id="editedItemId" :coords="item.coordinates" />
+      <ymap-marker :key="index" :marker-id="`editedItemId-${item.id}`" :coords="item.coordinates" />
     </template>
   </yandex-map>
 </template>
@@ -23,10 +23,10 @@ export default {
     ymapMarker,
   },
   props: {
-    ordersList: {
-      type: Array,
-      required: true,
-    },
+    // ordersList: {
+    //   type: Array,
+    //   required: true,
+    // },
     deliveryTimeOfDayList: {
       type: Array,
       required: true,

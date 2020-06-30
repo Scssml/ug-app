@@ -4,34 +4,7 @@
     class="pa-0"
   >
     <div class="hidden-sm-and-down">
-      <v-dialog
-        :value="loadingDialog"
-        persistent
-        max-width="320px"
-      >
-        <v-list>
-          <v-list-tile
-            v-for="(item, index) in loadingData"
-            :key="index"
-            avatar
-            :color="(item.error) ? 'red' : item.color"
-          >
-            <v-list-tile-avatar>
-              <v-progress-circular
-                :value="100"
-                :size="30"
-                :color="(item.error) ? 'red' : item.color"
-                :indeterminate="item.loading"
-              ></v-progress-circular>
-            </v-list-tile-avatar>
-
-            <v-list-tile-content>
-              <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-        </v-list>
-      </v-dialog>
-      <template v-if="!loadingDialog">
+      <template>
         <v-dialog
           v-model="dialogForm"
           fullscreen
@@ -85,7 +58,6 @@
                       item-value="id"
                       v-model="filter.courier"
                       hide-details
-                      @change="customFilter()"
                     ></v-select>
                   </v-flex>
                   <v-flex
@@ -99,7 +71,6 @@
                       item-value="id"
                       v-model="filter.deliveryTimeOfDay"
                       hide-details
-                      @change="customFilter()"
                     ></v-select>
                   </v-flex>
                   <v-flex
@@ -133,7 +104,6 @@
                         locale="ru-ru"
                         first-day-of-week="1"
                         :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                        @change="customFilter()"
                       ></v-date-picker>
                     </v-menu>
                   </v-flex>
@@ -168,7 +138,6 @@
                         scrollable
                         first-day-of-week="1"
                         :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                        @change="customFilter()"
                       ></v-date-picker>
                     </v-menu>
                   </v-flex>
@@ -414,7 +383,6 @@
               locale="ru-ru"
               first-day-of-week="1"
               :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-              @change="customFilter()"
             ></v-date-picker>
           </v-menu>
         </v-flex>
@@ -448,7 +416,6 @@
               scrollable
               first-day-of-week="1"
               :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-              @change="customFilter()"
             ></v-date-picker>
           </v-menu>
         </v-flex>
@@ -612,6 +579,11 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
+import isAfter from "date-fns/isAfter";
+import parse from "date-fns/parse";
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
 import userSettings from './userSettings.vue';
 import orderShow from './showOrder.vue';
@@ -665,7 +637,9 @@ export default {
       },
       userSettings: [],
       pagination: {
+        sortBy: "id",
         rowsPerPage: -1,
+        descending: false
       },
       deliveryTimeOfDayFilter: [
         {
@@ -714,7 +688,213 @@ export default {
       showOrderMap: false,
       showMap: false,
       editOrderBouquets: false,
+      skipQuery: false,
     };
+  },
+  apollo: {
+    couriersList: {
+      query: gql`
+        query  {
+          couriersList: users(
+            where: { groupId: { _eq: "4" } }
+          ) {
+            id
+            name
+          }
+        }
+      `,
+    },
+    statusList: {
+      query: gql`
+        query {
+          statusList: orderStatuses {
+            id
+            name
+          }
+        }
+      `,
+    },
+    userSettings: {
+      query: gql`
+        query UserSettings($userId: bigint) {
+          userSettings: users(where: { id: { _eq: $userId } }) {
+            userSettings: settings
+          }
+        }
+      `,
+      variables() {
+        return {
+          userId: this.$store.getters.getAuthUser
+        };
+      },
+      update({ userSettings: [{ userSettings: { orderSettings } = {} }] }) {
+        const userSort = this.$store.getters.getOrderSort;
+
+        this.userSettings = orderSettings || [];
+
+        if (userSort.sortBy) {
+          this.pagination.sortBy = userSort.sortBy;
+          this.pagination.descending = userSort.descending;
+          this.getOrdersList();
+        } else if (orderSettings) {
+          const colSort = this.userSettings.find(item => item.sortOrder);
+
+          if (colSort) {
+            this.pagination.sortBy = colSort.sortField;
+            this.pagination.descending = colSort.sortOrder === "desc";
+
+            const sort = {
+              sortBy: this.pagination.sortBy,
+              descending: this.pagination.descending
+            };
+
+            this.$store.commit("setOrderSort", sort);
+          }
+        }
+
+        return orderSettings;
+      }
+    },
+    ordersList: {
+      query: function() {
+        return gql`
+        query OrderList(
+          $startDate: date
+          $endDate: date
+          $orderStatus: [bigint!]
+          $deliveryTimeOfDay: bigint
+          $courierId: bigint
+          $deliveryTypeId: bigint
+        ) {
+          ordersList: orders(
+            where: {
+              _and: [
+                { deliveryDate: { _gte: $startDate } }
+                { deliveryDate: { _lte: $endDate } }
+                { orderStatusId: { _in: $orderStatus } }
+                { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
+                { deliveryTypeId: { _eq: $deliveryTypeId } }
+                { courierId: { _eq: $courierId } }
+              ]
+            }
+            order_by: { ${this.pagination.sortBy}: ${
+          this.pagination.descending ? "desc" : "asc"
+        } }
+          ) {
+            id
+            deliveryTimeOfDay
+            orderSourceTypeIds
+            incognito
+            alreadyPaid
+            prePayment
+            description
+            clientName
+            clientPhone
+            coordinates
+            address
+            entrance
+            flat
+            floor
+            addresseeName
+            addresseePhone
+            deliveryCost
+            isAlreadyPrinted
+            deliveryType {
+              id
+              name
+            }
+            deliveryDate
+            deliveryTime
+            clientType {
+              name
+            }
+            orderCost
+            responsible {
+              name
+              phone
+            }
+            clientTypeId
+            courier {
+              name
+            }
+            client {
+              id
+              name
+              bill
+            }
+            bouquets: orderBouquets {
+              name
+              count
+              place
+              readyBouquetCount: bouquets_aggregate {
+                aggregate {
+                  count
+                }
+              }
+            }
+            createdAt: created_at
+            createdBy {
+              name
+            }
+            orderStatus {
+              id
+              name
+              color
+            }
+          }
+        }
+      `;
+      },
+      variables() {
+        return {
+          startDate: this.filter.dateStart
+            ? this.filter.dateStart
+            : undefined,
+          endDate: this.filter.dateEnd
+            ? this.filter.dateEnd
+            : undefined,
+          orderStatus:
+            this.filter.orderStatus ? this.filter.orderStatus : undefined,
+          deliveryTimeOfDay:
+            this.filter.deliveryTimeOfDay
+              ? this.filter.deliveryTimeOfDay
+              : undefined,
+          courierId:
+            this.filter.courier
+              ? this.filter.courier
+              : undefined,
+          deliveryTypeId:
+            this.filter.deliveryType
+              ? this.filter.deliveryType
+              : undefined,
+        };
+      },
+      update({ ordersList }) {
+        const parseDateFormat = "yyyy-LL-dd";
+        let prevItem = null;
+
+        for (let order of ordersList) {
+          order.isTopLine =
+            prevItem &&
+            isAfter(
+              parse(order.deliveryDate, parseDateFormat, new Date()),
+              parse(prevItem, parseDateFormat, new Date())
+            );
+
+          prevItem = order.deliveryDate;
+        }
+
+        return ordersList;
+      },
+      skip() {
+        return this.skipQuery;
+      },
+      // result() {
+      //   const loadData = this.loadingData.find(item => item.id === "orders");
+      //   loadData.title = "Заказы получены!";
+      //   loadData.loading = false;
+      // }
+    },
   },
   watch: {
     dialogForm(newValue) {
@@ -740,7 +920,7 @@ export default {
       const placemarks = [];
 
       this.ordersList.forEach((item) => {
-        if (item.coordinates && item.coordinates.length === 2) {
+        if (item.coordinates && item.coordinates[0] && item.coordinates[1]) {
           placemarks.push({
             id: item.id,
             coords: item.coordinates,
@@ -759,10 +939,10 @@ export default {
 
       return placemarks;
     },
-    loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
-    },
+    // loadingDialog() {
+    //   const loadData = this.loadingData.filter(item => !item.error && !item.loading);
+    //   return (loadData.length === this.loadingData.length) ? 0 : 1;
+    // },
     orderSourceTypeEditElem() {
       const editElem = this.ordersList.find(item => item.id === this.editedId);
       return (editElem) ? editElem.orderSourceType : [];
@@ -901,24 +1081,24 @@ export default {
         loadData.error = true;
       });
     },
-    getCouriersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
-          isActive: true,
-          group: 4,
-        },
-      };
+    // getCouriersList() {
+    //   const itemParams = {
+    //     type: 'users',
+    //     filter: {
+    //       isActive: true,
+    //       group: 4,
+    //     },
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.couriersList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.couriersList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     // getDeliveryNow() {
     //   const orderFilter = {
     //     deliveryDate: [this.dateNowStr, this.dateNowStr],
@@ -939,20 +1119,20 @@ export default {
     //     console.log('error');
     //   });
     // },
-    getStatusList() {
-      const itemParams = {
-        type: 'order-status',
-      };
+    // getStatusList() {
+    //   const itemParams = {
+    //     type: 'order-status',
+    //   };
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.statusList = response.map((item) => {
-          item.id = +item.id;
-          return item;
-        });
-      }).catch(() => {
-        console.log('error');
-      });
-    },
+    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
+    //     this.statusList = response.map((item) => {
+    //       item.id = +item.id;
+    //       return item;
+    //     });
+    //   }).catch(() => {
+    //     console.log('error');
+    //   });
+    // },
     // getClientsList() {
     //   const itemParams = {
     //     type: 'clients',
@@ -985,7 +1165,7 @@ export default {
     //   });
     // },
     closeDialog() {
-      this.getOrdersList();
+      this.$apollo.queries.ordersList.refetch();
       this.dialogForm = false;
       setTimeout(() => {
         this.editSettings = false;
@@ -1046,7 +1226,6 @@ export default {
     },
     setFilterProp(code, value) {
       this.filter[code] = value;
-      this.customFilter();
     },
     setCoordsMap() {
       // this.coordsMap = e.get('coords');
@@ -1068,9 +1247,9 @@ export default {
     this.filter.dateStart = dateStart;
     this.filter.dateEnd = dateStart;
 
-    this.getOrdersList();
-    this.getStatusList();
-    this.getCouriersList();
+    // this.getOrdersList();
+    // this.getStatusList();
+    // this.getCouriersList();
     // this.getClientsList();
     // this.getClientTypeList();
 

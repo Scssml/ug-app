@@ -51,6 +51,8 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
+
 export default {
   props: {
     id: {
@@ -63,6 +65,34 @@ export default {
       editedItem: {},
       createdSuccess: false,
     };
+  },
+  apollo: {
+    couriersList: {
+      query: gql`
+        query couriersList(
+          $id: bigint
+        ) {
+          couriersList: users(
+            where: { id: { _eq: $id } }
+          ) {
+            id
+            name
+            active
+            login
+            active
+            groupId
+          }
+        }
+      `,
+      variables() {
+        return {
+          id: this.id,
+        };
+      },
+      update({ couriersList }) {
+        this.editedItem = couriersList.shift();
+      },
+    },
   },
   methods: {
     getItem() {
@@ -91,6 +121,11 @@ export default {
         const propsItem = Object.assign({}, this.editedItem);
         delete propsItem.id;
 
+        propsItem.group = +propsItem.groupId;
+        propsItem.isActive = propsItem.active;
+        delete propsItem.groupId;
+        delete propsItem.active;
+
         const itemParams = {
           type: 'users',
           id: this.id,
@@ -106,8 +141,8 @@ export default {
       }
     },
   },
-  mounted() {
-    this.getItem();
-  },
+  // mounted() {
+  //   this.getItem();
+  // },
 };
 </script>

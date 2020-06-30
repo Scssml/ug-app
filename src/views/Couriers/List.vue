@@ -3,34 +3,7 @@
     fluid
     class="pa-0"
   >
-    <v-dialog
-      :value="loadingDialog"
-      persistent
-      max-width="320px"
-    >
-      <v-list>
-        <v-list-tile
-          v-for="(item, index) in loadingData"
-          :key="index"
-          avatar
-          :color="(item.error) ? 'red' : item.color"
-        >
-          <v-list-tile-avatar>
-            <v-progress-circular
-              :value="100"
-              :size="30"
-              :color="(item.error) ? 'red' : item.color"
-              :indeterminate="item.loading"
-            ></v-progress-circular>
-          </v-list-tile-avatar>
-
-          <v-list-tile-content>
-            <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-dialog>
-    <template v-if="!loadingDialog">
+    <template>
       <v-card>
         <v-card-title>
           <v-text-field
@@ -81,7 +54,7 @@
             <td class="text-xs-right" style="width: 30px;">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
             <td class="text-xs-right">
-              {{ (!!props.item.isActive) ? 'Да' : 'Нет' }}
+              {{ (!!props.item.active) ? 'Да' : 'Нет' }}
             </td>
             <td class="text-xs-right" style="width: 110px;">
               <v-icon
@@ -108,6 +81,7 @@
 </template>
 
 <script>
+import gql from "graphql-tag";
 import CourierEdit from './edit.vue';
 import CourierAdd from './add.vue';
 import CourierDelete from './delete.vue';
@@ -121,15 +95,6 @@ export default {
   },
   data() {
     return {
-      loadingData: [
-        {
-          title: 'Получение курьеров',
-          error: false,
-          loading: true,
-          color: 'cyan',
-          id: 'couriers',
-        },
-      ],
       search: '',
       headersTable: [
         {
@@ -160,38 +125,24 @@ export default {
       deleteId: 0,
     };
   },
-  computed: {
-    loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
-      return (loadData.length === this.loadingData.length) ? 0 : 1;
+  apollo: {
+    couriersList: {
+      query: gql`
+        query  {
+          couriersList: users(
+            where: { groupId: { _eq: "4" } }
+          ) {
+            id
+            name
+            active
+          }
+        }
+      `,
     },
   },
   methods: {
-    getCouriersList: function getCouriersList() {
-      const itemParams = {
-        type: 'users',
-        filter: {
-          group: 4,
-        },
-      };
-
-      const successData = 'Курьеры получены!';
-      const errorData = 'Ошибка получения курьеров!';
-
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.couriersList = response;
-
-        const loadData = this.loadingData.find(item => item.id === 'couriers');
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === 'couriers');
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
     closeDialog() {
-      this.getCouriersList();
+      this.$apollo.queries.couriersList.refetch();
       this.dialogForm = false;
       this.editedId = 0;
       this.deleteId = 0;
@@ -204,9 +155,6 @@ export default {
       this.deleteId = +id;
       this.dialogForm = true;
     },
-  },
-  mounted() {
-    this.getCouriersList();
   },
 };
 </script>

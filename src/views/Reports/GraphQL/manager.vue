@@ -4,27 +4,49 @@
       class="width-auto"
       v-if="report"
     >
-      <tr>
-        <template v-for="(item, index) in tableHeader">
-          <th :key="`th-${index}`">{{ item }}</th>
-        </template>
-      </tr>
       <template v-for="(item, index) in report">
-        <tr :key="index">
-          <td>{{ index + 1 }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.totalBouquets }}</td>
-          <td>{{ item.totalBouquetPrice }}</td>
-          <td>{{ item.totalOrders }}</td>
-          <td>
-            <template v-if="item.orderSourceTypesName">
-              {{ item.orderSourceTypesName }}
-            </template>
-          </td>
-          <td>{{ item.deliveryBouquetCount }}</td>
-          <td>{{ Math.ceil(item.allDeliveryBouquetPrice) }}</td>
+        <tr :key="item.id">
+          <td colspan="6" class="text-xs-center"><b>{{ item.name }}</b></td>
+        </tr>
+        <tr :key="item.id">
+          <template v-for="(th, indexTh) in tableHeader">
+            <td :key="`th-${indexTh}`"><b>{{ th }}</b></td>
+          </template>
+        </tr>
+        <template v-for="(val, key) in item.values">
+          <tr :key="`value-${item.id}-${key}`">
+            <td>
+              <template v-if="val.orderSourceTypesName">
+                {{ val.orderSourceTypesName }}
+              </template>
+            </td>
+            <td>{{ val.totalBouquets }}</td>
+            <td>{{ val.totalBouquetPrice }}</td>
+            <td>{{ val.totalOrders }}</td>
+            <td>{{ val.deliveryBouquetCount }}</td>
+            <td>{{ Math.ceil(val.allDeliveryBouquetPrice) }}</td>
+          </tr>
+        </template>
+        <tr :key="item.id">
+          <td><b>Итого</b></td>
+          <td><b>{{ item.allTotalBouquets }}</b></td>
+          <td><b>{{ item.allTotalBouquetPrice }}</b></td>
+          <td><b>{{ item.allTotalOrders }}</b></td>
+          <td><b>{{ item.allDeliveryBouquetCount }}</b></td>
+          <td><b>{{ item.totalallDeliveryBouquetPrice }}</b></td>
         </tr>
       </template>
+      <tr>
+        <td colspan="6" class="text-xs-center"><b>Всего по всем менеджерам</b></td>
+      </tr>
+      <tr>
+        <td><b>Итого</b></td>
+        <td><b>{{ allTotalBouquets }}</b></td>
+        <td><b>{{ allTotalBouquetPrice }}</b></td>
+        <td><b>{{ allTotalOrders }}</b></td>
+        <td><b>{{ allDeliveryBouquetCount }}</b></td>
+        <td><b>{{ totalallDeliveryBouquetPrice }}</b></td>
+      </tr>
     </table>
   </div>
 </template>
@@ -48,18 +70,43 @@ export default {
   data() {
     return {
       tableHeader: [
-        '№',
-        'Менеджер',
+        'Т/С',
         'Количество букетов',
         'Стоимость букетов',
         'Количество заказов',
-        'Т/С',
         'Доставленные букеты',
         'Стоимость доставленных букетов',
       ],
       report: [],
       orderSourceTypes: [],
     };
+  },
+  computed: {
+    allTotalBouquets() {
+      return this.report.reduce((sum, item) => {
+        return sum + item.allTotalBouquets;
+      }, 0);
+    },
+    allTotalBouquetPrice() {
+      return this.report.reduce((sum, item) => {
+        return sum + item.allTotalBouquetPrice;
+      }, 0);
+    },
+    allTotalOrders() {
+      return this.report.reduce((sum, item) => {
+        return sum + item.allTotalOrders;
+      }, 0);
+    },
+    allDeliveryBouquetCount() {
+      return this.report.reduce((sum, item) => {
+        return sum + item.allDeliveryBouquetCount;
+      }, 0);
+    },
+    totalallDeliveryBouquetPrice() {
+      return this.report.reduce((sum, item) => {
+        return sum + item.totalallDeliveryBouquetPrice;
+      }, 0);
+    },
   },
   apollo: {
     orderSourceTypes: {
@@ -84,6 +131,7 @@ export default {
               end_date: $dateEnd
             }
           ) {
+            id
             name
             totalBouquets
             totalBouquetPrice
@@ -101,7 +149,7 @@ export default {
         };
       },
       update({ report }) {
-        return report.map((item) => {
+        const reportManager = report.map((item) => {
           if (item.ordersourcetypeids.length > 0) {
             item.orderSourceTypesName = item.ordersourcetypeids.map((type) => {
               const findSource = this.orderSourceTypes.find(elem => elem.id === type);
@@ -119,6 +167,40 @@ export default {
 
           return item;
         });
+
+        return reportManager.reduce((arVal, item) => {
+          let index = arVal.findIndex(elem => elem.id === item.id);
+
+          if (index === -1) {
+            arVal.push({
+              id: item.id,
+              name: item.name,
+              allTotalBouquets: item.totalBouquets,
+              allTotalBouquetPrice: item.totalBouquetPrice,
+              allTotalOrders: item.totalOrders,
+              allDeliveryBouquetCount: item.deliveryBouquetCount,
+              totalallDeliveryBouquetPrice: item.allDeliveryBouquetPrice,
+              values: [item],
+            });
+
+            index = arVal.length - 1;
+          } else {
+            arVal[index].values.push(item);
+            arVal[index].allTotalBouquets += item.totalBouquets;
+            arVal[index].allTotalBouquetPrice += item.totalBouquetPrice;
+            arVal[index].allTotalOrders += item.totalOrders;
+            arVal[index].allDeliveryBouquetCount += item.deliveryBouquetCount;
+            arVal[index].totalallDeliveryBouquetPrice += item.allDeliveryBouquetPrice;
+          }
+
+          arVal[index].values.sort((a, b) => {
+            if (a.orderSourceTypesName > b.orderSourceTypesName) return 1;
+            if (a.orderSourceTypesName === b.orderSourceTypesName) return 0;
+            if (a.orderSourceTypesName < b.orderSourceTypesName) return -1;
+          });
+
+          return arVal;
+        }, []);
       },
     },
   },

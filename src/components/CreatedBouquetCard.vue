@@ -259,6 +259,7 @@
           v-model="bouquetCount"
           class="scs-small text-lg-right"
           title="Количество"
+          @change="updateProps()"
         ></v-text-field>
       </div>
       <v-btn @click="checkCard()" flat small color="gray" class="mx-0">
@@ -804,6 +805,8 @@ export default {
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
         this.clientSaleCustom = this.propsDefault.salePercent;
       }
+
+      this.updateProps();
     }
   },
   updated() {

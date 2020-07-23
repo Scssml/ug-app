@@ -511,6 +511,8 @@ export default {
     saveProps: function saveProps(index, props) {
       const cardItem = this.cardsList[index];
 
+      const arSuccess = [];
+
       if (props) {
         let emptySum = true;
 
@@ -523,13 +525,15 @@ export default {
           goodId: item.id,
         }));
 
+        props.payment.clientId = (props.payment.clientId) ? props.payment.clientId : 0;
+
         const propsService = {
           clientID: props.payment.clientId,
           userID: this.$store.getters.getAuthUser,
           payments: [
             {
               paymentTypeId: props.payment.paymentTypeId,
-              price: props.payment.amount,
+              price: props.payment.amount / props.bouquetCount,
               comment: props.payment.description,
             },
           ],
@@ -542,7 +546,7 @@ export default {
         if (props.secondPayment) {
           propsService.payments.push({
             paymentTypeId: props.secondPayment.paymentTypeId,
-            price: props.secondPayment.amount,
+            price: props.secondPayment.amount / props.bouquetCount,
             comment: props.secondPayment.description,
           });
         }
@@ -564,36 +568,42 @@ export default {
           propsService.orderBouquetID = props.orderBouquet;
         }
 
-        this.$apollo.mutate({
-          mutation: gql`mutation createService (
-            $props: NewService!
-          ) {
-            createService(input: $props) {
-              id
+        for (let i = 0; i < props.bouquetCount; i++) {
+          this.$apollo.mutate({
+            mutation: gql`mutation createService (
+              $props: NewService!
+            ) {
+              createService(input: $props) {
+                id
+              }
+            }`,
+            variables: {
+              props: propsService,
+            },
+          }).then(() => {
+            arSuccess.push(true);
+
+            if (arSuccess.length === props.bouquetCount) {
+              cardItem.success = true;
+              this.$set(this.cardsList, index, cardItem);
+
+              this.refreshPayments();
+
+              const cardNoEmpty = this.cardsList.filter(elem =>
+                (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+                  elem.success !== true);
+              localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+
+              const findIndex = this.checkCardList.findIndex(card => card.index === index);
+
+              if (findIndex + 1) {
+                this.checkCardList.splice(findIndex, 1);
+              }
             }
-          }`,
-          variables: {
-            props: propsService,
-          },
-         }).then(() => {
-          cardItem.success = true;
-          this.$set(this.cardsList, index, cardItem);
-
-          this.refreshPayments();
-
-          const cardNoEmpty = this.cardsList.filter(elem =>
-            (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-              elem.success !== true);
-          localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
-
-          const findIndex = this.checkCardList.findIndex(card => card.index === index);
-
-          if (findIndex + 1) {
-            this.checkCardList.splice(findIndex, 1);
-          }
-        }).catch((error) => {
-          console.error(error);
-        });
+          }).catch((error) => {
+            console.error(error);
+          });
+        }
       }
     },
     updateProps: function updateProps(index, props) {

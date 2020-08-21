@@ -135,6 +135,8 @@
 
 <script>
 import gql from "graphql-tag";
+import format from "date-fns/format";
+import { ru } from "date-fns/locale";
 
 export default {
   data() {
@@ -190,6 +192,9 @@ export default {
     },
   },
   methods: {
+    formatDate(date, dateFormat) {
+      return format(new Date(date), dateFormat, { locale: ru });
+    },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;

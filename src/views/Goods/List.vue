@@ -444,7 +444,7 @@ export default {
             estimate: +item.count,
             newPrice: item.price,
             oldPrice: item.oldPrice,
-            stockQuantity: item.stockBalance,
+            stockQuantity: item.stockBalance + +item.count,
           };
 
           return good;

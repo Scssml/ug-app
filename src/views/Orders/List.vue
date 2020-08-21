@@ -1144,7 +1144,7 @@ export default {
             clientId: item.client.id,
             decorPercent: 20,
             deliveryCost: item.deliveryCost,
-            salePercent: 0,
+            salePercent: '',
             sumDecorAdditional: 0
           },
           goods: []

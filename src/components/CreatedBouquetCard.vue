@@ -622,7 +622,7 @@ export default {
     clientSale: function clientSale() {
       const client = this.client;
 
-      let salePersent = 0;
+      let salePersent = null;
 
       if (client) {
         if (this.clientSaleCustom !== "") {

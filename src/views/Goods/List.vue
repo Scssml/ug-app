@@ -216,13 +216,13 @@ export default {
           text: 'Название',
           align: 'left',
           value: 'name',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Сортировка',
           align: 'left',
           value: 'sortIndex',
-          sortable: false,
+          sortable: true,
         },
         {
           text: 'Цена',

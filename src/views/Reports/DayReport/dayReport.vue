@@ -1,33 +1,111 @@
 <template>
   <div>
-    <template v-if="report">
-      <p>Дата: {{ report.date }}</p>
-      <p>Выручка: {{ report.revenue }}</p>
-      <p>Сумма оплат по каналу Безнал: {{ report.cashless }}</p>
-      <p>Карта: {{ report.card }}</p>
-      <p>Терминал: {{ report.terminal }}</p>
-      <p>Артур: {{ report.collection }}</p>
-      <p>Расходы: {{ report.expenses }}</p>
-      <p>Закупка цветов: {{ report.flowerPurchase }}</p>
-      <p>Наличные: {{ report.cash }}</p>
-      <p>Доставка: {{ report.serviceDelivery }}</p>
-      <p>Оформление: {{ report.serviceDecor }}</p>
-      <p>Скидка: {{ report.serviceSale }}</p>
-      <p>Упаковка: {{ report.packaging }}</p>
-      <p>Роза России: {{ report.russianRosa }}</p>
-      <p>Транспортные расходв: {{ report.transport }}</p>
-      <!-- <p>Авет: {{ report.avet }}</p> -->
-      <p>Алик: {{ report.alic }}</p>
-      <p>Долги: {{ report.debts }}</p>
-      <p>Брак: {{ report.defect }}</p>
-      <p>Приход товаров: {{ report.purchase }}</p>
-      <p>Закупка товаров: {{ report.arrival }}</p>
-      <p>Переоценка: {{ report.revaluation }}</p>
-      <p>Товарный остаток: {{ report.commodityBalance }}</p>
-      <p>Комиссия: {{ report.commission }}</p>
-      <p>К оплате: {{ report.toPay }}</p>
-      <p>К оплате дост: {{ report.toDeliveryPay }}</p>
-    </template>
+    <table v-if="report" class="width-auto">
+      <tr>
+        <td>Дата</td>
+        <td>{{ report.date }}</td>
+      </tr>
+      <tr>
+        <td>Выручка</td>
+        <td>{{ report.revenue }}</td>
+      </tr>
+      <tr>
+        <td>Сумма оплат по каналу Безнал</td>
+        <td>{{ report.cashless }}</td>
+      </tr>
+      <tr>
+        <td>Карта</td>
+        <td>{{ report.card }}</td>
+      </tr>
+      <tr>
+        <td>Терминал</td>
+        <td>{{ report.terminal }}</td>
+      </tr>
+      <tr>
+        <td>Артур</td>
+        <td>{{ report.collection }}</td>
+      </tr>
+      <tr>
+        <td>Расходы</td>
+        <td>{{ report.expenses }}</td>
+      </tr>
+      <tr>
+        <td>Закупка цветов</td>
+        <td>{{ report.flowerPurchase }}</td>
+      </tr>
+      <tr>
+        <td>Наличные</td>
+        <td>{{ report.cash }}</td>
+      </tr>
+      <tr>
+        <td>Доставка</td>
+        <td>{{ report.serviceDelivery }}</td>
+      </tr>
+      <tr>
+        <td>Оформление</td>
+        <td>{{ report.serviceDecor }}</td>
+      </tr>
+      <tr>
+        <td>Скидка</td>
+        <td>{{ report.serviceSale }}</td>
+      </tr>
+      <tr>
+        <td>Упаковка</td>
+        <td>{{ report.packaging }}</td>
+      </tr>
+      <tr>
+        <td>Роза России</td>
+        <td>{{ report.russianRosa }}</td>
+      </tr>
+      <tr>
+        <td>Транспортные расходв</td>
+        <td>{{ report.transport }}</td>
+      </tr>
+      <!-- <tr>
+        <td>Авет</td>
+        <td>{{ report.avet }}</td>
+      </tr> -->
+      <tr>
+        <td>Алик</td>
+        <td>{{ report.alic }}</td>
+      </tr>
+      <tr>
+        <td>Долги</td>
+        <td>{{ report.debts }}</td>
+      </tr>
+      <tr>
+        <td>Брак</td>
+        <td>{{ report.defect }}</td>
+      </tr>
+      <tr>
+        <td>Приход товаров</td>
+        <td>{{ report.purchase }}</td>
+      </tr>
+      <tr>
+        <td>Закупка товаров</td>
+        <td>{{ report.arrival }}</td>
+      </tr>
+      <tr>
+        <td>Переоценка</td>
+        <td>{{ report.revaluation }}</td>
+      </tr>
+      <tr>
+        <td>Товарный остаток</td>
+        <td>{{ report.commodityBalance }}</td>
+      </tr>
+      <tr>
+        <td>Комиссия</td>
+        <td>{{ report.commission }}</td>
+      </tr>
+      <tr>
+        <td>К оплате</td>
+        <td>{{ report.toPay }}</td>
+      </tr>
+      <tr>
+        <td>К оплате дост</td>
+        <td>{{ report.toDeliveryPay }}</td>
+      </tr>
+    </table>
   </div>
 </template>
 

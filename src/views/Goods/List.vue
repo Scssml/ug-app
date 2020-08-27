@@ -467,6 +467,7 @@ export default {
 
           setTimeout(() => {
             this.$emit('cancel', true);
+            this.createdSuccess = false;
           }, 1000);
         }).catch((error) => {
           console.error(error);

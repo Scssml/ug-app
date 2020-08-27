@@ -698,6 +698,8 @@ export default {
       `,
       update({ clients }) {
         // this.clientsList = this.clientsList.concat(clients);
+        const findIndex = clients.findIndex(item => item.id === 0);
+        clients.splice(findIndex, 1);
         this.clientsList = clients;
       },
     },

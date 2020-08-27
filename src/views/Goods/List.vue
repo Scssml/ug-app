@@ -266,7 +266,7 @@ export default {
       query: gql`
         query goods {
           goods: goods(
-            order_by: { sortIndex: asc }
+            order_by: { sortIndex: desc }
             where: {
               deleted_at: { _is_null: true }
             }

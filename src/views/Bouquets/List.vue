@@ -483,7 +483,7 @@ export default {
         query BouquetsList(
           $clientId: bigint
           $selectedManagerId: bigint
-          $paymentTypeId: bigint
+          $paymentTypeId: [bigint!]
           $startDate: timestamptz
           $endDate: timestamptz
           $limit: Int
@@ -498,7 +498,7 @@ export default {
               _and: [
                 { clientId: { _eq: $clientId } }
                 { user: { id: { _eq: $selectedManagerId } } }
-                { payments: { paymentTypeId: { _eq: $paymentTypeId } } }
+                { payments: { paymentTypeId: { _in: $paymentTypeId } } }
                 { created_at: { _gte: $startDate } }
                 { created_at: { _lte: $endDate } }
               ]
@@ -557,7 +557,7 @@ export default {
               ? this.filter.clientId
               : undefined,
           paymentTypeId:
-            this.filter.paymentType !== 0 ? this.filter.paymentType : undefined,
+            this.filter.paymentType !== 0 ? [this.filter.paymentType] : [1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 14],
           startDate: this.filter.dateStart
             ? `${this.filter.dateStart} 00:00:00`
             : undefined,

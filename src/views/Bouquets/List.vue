@@ -286,7 +286,7 @@
             <td>
               {{
                 props.item.payments.reduce((acc, item) => {
-                  return acc + +item.amount;
+                  return acc + (item.paymentType.id === 5) ? -1 * item.amount : +item.amount;
                 }, 0)
               }}р <br />{{
                 new Date(
@@ -536,6 +536,7 @@ export default {
               creationDate: created_at
               paymentType {
                 name
+                id
               }
             }
             goods: bouquetGoodsMappings {

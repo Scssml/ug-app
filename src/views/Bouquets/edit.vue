@@ -110,7 +110,7 @@
                 ></v-text-field>
                 <v-text-field
                   label="Стоимость"
-                  :value="payment.amount"
+                  :value="(payment.paymentType.id === 5) ? `-${payment.amount}` : payment.amount"
                   readonly
                 ></v-text-field>
                 <v-text-field
@@ -245,6 +245,7 @@ export default {
               amount
               paymentType {
                 name
+                id
               }
               description
             }

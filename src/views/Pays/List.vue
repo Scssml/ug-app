@@ -186,7 +186,10 @@
               <br />Баланс:
               {{ props.item.client && props.item.client.bill }}
             </td>
-            <td>{{ props.item.amount }}</td>
+            <td>
+              <template v-if="props.item.paymentType.id === 5">-</template>
+              {{ props.item.amount }}
+            </td>
             <td>
               {{ props.item.paymentType && props.item.paymentType.name }}
               <template v-if="props.item.paymentType && props.item.paymentType.id === 7 && props.item.parent">

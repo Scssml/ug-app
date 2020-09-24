@@ -31,7 +31,7 @@
         ></v-text-field>
         <v-text-field
           label="Стоимость"
-          :value="editedItem.amount"
+          :value="(editedItem.paymentType.id === 5) ? `-${editedItem.amount}` : editedItem.amount"
           readonly
         ></v-text-field>
         <v-text-field

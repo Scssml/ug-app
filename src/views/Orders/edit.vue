@@ -520,6 +520,7 @@
                   hide-details
                   class="mb-4"
                   :readonly="editedItemReadOnly"
+                  @change="checkNumber(index)"
                 ></v-text-field>
               </v-flex>
               <v-flex
@@ -989,6 +990,11 @@ export default {
     },
   },
   methods: {
+    checkNumber(index) {
+      let val = this.editedItem.bouquets[index].count;
+      val = (!isNaN(val)) ? +val : 0;
+      this.editedItem.bouquets[index].count = val;
+    },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
       const textTwo = item.phone.replace(/[^0-9]/gim, '');

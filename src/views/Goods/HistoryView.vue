@@ -136,8 +136,9 @@
         >
           <template slot="items" slot-scope="props">
             <td>{{ props.item.good.name }}</td>
-            <td>{{ props.item.stockQuantity }}</td>
+            <td>{{ props.item.stockQuantity - props.item.estimate }}</td>
             <td>{{ props.item.estimate }}</td>
+            <td>{{ props.item.stockQuantity }}</td>
             <td>{{ props.item.oldPrice }}</td>
             <td>{{ props.item.newPrice }}</td>
           </template>
@@ -181,6 +182,11 @@ export default {
           text: 'Пришло',
           align: 'left',
           value: 'estimate',
+        },
+        {
+          text: 'Стало',
+          align: 'left',
+          value: 'stockQuantityNew',
         },
         {
           text: 'Старая цена',

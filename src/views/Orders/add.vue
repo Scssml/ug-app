@@ -517,10 +517,10 @@
                 <v-text-field
                   label="Кол-во"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-model="bouquet.count"
+                  v-model.number="bouquet.count"
                   hide-details
                   class="mb-4"
-                  @change="handleDirty"
+                  @change="handleDirty; checkNumber(index)"
                 ></v-text-field>
               </v-flex>
               <v-flex xs2 class="pr-3">
@@ -858,6 +858,11 @@ export default {
       if (this.isDirty) {
         e.returnValue = unSaveChangesText;
       }
+    },
+    checkNumber(index) {
+      let val = this.editedItem.bouquets[index].count;
+      val = (!isNaN(val)) ? +val : 0;
+      this.editedItem.bouquets[index].count = val;
     },
     handleDirty() {
       if (!this.isDirty) {

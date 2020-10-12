@@ -501,6 +501,7 @@ export default {
                 { payments: { paymentTypeId: { _in: $paymentTypeId } } }
                 { created_at: { _gte: $startDate } }
                 { created_at: { _lte: $endDate } }
+                { orderBouquetId: { _is_null: false } }
               ]
             }
           ) {

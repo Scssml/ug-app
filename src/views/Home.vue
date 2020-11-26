@@ -273,6 +273,7 @@ import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 import PaymentDay from './Pays/paymentDay.vue';
 import gql from 'graphql-tag';
+import { PaymentTypes } from '@/constants';
 
 export default {
   name: 'Home',
@@ -533,7 +534,9 @@ export default {
           payments: [
             {
               paymentTypeId: props.payment.paymentTypeId,
-              price: props.payment.amount / props.bouquetCount,
+              price: +props.payment.paymentTypeId === PaymentTypes.BALANCE
+                ? -(props.payment.amount / props.bouquetCount)
+                : props.payment.amount / props.bouquetCount,
               comment: props.payment.description,
             },
           ],
@@ -546,7 +549,9 @@ export default {
         if (props.secondPayment) {
           propsService.payments.push({
             paymentTypeId: props.secondPayment.paymentTypeId,
-            price: props.secondPayment.amount / props.bouquetCount,
+            price: +props.secondPayment.paymentTypeId === PaymentTypes.BALANCE
+              ? -(props.secondPayment.amount / props.bouquetCount)
+              : props.secondPayment.amount / props.bouquetCount,
             comment: props.secondPayment.description,
           });
         }

@@ -731,6 +731,7 @@ export default {
             deliveryDate
             deliveryTime
             clientType {
+              id
               name
             }
             orderCost
@@ -759,6 +760,7 @@ export default {
             }
             createdAt: created_at
             createdBy {
+              id
               name
             }
             orderStatus {
@@ -766,6 +768,7 @@ export default {
               name
               color
             }
+            orderSourceType: orderSourceTypeIds,
           }
           ordersCount: orders_aggregate(
             where: {

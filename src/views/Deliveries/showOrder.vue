@@ -17,6 +17,20 @@
         этаж {{ order.floor }}
       </p>
 
+      <template v-if="order.orderStatus.id === 3">
+        <p class="mb-2">
+          Клиент: {{ order.clientName }}
+          (<a :href="clientPhoneHref">{{ order.clientPhone }}</a>)
+        </p>
+
+        <template v-if="order.addressee !== null">
+          <p class="mb-2">
+            Получатель: {{ order.addresseeName }}
+            (<a :href="addresseePhoneHref">{{ order.addresseePhone }}</a>)
+          </p>
+        </template>
+      </template>
+
       <v-alert
         :value="deliveredSuccess"
         type="success"
@@ -59,6 +73,7 @@
       <v-btn
         color="info"
         @click="takeDelivery"
+        :loading="btnLoad"
         v-else
       >Взять на доставку</v-btn>
     </v-card-actions>
@@ -82,10 +97,25 @@ export default {
       btnLoad: false,
     };
   },
+  computed: {
+    clientPhoneHref() {
+      if (this.editedItem.clientPhone) {
+        return `tel:${this.editedItem.clientPhone.replace(/[^+\d]/g, '')}`;
+      }
+      return '';
+    },
+    addresseePhoneHref() {
+      if (this.editedItem.addresseePhone) {
+        return `tel:${this.editedItem.addresseePhone.replace(/[^+\d]/g, '')}`;
+      }
+      return '';
+    },
+  },
   methods: {
     takeDelivery() {
       this.deliveredSuccess = false;
       this.deliveredError = false;
+      this.btnLoad = true;
 
       const propsItem = Object.assign({}, this.editedItem);
       delete propsItem.id;
@@ -107,6 +137,7 @@ export default {
         }, 1000);
       }).catch(() => {
         this.deliveredError = true;
+        this.btnLoad = false;
       });
     },
     submitForm() {
@@ -114,6 +145,7 @@ export default {
       if (validate) {
         this.deliveredSuccess = false;
         this.deliveredError = false;
+        this.btnLoad = true;
 
         const itemParams = {
           type: 'api/orders',
@@ -130,6 +162,7 @@ export default {
           }, 1000);
         }).catch(() => {
           this.deliveredError = true;
+          this.btnLoad = false;
         });
       }
     },

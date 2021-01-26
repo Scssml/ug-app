@@ -104,11 +104,12 @@
             <v-flex xs2 class="px-2">
               <v-select
                 label="Статус"
-                :items="[{ id: 0, name: 'Все' }].concat(statusList)"
+                :items="statusList"
                 item-text="name"
                 item-value="id"
                 v-model="filter.orderStatus"
                 hide-details
+                multiple
                 @change="customFilter()"
               ></v-select>
             </v-flex>
@@ -599,13 +600,13 @@ export default {
   data() {
     return {
       filter: {
-        orderStatus: 0,
+        orderStatus: [],
         client: null,
         clientItem: null,
         deliveryTimeOfDay: 0,
         dateStart: null,
         dateEnd: null,
-        createdBy: 0
+        createdBy: 0,
       },
       loadingData: [
         {
@@ -681,7 +682,7 @@ export default {
           $offset: Int
           $startDate: date
           $endDate: date
-          $orderStatus: bigint
+          $orderStatus: [bigint!]
           $createdBy: bigint
           $deliveryTimeOfDay: bigint
           $clientId: bigint
@@ -693,7 +694,7 @@ export default {
               _and: [
                 { deliveryDate: { _gte: $startDate } }
                 { deliveryDate: { _lte: $endDate } }
-                { orderStatusId: { _eq: $orderStatus } }
+                { orderStatusId: { _in: $orderStatus } }
                 { createdById: { _eq: $createdBy } }
                 { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
                 { clientId: { _eq: $clientId } }
@@ -769,7 +770,7 @@ export default {
               _and: [
                 { deliveryDate: { _gte: $startDate } }
                 { deliveryDate: { _lte: $endDate } }
-                { orderStatusId: { _eq: $orderStatus } }
+                { orderStatusId: { _in: $orderStatus } }
                 { createdById: { _eq: $createdBy } }
                 { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
                 { clientId: { _eq: $clientId } }
@@ -793,7 +794,7 @@ export default {
             ? this.filter.clientItem.id
             : undefined,
           orderStatus:
-            this.filter.orderStatus !== 0 ? this.filter.orderStatus : undefined,
+            this.filter.orderStatus.length !== 0 ? this.filter.orderStatus : undefined,
           createdBy:
             this.filter.createdBy !== 0 ? this.filter.createdBy : undefined,
           deliveryTimeOfDay:
@@ -1213,7 +1214,7 @@ export default {
       this.filter.dateStart = "";
       this.filter.dateEnd = "";
       this.filter.orderSourceType = 2;
-      this.filter.orderStatus = 1;
+      this.filter.orderStatus = [1];
       this.page = 0;
     },
     toggleAll() {

@@ -552,6 +552,12 @@
               @click.prevent="viewOrder(props.item.id)"
             >
               {{ props.item.id }}
+
+              <template
+                v-if="typeof props.item.courier === 'object' && props.item.courier !== null"
+              >
+                <br>{{ props.item.courier.name }}
+              </template>
             </td>
             <td
               class="px-1"

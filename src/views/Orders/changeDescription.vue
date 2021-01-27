@@ -21,8 +21,7 @@
         <v-textarea
           label="Комментарий"
           auto-grow
-          :rules="[v => !!v || 'Заполните поле']"
-          v-model.number="editedItem.description"
+          v-model="editedItem.description"
           row-height="12"
           hide-details
           class="mb-4"

@@ -88,7 +88,7 @@
             <td>{{ props.item.login }}</td>
             <td>{{ props.item.group.name }}</td>
             <td class="text-xs-right">
-              {{ (props.item.isActive) ? 'Да' : 'Нет' }}
+              {{ (props.item.active) ? 'Да' : 'Нет' }}
             </td>
             <td class="text-xs-right" style="width: 140px">
               <v-icon
@@ -123,6 +123,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import UserEdit from './edit.vue';
 import UserAdd from './add.vue';
 import UserDelete from './delete.vue';
@@ -196,24 +197,23 @@ export default {
   },
   methods: {
     getUsersList() {
-      const itemParams = {
-        type: 'users',
-      };
+      const loadData = this.loadingData.find(item => item.id === 'users');
+      const url = 'users';
 
-      const successData = 'Пользователи получены!';
-      const errorData = 'Ошибка получения пользователей!';
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.usersList = items;
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersList = response;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
+          loadData.title = 'Пользователи получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения пользователей!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
     closeDialog() {
       this.getUsersList();

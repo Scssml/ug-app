@@ -34,13 +34,13 @@
         <v-text-field
           label="На складе"
           :rules="[v => !!v || 'Заполните поле']"
-          v-model.number="editedItem.stockBalance"
+          v-model.number="editedItem.stock"
           type="number"
         ></v-text-field>
         <v-text-field
           label="Сортировка"
           :rules="[v => !!v || 'Заполните поле']"
-          v-model.number="editedItem.sortIndex"
+          v-model.number="editedItem.sort_index"
           type="number"
         ></v-text-field>
       </v-card-text>
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
+import axios from 'axios';
 
 export default {
   data() {
@@ -69,8 +69,8 @@ export default {
       editedItem: {
         name: '',
         price: 0,
-        stockBalance: 0,
-        sortIndex: 0,
+        stock: 0,
+        sort_index: 0,
         color: '',
       },
       createdSuccess: false,
@@ -86,28 +86,20 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsGood = Object.assign({}, this.editedItem);
+        const url = 'goods';
 
-        this.$apollo.mutate({
-          mutation: gql`mutation {
-            createGood(input:{
-              name: "${propsGood.name}"
-              price: ${propsGood.price}
-              sortIndex: ${propsGood.sortIndex}
-              stockBalance: ${propsGood.stockBalance}
-              color: "${propsGood.color}"
-            }) {
-              id
-            }
-          }`,
-        }).then(() => {
-          this.createdSuccess = true;
+        axios
+          .post(url, propsGood)
+          .then(() => {
+            this.createdSuccess = true;
 
-          setTimeout(() => {
-            this.$emit('cancel', true);
-          }, 1000);
-        }).catch((error) => {
-          console.error(error);
-        });
+            setTimeout(() => {
+              this.$emit('cancel', true);
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },

@@ -18,11 +18,11 @@
       <v-card-text
         class="px-4"
       >
-        <v-checkbox
+        <!-- <v-checkbox
           label="Активность"
           v-model="editedItem.isActive"
           color="primary"
-        ></v-checkbox>
+        ></v-checkbox> -->
         <v-text-field
           label="Имя"
           :rules="[v => !!v || 'Заполните поле']"
@@ -51,13 +51,15 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
       editedItem: {
         name: '',
         code: '',
-        isActive: true,
+        // isActive: true,
       },
       createdSuccess: false,
     };
@@ -72,19 +74,20 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
+        const url = 'groups';
 
-        const itemParams = {
-          type: 'users-groups',
-          props: propsItem,
-        };
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
 
-        this.$store.dispatch('addItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },

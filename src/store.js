@@ -109,34 +109,37 @@ export default new Vuex.Store({
   actions: {
     login({ state, commit }, user) {
       return new Promise((resolve, rejected) => {
-        commit("authRequest");
+        commit('authRequest');
         axios
-          .post(`${state.apiUrl}login`, user, {
+          .post(`${state.apiUrl}auth`, user, {
             headers: {
-              "Content-Type": "application/json"
-            }
+              'Content-Type': 'application/json',
+            },
           })
-          .then(response => {
-            const token = response.data.jwtToken;
-            const { id, group } = response.data.userInfo;
-            localStorage.setItem("user-token", token);
+          .then((response) => {
+            console.log(response);
+            const { token } = response.data;
+            localStorage.setItem('user-token', token);
             axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-            localStorage.setItem("user-id", id);
-            localStorage.setItem("user-group", JSON.stringify(group));
+            const id = 1;
+            const group = { code: 'admin' };
 
-            const countElemPage = localStorage.getItem("countElemPage");
-            if (countElemPage !== null) {
-              commit("setCountElemPage", countElemPage);
-            }
+            localStorage.setItem('user-id', id);
+            localStorage.setItem('user-group', JSON.stringify(group));
 
-            commit("authSuccess", { token, id, group });
+            // const countElemPage = localStorage.getItem("countElemPage");
+            // if (countElemPage !== null) {
+            //   commit("setCountElemPage", countElemPage);
+            // }
+
+            commit('authSuccess', { token, id, group });
 
             resolve(response);
           })
-          .catch(error => {
-            commit("authError", error);
-            localStorage.removeItem("user-token");
+          .catch((error) => {
+            commit('authError', error);
+            localStorage.removeItem('user-token');
             rejected(error);
           });
       });

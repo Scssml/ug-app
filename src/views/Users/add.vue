@@ -40,13 +40,13 @@
           :rules="[v => !!v || 'Заполните поле']"
           item-text="name"
           item-value="id"
-          v-model="editedItem.group"
+          v-model="editedItem.group_id"
         ></v-select>
-        <v-checkbox
+        <!-- <v-checkbox
           label="Активность"
           v-model="editedItem.isActive"
           color="primary"
-        ></v-checkbox>
+        ></v-checkbox> -->
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -65,6 +65,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
@@ -72,8 +74,8 @@ export default {
         name: '',
         login: '',
         password: '',
-        group: 0,
-        isActive: true,
+        group_id: 0,
+        // isActive: true,
       },
       createdSuccess: false,
       usersGroupsList: [],
@@ -81,21 +83,33 @@ export default {
   },
   methods: {
     getUsersGroupsList() {
-      const itemParams = {
-        type: 'users-groups',
-        filter: {
-          isActive: true,
-        },
-      };
+      const url = 'groups';
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersGroupsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.usersGroupsList = items;
+        })
+        .catch((error) => {
+          console.log(error);
         });
-      }).catch(() => {
-        console.log('error');
-      });
+
+      // const itemParams = {
+      //   type: 'users-groups',
+      //   filter: {
+      //     isActive: true,
+      //   },
+      // };
+
+      // this.$store.dispatch('getItemsList', itemParams).then((response) => {
+      //   this.usersGroupsList = response.map((item) => {
+      //     item.id = +item.id;
+      //     return item;
+      //   });
+      // }).catch(() => {
+      //   console.log('error');
+      // });
     },
     cancel() {
       this.editedItem = {};
@@ -106,18 +120,20 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
+        const url = 'users';
 
-        const itemParams = {
-          type: 'users',
-          props: propsItem,
-        };
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
 
-        this.$store.dispatch('addItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },

@@ -76,7 +76,7 @@
             <td class="text-xs-right" style="width: 30px">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.code }}</td>
-            <td>{{ (props.item.isActive) ? 'Да' : 'Нет' }}</td>
+            <!-- <td>{{ (props.item.isActive) ? 'Да' : 'Нет' }}</td> -->
             <td class="text-xs-right" style="width: 110px">
               <v-icon
                 class="mr-2"
@@ -94,11 +94,12 @@
 </template>
 
 <script>
+import axios from 'axios';
 import UserGroupEdit from './edit.vue';
 import UserGroupAdd from './add.vue';
 
 export default {
-  name: 'Users',
+  name: 'Groups',
   components: {
     UserGroupEdit,
     UserGroupAdd,
@@ -111,7 +112,7 @@ export default {
           error: false,
           loading: true,
           color: 'deep-purple',
-          id: 'users-groups',
+          id: 'groups',
         },
       ],
       search: '',
@@ -131,11 +132,11 @@ export default {
           align: 'left',
           value: 'code',
         },
-        {
-          text: 'Активность',
-          align: 'left',
-          value: 'isActive',
-        },
+        // {
+        //   text: 'Активность',
+        //   align: 'left',
+        //   value: 'isActive',
+        // },
         {
           text: '',
           align: 'right',
@@ -156,24 +157,23 @@ export default {
   },
   methods: {
     getUsersGroupsList() {
-      const itemParams = {
-        type: 'users-groups',
-      };
+      const loadData = this.loadingData.find(item => item.id === 'groups');
+      const url = 'groups';
 
-      const successData = 'Группы получены!';
-      const errorData = 'Ошибка получения групп!';
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.usersGroupsList = items;
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersGroupsList = response;
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
+          loadData.title = 'Группы получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения групп!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
     closeDialog() {
       this.getUsersGroupsList();

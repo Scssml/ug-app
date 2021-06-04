@@ -172,12 +172,12 @@
 </template>
 
 <script>
+import axios from 'axios';
 import GoodAdd from './add.vue';
 import ListItem from './ListItem';
 import { PaymentTypes } from './constants';
 import GoodDelete from './delete.vue';
-import gql from "graphql-tag";
-import Autosuggest from "../../components/Autosuggest";
+import Autosuggest from '../../components/Autosuggest';
 
 export default {
   name: 'Goods',
@@ -209,7 +209,7 @@ export default {
         {
           text: 'Остаток',
           align: 'left',
-          value: 'stockBalance',
+          value: 'stock',
           sortable: false,
         },
         {
@@ -221,7 +221,7 @@ export default {
         {
           text: 'Сортировка',
           align: 'left',
-          value: 'sortIndex',
+          value: 'sort_index',
           sortable: true,
         },
         {
@@ -260,95 +260,6 @@ export default {
       page: 0,
       loading: true,
     };
-  },
-  apollo: {
-    goods: {
-      query: gql`
-        query goods {
-          goods: goods(
-            order_by: { sortIndex: desc }
-            where: {
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-            price
-            sortIndex
-            stockBalance
-            color
-          }
-        }
-      `,
-      // variables() {
-      //   return {
-      //     offset: this.page * this.take,
-      //     limit: this.take,
-      //   };
-      // },
-      update({ goods }) {
-        const loadData = this.loadingData.find(item => item.id === 'goods');
-        loadData.title = 'Товары получены!';
-        loadData.loading = false;
-
-        goods = goods.map((item) => {
-          const good = item;
-          good.count = 0;
-          good.oldPrice = good.price;
-          good.oldCount = good.count;
-          return good;
-        });
-
-        this.goodsList = this.goodsList.concat(goods);
-
-        if (goods.length > 0) {
-          this.loading = false;
-        }
-
-        this.take = (this.take) ? this.take : 20;
-        this.goodsUpdate = false;
-      },
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($name: String) {
-          clientsList: clients(
-            where: {
-              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
-              deleted_at: { _is_null: true }
-              typeId: { _eq: 4 }
-            }
-            limit: 50
-          ) {
-            id
-            name
-          }
-        }
-      `,
-      update({ clientsList: data }) {
-        this.suggestions = [{ data }];
-
-        return data;
-      },
-      variables() {
-        return {
-          name: this.queryName
-        };
-      },
-      skip() {
-        return this.skipClientsQuery;
-      },
-    },
-    typeEdit: {
-      query: gql`
-        query {
-          typeEdit: purchaseTypes {
-            id
-            name
-          }
-        }
-      `,
-    },
   },
   computed: {
     isSaveButtonDisabled() {
@@ -452,6 +363,7 @@ export default {
 
         propsPurchase.purchasedGoods = purchaseGoods;
 
+        /*
         this.$apollo.mutate({
           mutation: gql`mutation createPurchase (
             $props: NewPurchase!
@@ -472,6 +384,7 @@ export default {
         }).catch((error) => {
           console.error(error);
         });
+        */
       }
     },
     closeDialog() {
@@ -485,12 +398,11 @@ export default {
         this.goodsList = [];
         this.take = 0;
 
-        this.$apollo.queries.goods.refetch();
-
-
         const loadData = this.loadingData.find(item => item.id === 'goods');
         loadData.title = 'Получение товаров!';
         loadData.loading = true;
+
+        this.getItems();
       }
     },
     deleteGood(id) {
@@ -510,9 +422,31 @@ export default {
         }
       };
     },
+    getItems() {
+      const loadData = this.loadingData.find(item => item.id === 'goods');
+      const url = 'goods';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.goodsList = items.map((item) => {
+            item.count = 0;
+            return item;
+          });
+
+          loadData.title = 'Товары получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения товаров!';
+          loadData.error = true;
+          console.log(error);
+        });
+    },
   },
   mounted() {
-    // this.scroll();
+    this.getItems();
   },
 };
 </script>

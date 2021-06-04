@@ -6,7 +6,7 @@
         solo
         flat
         hide-details
-        :value="+props.item.stockBalance + +props.item.count"
+        :value="+props.item.stock + +props.item.count"
         class="scs-small"
         readonly
       ></v-text-field>
@@ -28,7 +28,7 @@
         solo
         flat
         hide-details
-        v-model="props.item.sortIndex"
+        v-model="props.item.sort_index"
         class="scs-small"
         @blur="changeSortIndex"
       ></v-text-field>

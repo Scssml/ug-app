@@ -144,10 +144,17 @@ export default {
 </script>
 
 <style lang="sass">
-.fade-enter, .fade-leave-to { opacity: 0; }
-.fade-enter-active { transition: opacity .5s ease-in-out .5s; }
-.fade-leave-active { transition: opacity .5s ease-in-out; }
-.print-visible { display: none; }
+.fade-enter, .fade-leave-to 
+  opacity: 0
+
+.fade-enter-active
+  transition: opacity .5s ease-in-out .5s
+
+.fade-leave-active
+  transition: opacity .5s ease-in-out
+
+.print-visible
+  display: none
 
 .report
   table
@@ -159,10 +166,16 @@ export default {
       border: 1px solid #ccc
 
 @media print
-  .print-btn { display: none; }
-  .print-hidden { display: none; }
-  .print-visible { display: block; }
+  .print-btn
+    display: none
+
+  .print-hidden
+    display: none
+
+  .print-visible
+    display: block
 
 @media (max-width: 959px)
-  main.v-content { padding: 0 !important; }
+  main.v-content
+    padding: 0 !important
 </style>

@@ -6,8 +6,8 @@ services:
     restart: always
     build: .
     image: fs-frontend
-    networks:
-      - shopbackend_discovery
+#    networks:
+#      - shopbackend_discovery
     ports:
       - '3004:80'
 

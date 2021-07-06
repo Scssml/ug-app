@@ -11,6 +11,6 @@ services:
     ports:
       - '3004:80'
 
-networks:
-  shopbackend_discovery:
-    external: true
+#networks:
+#  shopbackend_discovery:
+#    external: true

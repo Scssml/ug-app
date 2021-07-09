@@ -198,7 +198,7 @@ export default {
   methods: {
     getUsersList() {
       const loadData = this.loadingData.find(item => item.id === 'users');
-      const url = 'users';
+      const url = '/api/v1/users';
 
       axios
         .get(url)

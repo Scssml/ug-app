@@ -120,7 +120,7 @@ export default new Vuex.Store({
             console.log(response);
             const { token } = response.data;
             localStorage.setItem('user-token', token);
-            axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+            axios.defaults.headers.common['x-token'] = token;
 
             const id = 1;
             const group = { code: 'admin' };
@@ -166,7 +166,7 @@ export default new Vuex.Store({
         }
 
         if (token !== null) {
-          axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+          axios.defaults.headers.common['x-token'] = token;
           commit("authSuccess", { token, id, group });
           resolve();
         } else {

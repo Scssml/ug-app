@@ -24,7 +24,7 @@
           :rules="[v => !!v || 'Заполните поле']"
           item-text="name"
           item-value="id"
-          v-model="editedItem.typeId"
+          v-model="editedItem.client_type"
           hide-details
           class="mb-4"
         ></v-select>
@@ -37,34 +37,17 @@
           label="Телефон"
           v-model="editedItem.phone"
         ></v-text-field>
-        <v-autocomplete
-          label="Организация"
-          :items="clientsList"
-          :filter="clientsFilter"
-          item-text="name"
-          item-value="id"
-          v-model.number="editedItem.referenceId"
-          hide-details
-          class="mb-4"
-          no-data-text="Не надено"
-          clearable
-          v-if="editedItem.typeId === 2"
-        ></v-autocomplete>
         <v-text-field
           label="Адрес"
           v-model="editedItem.address"
         ></v-text-field>
         <v-text-field
-          label="Подъезд"
-          v-model="editedItem.entrance"
-        ></v-text-field>
-        <v-text-field
           label="Квартира"
-          v-model="editedItem.flat"
+          v-model.number="editedItem.flat_number"
         ></v-text-field>
         <v-text-field
           label="Этаж"
-          v-model="editedItem.floor"
+          v-model.number="editedItem.floor"
         ></v-text-field>
         <v-menu
           :close-on-content-click="false"
@@ -80,7 +63,7 @@
           <v-text-field
             slot="activator"
             label="День рождения"
-            v-model="editedItem.birthDay"
+            v-model="editedItem.birth_day"
             prepend-icon="event"
             hide-details
             readonly
@@ -88,7 +71,7 @@
             clearable
           ></v-text-field>
           <v-date-picker
-            v-model="editedItem.birthDay"
+            v-model="editedItem.birth_day"
             @input="dataPicker = false"
             no-title
             scrollable
@@ -111,11 +94,11 @@
           v-model.number="editedItem.sale"
           type="number"
         ></v-text-field>
-        <!-- <v-checkbox
+        <v-checkbox
           label="Активность"
-          v-model="editedItem.isActive"
+          v-model="editedItem.active"
           color="primary"
-        ></v-checkbox> -->
+        ></v-checkbox>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -134,67 +117,47 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
+import axios from 'axios';
 
 export default {
   data() {
     return {
       dataPicker: false,
       editedItem: {
-        name: '',
-        birthDay: null,
-        bill: 0,
-        limit: 0,
-        sale: 0,
-        phone: '',
-        typeId: 0,
+        active: true,
         address: '',
-        entrance: '',
-        flat: '',
-        floor: '',
-        referenceId: null,
+        bill: 0,
+        birth_day: '',
+        client_type: 'individual',
+        flat_number: 0,
+        floor: 0,
+        limit: 0,
+        name: '',
+        phone: '',
+        sale: 0,
       },
-      typeClient: [],
+      typeClient: [
+        {
+          id: 'individual',
+          name: 'Физ. лицо',
+        },
+        {
+          id: 'legal',
+          name: 'Юр. лицо',
+        },
+        {
+          id: 'counter_party',
+          name: 'Контрагент',
+        },
+        {
+          id: 'our',
+          name: 'Наш',
+        },
+      ],
       createdSuccess: false,
-      clientsList: [],
     };
   },
-  apollo: {
-    clientsList: {
-      query: gql`
-        query clientsList(
-          $id: bigint
-        ) {
-          clientsList: clients(
-            where: {
-              typeId: { _eq: 2 }
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-            phone
-          }
-        }
-      `,
-    },
-    typeClient: {
-      query: gql`
-        query {
-          typeClient: clientTypes(where: { active: { _eq: true } }) {
-            id
-            name
-          }
-        }
-      `,
-    },
-  },
   methods: {
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
-    },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
@@ -203,45 +166,23 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsClient = Object.assign({}, this.editedItem);
+        const propsItem = Object.assign({}, this.editedItem);
 
-        this.$apollo.mutate({
-          mutation: gql`mutation {
-            createClient(input:{
-              address: "${propsClient.address}"
-              entrance: "${propsClient.entrance}"
-              flat: "${propsClient.flat}"
-              floor: "${propsClient.floor}"
-              limit: ${propsClient.limit}
-              name: "${propsClient.name}"
-              phone: "${propsClient.phone}"
-              referenceId: ${propsClient.referenceId}
-              sale: ${propsClient.sale}
-              typeId: ${propsClient.typeId}
-              bill: ${propsClient.bill}
-              birthDay: "${this.formatDate(propsClient.birthDay, 'yyyy-MM-dd')}T00:00:00Z"
-            }) {
-              id
-            }
-          }`,
-        }).then(() => {
-          this.createdSuccess = true;
+        const url = 'clients';
 
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        }).catch((error) => {
-          console.error(error);
-        });
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
+
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
-    },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
     },
   },
 };

@@ -30,49 +30,28 @@
             <v-flex xs2 class="px-3">
               <v-select
                 label="Тип клиента"
-                :items="[{ id: 0, name: 'Все' }].concat(typeClient)"
+                :items="typeClient"
                 item-text="name"
                 item-value="id"
-                v-model="filter.typeId"
-                @change="handleClientTypeChange($event)"
+                v-model="filter.clientType"
+                @change="changeFilter()"
                 hide-details
               ></v-select>
             </v-flex>
-            <v-flex xs4 class="px-3">
-              <v-text-field
-                label="Имя"
-                v-model="filter.name"
-                hide-details
-                @change="handleClientNameChange($event)"
-              ></v-text-field>
-            </v-flex>
           </v-layout>
           <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            dark
-            class="mb-2"
-            @click="moveDebt()"
-          >Переброска средств</v-btn>
           <v-dialog
             v-model="dialogForm"
             persistent
             max-width="420px"
-            :fullscreen="printedId >= 0 && printedId !== null ? true : false"
           >
             <v-btn slot="activator" color="primary" dark class="mb-2"
               >Добавить</v-btn
             >
             <template v-if="dialogForm">
-              <client-print
-                v-if="printedId >= 0 && printedId !== null"
-                :id="printedId"
-                :name="clientsList.find(item => item.id === printedId)['name']"
-                @cancel="closeDialog()"
-              ></client-print>
               <client-edit
-                v-else-if="editedId"
-                :id="editedId"
+                v-if="Object.keys(this.editedItem).length > 0"
+                :item="editedItem"
                 @cancel="closeDialog()"
               ></client-edit>
               <client-delete
@@ -80,10 +59,6 @@
                 :id="deleteId"
                 @cancel="closeDialog()"
               ></client-delete>
-              <move-debt
-                v-else-if="popupMoveDebt"
-                @cancel="closeDialog()"
-              ></move-debt>
               <client-add v-else @cancel="closeDialog()"></client-add>
             </template>
           </v-dialog>
@@ -96,27 +71,8 @@
           no-data-text="Клиентов не найдено"
           no-results-text="Клиентов не найдено"
           :search="search"
-          :pagination.sync="pagination"
-          :loading="!!$apollo.queries.clients.loading"
+          :loading="tableLoading"
         >
-          <template slot="headers" slot-scope="props">
-            <tr>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-                class="text-xs-left column"
-                :class="[
-                  'column sortable',
-                  pagination.descending ? 'desc' : 'asc',
-                  header.value === pagination.sortBy ? 'active' : ''
-                ]"
-                @click="header.sortable ? changeSort(header.value) : ''"
-              >
-                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
-                {{ header.text }}
-              </th>
-            </tr>
-          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">
               {{ props.item.id }}
@@ -124,15 +80,7 @@
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.phone }}</td>
             <td>
-              {{ props.item.clientType.name }}
-            </td>
-            <td>
-              <template v-if="props.item.reference">
-                <p>
-                  {{ props.item.reference.name }}
-                  <br />{{ props.item.reference.phone }}
-                </p>
-              </template>
+              {{ typeClient.find((item) => item.id === props.item.client_type).name }}
             </td>
             <td class="text-xs-right">{{ props.item.bill }}</td>
             <td class="text-xs-right">{{ props.item.sale }}</td>
@@ -149,19 +97,12 @@
               </v-icon>
               <v-icon
                 class="mr-2"
-                @click="printedItem(props.item.id)"
-                title="Акт сверки"
-              >
-                insert_drive_file
-              </v-icon>
-              <v-icon
-                class="mr-2"
                 @click="showBouquests(props.item.id, props.item.name)"
                 title="Показать букеты"
               >
                 local_florist
               </v-icon>
-              <v-icon @click="editItem(props.item.id)" title="Изменить">
+              <v-icon @click="editItem(props.item)" title="Изменить">
                 edit
               </v-icon>
               <v-icon
@@ -192,7 +133,7 @@
               small
               color="info"
               class="ml-3"
-              :disabled="page === 0"
+              :disabled="page === 1"
               @click="prevPage()"
             >
               <v-icon dark>keyboard_arrow_left</v-icon>
@@ -214,258 +155,168 @@
 </template>
 
 <script>
-import ClientEdit from "./edit.vue";
-import ClientAdd from "./add.vue";
-import ClientDelete from "./delete.vue";
-import ClientPrint from "./printAct.vue";
-import MoveDebt from "./moveDebt.vue";
-import gql from "graphql-tag";
+import axios from 'axios';
+import ClientEdit from './edit.vue';
+import ClientAdd from './add.vue';
+import ClientDelete from './delete.vue';
 
 export default {
-  name: "Clients",
+  name: 'Clients',
   components: {
     ClientEdit,
     ClientAdd,
     ClientDelete,
-    ClientPrint,
-    MoveDebt,
   },
   data() {
     return {
       loadingData: [
         {
-          title: "Получение клиентов",
+          title: 'Получение клиентов',
           error: false,
           loading: false,
-          color: "indigo",
-          id: "clients"
-        }
+          color: 'indigo',
+          id: 'clients',
+        },
       ],
       filter: {
-        typeId: 0
+        clientType: '',
       },
-      typeClient: [],
-      search: "",
+      typeClient: [
+        {
+          id: '',
+          name: 'Все',
+        },
+        {
+          id: 'individual',
+          name: 'Физ. лицо',
+        },
+        {
+          id: 'legal',
+          name: 'Юр. лицо',
+        },
+        {
+          id: 'counter_party',
+          name: 'Контрагент',
+        },
+        {
+          id: 'our',
+          name: 'Наш',
+        },
+      ],
+      search: '',
       headersTable: [
         {
-          text: "ID",
-          align: "right",
-          value: "id",
-          sortable: true
-        },
-        {
-          text: "Клиент",
-          align: "left",
-          value: "name",
-          sortable: true
-        },
-        {
-          text: "Телефон",
-          align: "left",
-          value: "phone",
-          sortable: true
-        },
-        {
-          text: "Тип",
-          align: "left",
-          value: "clientType.name",
-          sortable: true
-        },
-        {
-          text: "Ответственный",
-          align: "left",
-          value: "reference.name",
-          sortable: false
-        },
-        {
-          text: "Счет",
-          align: "right",
-          value: "bill",
-          sortable: true
-        },
-        {
-          text: "Скидка",
-          align: "right",
-          value: "sale",
-          sortable: true
-        },
-        {
-          text: "Активность",
-          align: "right",
-          value: "active",
-          sortable: true
-        },
-        {
-          text: "",
-          align: "right",
+          text: 'ID',
+          align: 'right',
+          value: 'id',
           sortable: false,
-          value: "action"
-        }
+        },
+        {
+          text: 'Клиент',
+          align: 'left',
+          value: 'name',
+          sortable: false,
+        },
+        {
+          text: 'Телефон',
+          align: 'left',
+          value: 'phone',
+          sortable: false,
+        },
+        {
+          text: 'Тип',
+          align: 'left',
+          value: 'clientType.name',
+          sortable: false,
+        },
+        {
+          text: 'Счет',
+          align: 'right',
+          value: 'bill',
+          sortable: false,
+        },
+        {
+          text: 'Скидка',
+          align: 'right',
+          value: 'sale',
+          sortable: false,
+        },
+        {
+          text: 'Активность',
+          align: 'right',
+          value: 'active',
+          sortable: false,
+        },
+        {
+          text: '',
+          align: 'right',
+          sortable: false,
+          value: 'action',
+        },
       ],
       dialogForm: false,
-      editedId: 0,
+      editedItem: {},
       clientsList: [],
       deleteId: 0,
-      printedId: null,
-      pagination: {
-        sortBy: "id",
-        rowsPerPage: -1,
-        descending: true
-      },
       take: 20,
       page: 0,
       tableLoading: false,
       selectedClientType: 0,
-      selectedClientName: "",
+      selectedClientName: '',
       popupMoveDebt: false,
     };
   },
-  apollo: {
-    clients: {
-      query: gql`
-        query clients(
-          $clientTypeId: bigint
-          $clientName: String
-          $limit: Int
-          $offset: Int
-          $orderBy: [clients_order_by!]
-        ) {
-          clients: clients(
-            order_by: $orderBy
-            limit: $limit
-            offset: $offset
-            where: {
-              clientType: { id: { _eq: $clientTypeId } }
-              _or: [{ name: { _ilike: $clientName } }, { phone: { _ilike: $clientName } }]
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-            phone
-            address
-            birthDay
-            floor
-            flat
-            entrance
-            clientType {
-              id
-              name
-            }
-            reference {
-              id
-              name
-              phone
-            }
-            bill
-            sale
-            active
-          }
-        }
-      `,
-      variables() {
-        return {
-          clientTypeId:
-            this.selectedClientType !== 0 ? this.selectedClientType : undefined,
-          clientName:
-            this.selectedClientName !== ""
-              ? `%${this.selectedClientName}%`
-              : undefined,
-          offset: this.page * this.take,
-          limit: this.take,
-          orderBy: this.orderBy
-        };
-      },
-      update({ clients }) {
-        // this.clientsList = this.clientsList.concat(clients);
-        this.clientsList = clients;
-      },
-    },
-    typeClient: {
-      query: gql`
-        query {
-          typeClient: clientTypes {
-            id
-            name
-          }
-        }
-      `
-    }
-  },
   computed: {
     loadingDialog: function loadingDialog() {
-      const loadData = this.loadingData.filter(
-        item => !item.error && !item.loading
-      );
+      const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    orderBy() {
-      const sortFields = this.pagination.sortBy.split(".");
-      let sortObject = {};
-      const sortOrder = this.pagination.descending
-        ? "desc_nulls_last"
-        : "asc_nulls_last";
-
-      if (sortFields.length === 3) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: {
-              [sortFields[2]]: sortOrder
-            }
-          }
-        };
-      } else if (sortFields.length === 2) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: sortOrder
-          }
-        };
-      } else {
-        sortObject[sortFields[0]] = sortOrder;
-      }
-
-      return sortObject;
-    }
   },
   methods: {
-    changeSort(column) {
-      this.clientsList = [];
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
+    getClientsList() {
+      const loadData = this.loadingData.find(item => item.id === 'clients');
+      const url = 'clients';
+      this.page += 1;
+
+      axios
+        .get(url, {
+          params: {
+            page: this.page,
+            page_limit: this.take,
+            client_type: this.filter.clientType,
+          },
+        })
+        .then((response) => {
+          const items = response.data;
+          this.clientsList = items;
+
+          loadData.title = 'Клиенты получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения клиентов!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
-    handleClientTypeChange(clientTypeId) {
-      this.selectedClientType = clientTypeId !== 0 ? clientTypeId : undefined;
+    changeFilter() {
       this.page = 0;
-    },
-    handleClientNameChange(clientName) {
-      this.selectedClientName = clientName !== "" ? clientName : "";
-      this.page = 0;
+      this.getClientsList();
     },
     closeDialog() {
       this.dialogForm = false;
-      this.editedId = 0;
+      this.editedItem = {};
       this.deleteId = 0;
-      this.printedId = null;
-      this.popupMoveDebt = false;
+
+      this.page -= 1;
+      this.getClientsList();
     },
-    editItem(id) {
-      this.editedId = +id;
+    editItem(item) {
+      this.editedItem = item;
       this.dialogForm = true;
     },
     deleteItem(id) {
       this.deleteId = +id;
-      this.dialogForm = true;
-    },
-    printedItem(id) {
-      this.printedId = +id;
-      this.dialogForm = true;
-    },
-    moveDebt() {
-      this.popupMoveDebt = true;
       this.dialogForm = true;
     },
     showOrders(id, name) {
@@ -473,21 +324,25 @@ export default {
     },
     showBouquests(id, name) {
       this.$router.push({
-        path: `/bouquets/?clientId=${id}&clientName=${name}`
+        path: `/bouquets/?clientId=${id}&clientName=${name}`,
       });
     },
     changeShowElem() {
-      localStorage.setItem("countElemPage", this.take);
-      this.$store.commit("setCountElemPage", this.take);
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
       this.page = 0;
+      this.getClientsList();
     },
     prevPage() {
       this.page -= 1;
     },
     nextPage() {
       this.page += 1;
-    }
-  }
+    },
+  },
+  mounted() {
+    this.getClientsList();
+  },
 };
 </script>
 

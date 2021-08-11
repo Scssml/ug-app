@@ -24,7 +24,7 @@
           :rules="[v => !!v || 'Заполните поле']"
           item-text="name"
           item-value="id"
-          v-model="editedItem.typeId"
+          v-model="editedItem.client_type"
           hide-details
           class="mb-4"
         ></v-select>
@@ -37,34 +37,17 @@
           label="Телефон"
           v-model="editedItem.phone"
         ></v-text-field>
-        <v-autocomplete
-          label="Организация"
-          :items="clientsList"
-          :filter="clientsFilter"
-          item-text="name"
-          item-value="id"
-          v-model.number="editedItem.referenceId"
-          hide-details
-          class="mb-4"
-          no-data-text="Не надено"
-          clearable
-          v-if="editedItem.typeId === 2"
-        ></v-autocomplete>
         <v-text-field
           label="Адрес"
           v-model="editedItem.address"
         ></v-text-field>
         <v-text-field
-          label="Подъезд"
-          v-model="editedItem.entrance"
-        ></v-text-field>
-        <v-text-field
           label="Квартира"
-          v-model="editedItem.flat"
+          v-model.number="editedItem.flat_number"
         ></v-text-field>
         <v-text-field
           label="Этаж"
-          v-model="editedItem.floor"
+          v-model.number="editedItem.floor"
         ></v-text-field>
         <v-menu
           :close-on-content-click="false"
@@ -80,7 +63,7 @@
           <v-text-field
             slot="activator"
             label="День рождения"
-            v-model="editedItem.birthDay"
+            v-model="editedItem.birth_day"
             prepend-icon="event"
             hide-details
             readonly
@@ -88,7 +71,7 @@
             clearable
           ></v-text-field>
           <v-date-picker
-            v-model="editedItem.birthDay"
+            v-model="editedItem.birth_day"
             @input="dataPicker = false"
             no-title
             scrollable
@@ -113,11 +96,11 @@
           v-model.number="editedItem.sale"
           type="number"
         ></v-text-field>
-        <!-- <v-checkbox
+        <v-checkbox
           label="Активность"
           v-model="editedItem.active"
           color="primary"
-        ></v-checkbox> -->
+        ></v-checkbox>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -136,14 +119,12 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
+import axios from 'axios';
 
 export default {
   props: {
-    id: {
-      type: Number,
+    item: {
+      type: Object,
       required: true,
     },
   },
@@ -151,85 +132,42 @@ export default {
     return {
       dataPicker: false,
       editedItem: {},
-      typeClient: [],
+      typeClient: [
+        {
+          id: 'individual',
+          name: 'Физ. лицо',
+        },
+        {
+          id: 'legal',
+          name: 'Юр. лицо',
+        },
+        {
+          id: 'counter_party',
+          name: 'Контрагент',
+        },
+        {
+          id: 'our',
+          name: 'Наш',
+        },
+      ],
       createdSuccess: false,
-      clientsList: [],
-      currentUserGroup: null,
-      billOld: 0,
     };
   },
-  apollo: {
-    client: {
-      query: gql`
-        query client(
-          $id: bigint
-        ) {
-          client: clients(
-            where: {
-              id: { _eq: $id }
-            }
-          ) {
-            id
-            typeId
-            name
-            phone
-            address
-            entrance
-            flat
-            floor
-            birthDay
-            bill
-            limit
-            sale
-            referenceId
-            # active
-          }
-        }
-      `,
-      variables() {
-        return {
-          id: this.id,
-        };
-      },
-      update({ client }) {
-        this.editedItem = client.shift();
-        this.editedItem.birthDay = this.formatDate(this.editedItem.birthDay, 'yyyy-MM-dd');
-        this.loading = false;
-        this.billOld = this.editedItem.bill;
-      },
-    },
-    clientsList: {
-      query: gql`
-        query clientsList(
-          $id: bigint
-        ) {
-          clientsList: clients(
-            where: {
-              typeId: { _eq: 2 }
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-            phone
-          }
-        }
-      `,
-    },
-    typeClient: {
-      query: gql`
-        query {
-          typeClient: clientTypes(where: { active: { _eq: true } }) {
-            id
-            name
-          }
-        }
-      `,
-    },
-  },
   methods: {
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
+    getItem() {
+      this.editedItem = {
+        active: this.item.active,
+        address: this.item.address,
+        bill: this.item.bill,
+        birth_day: this.item.birth_day.split('T')[0],
+        client_type: this.item.client_type,
+        flat_number: this.item.flat_number,
+        floor: this.item.floor,
+        limit: this.item.limit,
+        name: this.item.name,
+        phone: this.item.phone,
+        sale: this.item.sale,
+      };
     },
     cancel() {
       this.editedItem = {};
@@ -239,84 +177,31 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsClient = Object.assign({}, this.editedItem);
+        const propsItem = Object.assign({}, this.editedItem);
+        const url = `clients/${this.item.id}`;
 
-        if (this.billOld === propsClient.bill) {
-          this.$apollo.mutate({
-            mutation: gql`mutation {
-              updateClient(input:{
-                address: "${propsClient.address}"
-                entrance: "${propsClient.entrance}"
-                flat: "${propsClient.flat}"
-                floor: "${propsClient.floor}"
-                id: ${propsClient.id}
-                limit: ${propsClient.limit}
-                name: "${propsClient.name}"
-                phone: "${propsClient.phone}"
-                referenceId: ${propsClient.referenceId}
-                sale: ${propsClient.sale}
-                typeId: ${propsClient.typeId}
-                birthDay: "${this.formatDate(propsClient.birthDay, 'dd-MM-yyyy')}"
-              }) {
-                id
-              }
-            }`,
-          }).then(() => {
+        axios
+          .post(url, propsItem)
+          .then(() => {
             this.createdSuccess = true;
 
             setTimeout(() => {
               this.$emit('cancel');
             }, 1000);
-          }).catch((error) => {
-            console.error(error);
+          })
+          .catch((error) => {
+            console.log(error);
           });
-        } else {
-          this.$apollo.mutate({
-            mutation: gql`mutation {
-              updateClient(input:{
-                address: "${propsClient.address}"
-                entrance: "${propsClient.entrance}"
-                flat: "${propsClient.flat}"
-                floor: "${propsClient.floor}"
-                id: ${propsClient.id}
-                limit: ${propsClient.limit}
-                name: "${propsClient.name}"
-                phone: "${propsClient.phone}"
-                referenceId: ${propsClient.referenceId}
-                sale: ${propsClient.sale}
-                typeId: ${propsClient.typeId}
-                bill: ${propsClient.bill}
-                birthDay: "${this.formatDate(propsClient.birthDay, 'dd-MM-yyyy')}"
-              }) {
-                id
-              }
-            }`,
-          }).then(() => {
-            this.createdSuccess = true;
-
-            setTimeout(() => {
-              this.$emit('cancel');
-            }, 1000);
-          }).catch((error) => {
-            console.error(error);
-          });
-        }
-        
       }
-    },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
     },
   },
   computed: {
     isCurrentUserAdmin() {
       return this.$store.getters.getAuthUserGroup.code === 'admin';
     },
+  },
+  mounted() {
+    this.getItem();
   },
 };
 </script>

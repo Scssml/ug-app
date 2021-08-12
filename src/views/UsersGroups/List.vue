@@ -128,7 +128,7 @@ export default {
   methods: {
     getUsersGroupsList() {
       const loadData = this.loadingData.find(item => item.id === 'groups');
-      const url = '/api/v1/groups';
+      const url = 'groups';
 
       axios
         .get(url)

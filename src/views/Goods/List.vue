@@ -424,7 +424,7 @@ export default {
     },
     getItems() {
       const loadData = this.loadingData.find(item => item.id === 'goods');
-      const url = '/api/v1/goods';
+      const url = 'goods';
 
       axios
         .get(url)

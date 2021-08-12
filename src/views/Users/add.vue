@@ -105,7 +105,7 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
-        const url = '/api/v1/users';
+        const url = 'users';
 
         axios
           .post(url, propsItem)

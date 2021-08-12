@@ -21,7 +21,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     authUser: 0,
-    apiUrl: "/api/v1/",
+    apiUrl: "/",
     authToken: "",
     authStatus: "",
     authUserGroup: {},

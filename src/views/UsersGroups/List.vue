@@ -51,13 +51,7 @@
             <template
               v-if="dialogForm"
             >
-              <user-group-edit
-                v-if="editedId"
-                :id="editedId"
-                @cancel="closeDialog()"
-              ></user-group-edit>
               <user-group-add
-                v-else
                 @cancel="closeDialog()"
               ></user-group-add>
             </template>
@@ -76,16 +70,6 @@
             <td class="text-xs-right" style="width: 30px">{{ props.item.id }}</td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.code }}</td>
-            <!-- <td>{{ (props.item.isActive) ? 'Да' : 'Нет' }}</td> -->
-            <td class="text-xs-right" style="width: 110px">
-              <v-icon
-                class="mr-2"
-                @click="editItem(props.item.id)"
-                title="Изменить"
-              >
-                edit
-              </v-icon>
-            </td>
           </template>
         </v-data-table>
       </v-card>
@@ -95,13 +79,11 @@
 
 <script>
 import axios from 'axios';
-import UserGroupEdit from './edit.vue';
 import UserGroupAdd from './add.vue';
 
 export default {
   name: 'Groups',
   components: {
-    UserGroupEdit,
     UserGroupAdd,
   },
   data() {
@@ -132,20 +114,8 @@ export default {
           align: 'left',
           value: 'code',
         },
-        // {
-        //   text: 'Активность',
-        //   align: 'left',
-        //   value: 'isActive',
-        // },
-        {
-          text: '',
-          align: 'right',
-          sortable: false,
-          value: 'action',
-        },
       ],
       dialogForm: false,
-      editedId: 0,
       usersGroupsList: [],
     };
   },
@@ -178,11 +148,6 @@ export default {
     closeDialog() {
       this.getUsersGroupsList();
       this.dialogForm = false;
-      this.editedId = 0;
-    },
-    editItem(id) {
-      this.editedId = +id;
-      this.dialogForm = true;
     },
   },
   mounted() {

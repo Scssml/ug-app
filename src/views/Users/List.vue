@@ -52,15 +52,10 @@
               v-if="dialogForm"
             >
               <user-edit
-                v-if="editedId"
-                :id="editedId"
+                v-if="Object.keys(this.editedItem).length > 0"
+                :item="editedItem"
                 @cancel="closeDialog()"
               ></user-edit>
-              <user-delete
-                v-else-if="deleteId"
-                :id="deleteId"
-                @cancel="closeDialog()"
-              ></user-delete>
               <user-change-pwd
                 v-else-if="changePwdId"
                 :id="changePwdId"
@@ -92,7 +87,7 @@
             </td>
             <td class="text-xs-right" style="width: 140px">
               <v-icon
-                @click="editItem(props.item.id)"
+                @click="editItem(props.item)"
                 title="Изменить"
               >
                 edit
@@ -106,14 +101,6 @@
               >
                 https
               </v-icon>
-              <v-icon
-                class="ml-2"
-                v-if="$store.getters.getAuthUserGroup.code === 'admin'"
-                @click="deleteItem(props.item.id)"
-                title="Удалить"
-              >
-                delete
-              </v-icon>
             </td>
           </template>
         </v-data-table>
@@ -126,7 +113,6 @@
 import axios from 'axios';
 import UserEdit from './edit.vue';
 import UserAdd from './add.vue';
-import UserDelete from './delete.vue';
 import UserChangePwd from './changePwd.vue';
 
 export default {
@@ -134,7 +120,6 @@ export default {
   components: {
     UserEdit,
     UserAdd,
-    UserDelete,
     UserChangePwd,
   },
   data() {
@@ -184,8 +169,7 @@ export default {
       ],
       dialogForm: false,
       usersList: [],
-      editedId: 0,
-      deleteId: 0,
+      editedItem: {},
       changePwdId: 0,
     };
   },
@@ -218,16 +202,11 @@ export default {
     closeDialog() {
       this.getUsersList();
       this.dialogForm = false;
-      this.editedId = 0;
-      this.deleteId = 0;
+      this.editedItem = {};
       this.changePwdId = 0;
     },
-    editItem(id) {
-      this.editedId = +id;
-      this.dialogForm = true;
-    },
-    deleteItem(id) {
-      this.deleteId = +id;
+    editItem(item) {
+      this.editedItem = item;
       this.dialogForm = true;
     },
     changePwd(id) {

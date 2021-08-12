@@ -42,11 +42,11 @@
           item-value="id"
           v-model="editedItem.group_id"
         ></v-select>
-        <!-- <v-checkbox
+        <v-checkbox
           label="Активность"
-          v-model="editedItem.isActive"
+          v-model="editedItem.active"
           color="primary"
-        ></v-checkbox> -->
+        ></v-checkbox>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -75,7 +75,8 @@ export default {
         login: '',
         password: '',
         group_id: 0,
-        // isActive: true,
+        active: true,
+        user_setting: '',
       },
       createdSuccess: false,
       usersGroupsList: [],
@@ -94,22 +95,6 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-
-      // const itemParams = {
-      //   type: 'users-groups',
-      //   filter: {
-      //     isActive: true,
-      //   },
-      // };
-
-      // this.$store.dispatch('getItemsList', itemParams).then((response) => {
-      //   this.usersGroupsList = response.map((item) => {
-      //     item.id = +item.id;
-      //     return item;
-      //   });
-      // }).catch(() => {
-      //   console.log('error');
-      // });
     },
     cancel() {
       this.editedItem = {};

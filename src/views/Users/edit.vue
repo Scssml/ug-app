@@ -28,23 +28,17 @@
           :rules="[v => !!v || 'Заполните поле']"
           v-model="editedItem.login"
         ></v-text-field>
-        <!-- <v-text-field
-          label="Пароль"
-          :rules="[v => !!v || 'Заполните поле']"
-          v-model="editedItem.password"
-          type="password"
-        ></v-text-field> -->
         <v-select
           label="Группа"
           :items="usersGroupsList"
           :rules="[v => !!v || 'Заполните поле']"
           item-text="name"
           item-value="id"
-          v-model="editedItem.group"
+          v-model="editedItem.group_id"
         ></v-select>
         <v-checkbox
           label="Активность"
-          v-model="editedItem.isActive"
+          v-model="editedItem.active"
           color="primary"
         ></v-checkbox>
       </v-card-text>
@@ -65,10 +59,12 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   props: {
-    id: {
-      type: Number,
+    item: {
+      type: Object,
       required: true,
     },
   },
@@ -81,36 +77,25 @@ export default {
   },
   methods: {
     getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'users',
-          id: this.id,
-        };
-
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.editedItem = response;
-          this.editedItem.group = +response.group.id;
-        }).catch(() => {
-          console.log('error');
-        });
-      }
+      this.editedItem = {
+        name: this.item.name,
+        login: this.item.login,
+        group_id: this.item.group_id,
+        active: this.item.active,
+      };
     },
     getUsersGroupsList() {
-      const itemParams = {
-        type: 'users-groups',
-        filter: {
-          isActive: true,
-        },
-      };
+      const url = 'groups';
 
-      this.$store.dispatch('getItemsList', itemParams).then((response) => {
-        this.usersGroupsList = response.map((item) => {
-          item.id = +item.id;
-          return item;
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.usersGroupsList = items;
+        })
+        .catch((error) => {
+          console.log(error);
         });
-      }).catch(() => {
-        console.log('error');
-      });
     },
     cancel() {
       this.editedItem = {};
@@ -121,26 +106,26 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
+        const url = `users/${this.item.id}`;
 
-        const itemParams = {
-          type: 'users',
-          id: this.id,
-          props: propsItem,
-        };
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
 
-        this.$store.dispatch('updateItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },
   mounted() {
-    this.getItem();
     this.getUsersGroupsList();
+    this.getItem();
   },
 };
 </script>

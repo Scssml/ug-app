@@ -42,6 +42,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   props: {
     id: {
@@ -67,19 +69,20 @@ export default {
       const validate = this.$refs.form.validate();
       if (validate) {
         const propsItem = Object.assign({}, this.editedItem);
+        const url = `users/${this.id}`;
 
-        const itemParams = {
-          type: 'users',
-          id: this.id,
-          props: propsItem,
-        };
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
 
-        this.$store.dispatch('changePwd', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
   },

@@ -18,11 +18,6 @@
       <v-card-text
         class="px-4"
       >
-        <!-- <v-checkbox
-          label="Активность"
-          v-model="editedItem.isActive"
-          color="primary"
-        ></v-checkbox> -->
         <v-text-field
           label="Имя"
           :rules="[v => !!v || 'Заполните поле']"
@@ -59,7 +54,6 @@ export default {
       editedItem: {
         name: '',
         code: '',
-        // isActive: true,
       },
       createdSuccess: false,
     };

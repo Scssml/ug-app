@@ -27,27 +27,15 @@
       <v-card>
         <v-card-title>
           <v-select
-            label="Товар"
-            :items="goods"
-            item-text="name"
-            item-value="id"
-            v-model.number="purchaseFilter.goodId"
-            hide-details
-            clearable
-            class="pr-4"
-            @change="setPurchaseFilter('goodId')($event)"
-          ></v-select>
-          <v-spacer></v-spacer>
-          <v-select
             label="Тип изменения"
             :items="typeEdit"
             item-text="name"
             item-value="id"
-            v-model.number="purchaseFilter.type"
+            v-model.number="filter.operation_type"
             hide-details
             clearable
             class="pr-4"
-            @change="setPurchaseFilter('type')($event)"
+            @change="changeFilter"
           ></v-select>
           <v-menu
             :close-on-content-click="false"
@@ -61,7 +49,7 @@
             class="ml-4"
           >
             <v-text-field
-              v-model="purchaseFilter.startDate"
+              v-model="filter.start_date"
               slot="activator"
               label="C"
               prepend-icon="event"
@@ -70,13 +58,13 @@
               clearable
             ></v-text-field>
             <v-date-picker
-              v-model="purchaseFilter.startDate"
+              v-model="filter.start_date"
               @input="dataStartPicker = false"
               no-title
               scrollable
               locale="ru-ru"
               first-day-of-week="1"
-              @change="setPurchaseFilter('startDate')($event)"
+              @change="changeFilter"
             ></v-date-picker>
           </v-menu>
           <v-menu
@@ -91,7 +79,7 @@
             class="ml-4"
           >
             <v-text-field
-              v-model="purchaseFilter.endDate"
+              v-model="filter.end_date"
               slot="activator"
               label="По"
               prepend-icon="event"
@@ -100,13 +88,13 @@
               clearable
             ></v-text-field>
             <v-date-picker
-              v-model="purchaseFilter.endDate"
+              v-model="filter.end_date"
               @input="dataEndPicker = false"
               no-title
               scrollable
               locale="ru-ru"
               first-day-of-week="1"
-              @change="setPurchaseFilter('endDate')($event)"
+              @change="changeFilter"
             ></v-date-picker>
           </v-menu>
         </v-card-title>
@@ -117,42 +105,23 @@
           hide-actions
           no-data-text="Поставок не найдено"
           no-results-text="Поставок не найдено"
-          :search="search"
-          :disable-initial-sort="true"
-          :pagination.sync="pagination"
-          :loading="!!$apollo.queries.purchaseList.loading"
+          :loading="tableLoading"
         >
-          <template slot="headers" slot-scope="props">
-            <tr>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-                class="text-xs-left column"
-                :class="[
-                  'column sortable',
-                  pagination.descending ? 'desc' : 'asc',
-                  header.value === pagination.sortBy ? 'active' : ''
-                ]"
-                @click="header.sortable ? changeSort(header.value) : ''"
-              >
-                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
-                {{ header.text }}
-              </th>
-            </tr>
-          </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.created_at_format }}</td>
-            <td>{{ props.item.purchaseType.name }}</td>
-            <td>{{ props.item.purchase }}</td>
+            <td>{{ props.item.created_at }}</td>
+            <td>
+              {{ typeEdit.find((item) => item.id === props.item.operation_type).name }}
+            </td>
             <td>{{ props.item.arrival }}</td>
+            <td>{{ props.item.amount }}</td>
             <td>{{ markup(props.item) }}%</td>
             <td>{{ props.item.revaluation }}</td>
             <td>
-              <template v-if="props.item.company">
-                {{ props.item.company.name }}
+              <template v-if="props.item.company_name">
+                {{ props.item.company_name }}
               </template>
             </td>
-            <td>{{ props.item.createdBy.name }}</td>
+            <td>{{ props.item.user_name }}</td>
 
             <td class="text-xs-right" style="width: 7%;">
               <v-icon
@@ -183,7 +152,7 @@
               small
               color="info"
               class="ml-3"
-              :disabled="page === 0"
+              :disabled="page === 1"
               @click="prevPage()"
             >
               <v-icon dark>keyboard_arrow_left</v-icon>
@@ -205,17 +174,39 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
-import { mapState } from 'vuex';
+import axios from 'axios';
 
 export default {
   name: 'History',
   data() {
     return {
-      typeEdit: [],
-      goods: [],
+      filter: {
+        operation_type: '',
+        start_date: '',
+        end_date: '',
+      },
+      typeEdit: [
+        {
+          id: '',
+          name: 'Все',
+        },
+        {
+          id: 'coming',
+          name: 'Приход',
+        },
+        {
+          id: 'revaluation',
+          name: 'Переоценка',
+        },
+        {
+          id: 'inventory',
+          name: 'Инвентаризация',
+        },
+        {
+          id: 'defect',
+          name: 'Брак',
+        },
+      ],
       dataStartPicker: null,
       dataEndPicker: null,
       loadingData: [
@@ -227,31 +218,30 @@ export default {
           id: 'purchase',
         },
       ],
-      search: '',
       headersTable: [
         {
           text: 'Дата',
           align: 'left',
-          sortable: true,
+          sortable: false,
           value: 'created_at',
         },
         {
           text: 'Тип изменения',
           align: 'left',
-          sortable: true,
-          value: 'purchaseType.name',
+          sortable: false,
+          value: 'operation_type',
         },
         {
           text: 'Закупка',
           align: 'left',
-          sortable: true,
-          value: 'purchase',
+          sortable: false,
+          value: 'arrival',
         },
         {
           text: 'Приход',
           align: 'left',
-          sortable: true,
-          value: 'arrival',
+          sortable: false,
+          value: 'amount',
         },
         {
           text: 'Наценка',
@@ -262,20 +252,20 @@ export default {
         {
           text: 'Переоценка',
           align: 'left',
-          sortable: true,
+          sortable: false,
           value: 'revaluation',
         },
         {
           text: 'Компания',
           align: 'left',
-          sortable: true,
-          value: 'company.name',
+          sortable: false,
+          value: 'company_name',
         },
         {
           text: 'Менеджер',
           align: 'left',
-          sortable: true,
-          value: 'createdBy.name',
+          sortable: false,
+          value: 'user_name',
         },
         {
           text: '',
@@ -284,163 +274,19 @@ export default {
           value: 'action',
         },
       ],
-      usersList: [],
       purchaseList: [],
       take: 20,
       page: 0,
-      pagination: {
-        sortBy: 'created_at',
-        rowsPerPage: -1,
-        descending: true,
-      },
+      tableLoading: false,
     };
-  },
-  apollo: {
-    typeEdit: {
-      query: gql`
-        query {
-          typeEdit: purchaseTypes {
-            id
-            name
-          }
-        }
-      `,
-    },
-    goods: {
-      query: gql`
-        query goods {
-          goods: goods(
-            order_by: { sortIndex: asc }
-            where: {
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-          }
-        }
-      `,
-    },
-    purchaseList: {
-      query: gql`
-        query purchaseList(
-          $goodId: bigint,
-          $dateStart: timestamptz,
-          $dateEnd: timestamptz,
-          $typeId: bigint,
-          $limit: Int,
-          $offset: Int,
-          $orderBy: [purchases_order_by!]
-        ) {
-          purchaseList: purchases(
-            where: {
-              _and: [
-                { 
-                  purchasedGoods: {
-                    goodId: { _eq: $goodId }
-                  }
-                }
-                { typeId: { _eq: $typeId } }
-                { created_at: { _gte: $dateStart } }
-                { created_at: { _lte: $dateEnd } }
-              ]
-            },
-            order_by: $orderBy,
-            limit: $limit,
-            offset: $offset
-          ) {
-            id,
-            created_at
-            purchaseType {
-              name
-            }
-            purchase
-            arrival
-            revaluation
-            company {
-              name
-            }
-            createdBy {
-              name
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          goodId: this.purchaseFilter.goodId
-            ? this.purchaseFilter.goodId
-            : undefined,
-          typeId: this.purchaseFilter.type
-            ? this.purchaseFilter.type
-            : undefined,
-          dateStart: this.purchaseFilter.startDate
-            ? `${this.purchaseFilter.startDate} 00:00:00`
-            : undefined,
-          dateEnd: this.purchaseFilter.endDate
-            ? `${this.purchaseFilter.endDate} 23:59:59`
-            : undefined,
-
-          offset: this.page * this.take,
-          limit: this.take,
-          orderBy: this.orderBy,
-        };
-      },
-      update({ purchaseList }) {
-        return purchaseList.map((item) => {
-          item.created_at_format = this.formatDate(item.created_at, 'dd.MM.yyyy HH:mm:ss');
-          return item;
-        });
-      },
-    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(item => !item.error && !item.loading);
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    ...mapState(['purchaseFilter']),
-    orderBy() {
-      const sortFields = this.pagination.sortBy.split(".");
-      let sortObject = {};
-      const sortOrder = this.pagination.descending
-        ? "desc_nulls_last"
-        : "asc_nulls_last";
-
-      if (sortFields.length === 3) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: {
-              [sortFields[2]]: sortOrder
-            }
-          }
-        };
-      } else if (sortFields.length === 2) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: sortOrder
-          }
-        };
-      } else {
-        sortObject[sortFields[0]] = sortOrder;
-      }
-
-      return sortObject;
-    }
   },
   methods: {
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
-    },
-    changeSort(column) {
-      this.purchaseList = [];
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-    },
     prevPage() {
       this.page -= 1;
     },
@@ -448,26 +294,53 @@ export default {
       this.page += 1;
     },
     changeShowElem() {
-      localStorage.setItem("countElemPage", this.take);
-      this.$store.commit("setCountElemPage", this.take);
+      localStorage.setItem('countElemPage', this.take);
+      this.$store.commit('setCountElemPage', this.take);
       this.page = 0;
+      this.getItemsList();
     },
     markup(item) {
       let markupVal = 0;
-      if (item.arrival !== 0) {
-        markupVal = 100 - (item.purchase * 100) / item.arrival;
+      if (item.amount !== 0) {
+        markupVal = 100 - ((item.arrival * 100) / item.amount);
       }
 
       return +markupVal.toFixed(2);
     },
-    setPurchaseFilter(filterProp) {
-      return (value) => {
-        this.$store.commit('setPurchaseFilter', {
-          filterProp,
-          value,
-        });
-      };
+    changeFilter() {
+      this.page = 0;
+      this.getItemsList();
     },
+    getItemsList() {
+      const url = 'purchases';
+      this.page += 1;
+
+      const getParams = {
+        page: this.page,
+        page_limit: this.take,
+      };
+
+      Object.keys(this.filter).forEach((code) => {
+        if (this.filter[code]) {
+          getParams[code] = this.filter[code];
+        }
+      });
+
+      axios
+        .get(url, {
+          params: getParams,
+        })
+        .then((response) => {
+          const items = response.data.purchases;
+          this.purchaseList = items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+  },
+  mounted() {
+    this.getItemsList();
   },
 };
 </script>

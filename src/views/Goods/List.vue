@@ -51,7 +51,7 @@
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model.number="dataEdit.type"
+                  v-model.number="dataEdit.operation_type"
                   hide-details
                   class="pr-4"
                 ></v-select>
@@ -59,19 +59,19 @@
               <v-flex xs2>
                 <v-text-field
                   label="Закупка"
-                  :value="dataEdit.purchase"
+                  :value="dataEdit.arrival"
                   hide-details
                   class="pr-4"
                   :rules="[
                     v => (v !== '' && v !== undefined) || 'Заполните поле'
                   ]"
-                  @change="dataEdit.purchase = exelCalc($event)"
+                  @change="dataEdit.arrival = exelCalc($event)"
                 ></v-text-field>
               </v-flex>
               <v-flex xs2>
                 <v-text-field
                   label="Сумма"
-                  :value="arrival"
+                  :value="amount"
                   hide-details
                   class="pr-4"
                   readonly
@@ -94,27 +94,18 @@
                   class="pr-4"
                   :rules="[v => !!v || 'Заполните поле']"
                 ></v-text-field> -->
-                <autosuggest
-                  :suggestions="suggestions"
-                  placeholder="Клиенты"
-                  :value="client.name"
-                  @onChange="onInputChange"
-                  @onSelect="onSelected"
-                  class="mt-3 view-filter"
-                />
-                <!-- <v-autocomplete
+                <v-autocomplete
                   label="Компания"
                   :items="clientsList"
-                  :filter="clientsFilter"
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model.number="dataEdit.company"
+                  v-model.number="dataEdit.client_id"
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
-                ></v-autocomplete> -->
+                ></v-autocomplete>
               </v-flex>
               <v-flex xs2>
                 <v-btn
@@ -159,7 +150,7 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <list-item
+            <ListItem
               :props="props"
               @onChange="handleRowItemChange"
               @deleteItem="deleteGood"
@@ -174,10 +165,8 @@
 <script>
 import axios from 'axios';
 import GoodAdd from './add.vue';
-import ListItem from './ListItem';
-import { PaymentTypes } from './constants';
+import ListItem from './ListItem.vue';
 import GoodDelete from './delete.vue';
-import Autosuggest from '../../components/Autosuggest';
 
 export default {
   name: 'Goods',
@@ -185,7 +174,6 @@ export default {
     GoodAdd,
     ListItem,
     GoodDelete,
-    Autosuggest,
   },
   data() {
     return {
@@ -198,11 +186,29 @@ export default {
           id: 'goods',
         },
       ],
-      typeEdit: [],
+      typeEdit: [
+        {
+          id: 'coming',
+          name: 'Приход',
+        },
+        {
+          id: 'revaluation',
+          name: 'Переоценка',
+        },
+        {
+          id: 'inventory',
+          name: 'Инвентаризация',
+        },
+        {
+          id: 'defect',
+          name: 'Брак',
+        },
+      ],
       dataEdit: {
-        type: 0,
-        company: null,
-        purchase: 0,
+        arrival: 0,
+        client_id: 0,
+        operation_type: 'coming',
+        revaluation: 0,
       },
       search: '',
       headersTable: [
@@ -249,6 +255,7 @@ export default {
         },
       ],
       goodsList: [],
+      clientsList: [],
       createdSuccess: false,
       dialogForm: false,
       deleteId: 0,
@@ -275,9 +282,9 @@ export default {
     formAlertTitle() {
       return 'Остатки изменены';
     },
-    arrival() {
-      switch (+this.dataEdit.type) {
-        case PaymentTypes.Revaluation: {
+    amount() {
+      switch (this.dataEdit.type) {
+        case 'defect': {
           return this.calculateRevaluation(this.goodsList);
         }
         default: {
@@ -287,8 +294,8 @@ export default {
     },
     markup() {
       let markupVal = 0;
-      if (this.arrival !== 0) {
-        markupVal = 100 - (this.dataEdit.purchase * 100) / this.arrival;
+      if (this.amount !== 0) {
+        markupVal = 100 - ((this.dataEdit.arrival * 100) / this.amount);
       }
 
       return +markupVal.toFixed(2);
@@ -299,30 +306,21 @@ export default {
       this.client = item;
       this.dataEdit.company = item.id;
     },
-    onInputChange(text) {
-      this.queryName = `%${text}%`;
-      this.skipClientsQuery = false;
-
-      if (text === "") {
-        this.dataEdit.company = null;
-      }
-    },
     calculateRevaluation(goodsList) {
       return goodsList.reduce(
-        (sum, item) => sum + (item.price - item.oldPrice) * item.stockBalance,
+        (sum, item) => sum + ((item.price - item.oldPrice) * item.stockBalance),
         0,
       );
     },
     calculateOtherOperations(goodsList) {
-      return goodsList.reduce((sum, item) => sum + item.price * item.count, 0);
+      return goodsList.reduce((sum, item) => sum + (item.price * item.count), 0);
     },
     handleHistoryButtonClick() {
       this.$store.commit('clearPurchaseFilter');
     },
-    handleRowItemChange({ id, prop, value }) {
-      const good = this.goodsList.find(g => g.id === id);
-
-      good[prop] = value;
+    handleRowItemChange({ id, code, value }) {
+      const good = this.goodsList.find(item => item.id === id);
+      good[code] = value;
     },
     exelCalc(val) {
       /* eslint no-eval: 0 */
@@ -335,56 +333,37 @@ export default {
     },
     submitForm() {
       const validate = this.$refs.form.validate();
-      if (validate && this.dataEdit.company) {
-        const propsPurchase = {
-          typeId: this.dataEdit.type,
-          purchase: this.dataEdit.purchase,
-          arrival: this.arrival,
-          companyId: this.dataEdit.company,
-          createdByID: this.$store.getters.getAuthUser,
-          purchasedGoods: [],
-        };
+      if (validate && this.dataEdit.client_id) {
+        const propsPurchase = Object.assign({}, this.dataEdit);
+        const url = 'purchases';
+
+        propsPurchase.amount = this.amount;
 
         const goodsList = this.goodsList.filter((item) => {
-          return (+item.price !== +item.oldPrice || +item.count !== +item.oldCount);
+          return (+item.price !== +item.oldPrice || +item.count !== 0);
         });
 
-        const purchaseGoods = goodsList.map((item) => {
-          const good = {
-            goodId: item.id,
-            estimate: +item.count,
-            newPrice: item.price,
-            oldPrice: item.oldPrice,
-            stockQuantity: item.stockBalance + +item.count,
+        propsPurchase.goods = goodsList.map((item) => {
+          return {
+            id: item.id,
+            new_price: +item.price,
+            new_stock: +item.count,
           };
-
-          return good;
         });
 
-        propsPurchase.purchasedGoods = purchaseGoods;
+        axios
+          .post(url, propsPurchase)
+          .then(() => {
+            this.createdSuccess = true;
+            this.getItems();
 
-        /*
-        this.$apollo.mutate({
-          mutation: gql`mutation createPurchase (
-            $props: NewPurchase!
-          ) {
-            createPurchase(input: $props)
-          }`,
-          variables: {
-            props: propsPurchase,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          this.$apollo.queries.goods.refetch();
-
-          setTimeout(() => {
-            this.$emit('cancel', true);
-            this.createdSuccess = false;
-          }, 1000);
-        }).catch((error) => {
-          console.error(error);
-        });
-        */
+            setTimeout(() => {
+              this.createdSuccess = false;
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     },
     closeDialog() {
@@ -409,19 +388,6 @@ export default {
       this.deleteId = id;
       this.dialogForm = true;
     },
-    scroll() {
-      window.onscroll = () => {
-        const documentScrollTop = document.documentElement.scrollTop;
-        const documentOffsetHeight = document.documentElement.offsetHeight;
-        const windowInnerHeight = window.innerHeight;
-        const bottomOfWindow = documentScrollTop + windowInnerHeight >= documentOffsetHeight - 300;
-
-        if (bottomOfWindow && !this.loading) {
-          this.page += 1;
-          this.loading = true;
-        }
-      };
-    },
     getItems() {
       const loadData = this.loadingData.find(item => item.id === 'goods');
       const url = 'goods';
@@ -432,6 +398,7 @@ export default {
           const items = response.data;
           this.goodsList = items.map((item) => {
             item.count = 0;
+            item.oldPrice = item.price;
             return item;
           });
 
@@ -444,9 +411,27 @@ export default {
           console.log(error);
         });
     },
+    getClients() {
+      const url = 'clients';
+
+      axios
+        .get(url, {
+          params: {
+            client_type: 'legal',
+          },
+        })
+        .then((response) => {
+          const items = response.data;
+          this.clientsList = items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
   mounted() {
     this.getItems();
+    this.getClients();
   },
 };
 </script>

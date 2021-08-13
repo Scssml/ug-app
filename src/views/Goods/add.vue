@@ -43,6 +43,12 @@
           v-model.number="editedItem.sort_index"
           type="number"
         ></v-text-field>
+        <v-text-field
+          label="Цвет"
+          :rules="[v => !!v || 'Заполните поле']"
+          v-model.number="editedItem.color"
+          type="color"
+        ></v-text-field>
       </v-card-text>
       <v-card-actions
         class="px-4 pb-4"
@@ -71,7 +77,7 @@ export default {
         price: 0,
         stock: 0,
         sort_index: 0,
-        color: '',
+        color: '#FFF',
       },
       createdSuccess: false,
     };

@@ -17,9 +17,9 @@
         solo
         flat
         hide-details
-        v-model="props.item.name"
+        :value="props.item.name"
         class="scs-small"
-        @blur="changeName"
+        @change="changeProps('name', $event)"
       ></v-text-field>
     </td>
     <td>
@@ -28,9 +28,9 @@
         solo
         flat
         hide-details
-        v-model="props.item.sort_index"
+        :value="props.item.sort_index"
         class="scs-small"
-        @blur="changeSortIndex"
+        @change="changeProps('sort_index', +$event)"
       ></v-text-field>
     </td>
     <td>
@@ -40,8 +40,8 @@
         flat
         hide-details
         type="number"
-        v-model="props.item.price"
-        @keyup="handleItemChange('price')($event)"
+        :value="props.item.price"
+        @input="handleItemChange(props.item.id, 'price', +$event)"
         class="scs-small"
       ></v-text-field>
     </td>
@@ -53,7 +53,7 @@
         hide-details
         type="text"
         :value="props.item.count"
-        @keyup="handleItemChange('count')($event)"
+        @input="handleItemChange(props.item.id, 'count', +$event)"
         class="scs-small"
       ></v-text-field>
     </td>
@@ -65,134 +65,86 @@
       >
         color_lens
       </v-icon>
-      <chrome-picker
+      <ChromePicker
         v-model="color"
         v-if="showPicker"
-        v-click-outside="handleClickOutsidePicker"
+        v-click-outside="changeColor"
       />
     </td>
-    <td class="text-xs-right" style="width: 7%;">
-      <v-icon
+    <td class="text-xs-right">
+      <!-- <v-icon
         @click="deleteItem(props.item.id)"
         title="Удалить"
-        v-if="+props.item.stockBalance === 0"
+        v-if="+props.item.stock === 0"
       >
         delete
-      </v-icon>
+      </v-icon> -->
     </td>
   </tr>
 </template>
 
 <script>
-import gql from "graphql-tag";
-import Chrome from "vue-color/src/components/Chrome";
+import axios from 'axios';
+import ChromePicker from 'vue-color/src/components/Chrome.vue';
 
 export default {
-  name: "ListItem",
-  props: ["props", "exelCalc"],
+  name: 'ListItem',
+  props: {
+    props: {
+      type: Object,
+      required: true,
+      default: () => {},
+    },
+  },
   data: () => ({
-    color: "#FFF",
-    showPicker: false
+    color: '#FFF',
+    showPicker: false,
   }),
   components: {
-    "chrome-picker": Chrome
+    ChromePicker,
   },
   methods: {
+    changeProps(code, value) {
+      const propsItem = Object.assign({}, this.props.item);
+      const url = `goods/${propsItem.id}`;
+
+      delete propsItem.id;
+      delete propsItem.count;
+
+      propsItem[code] = value;
+
+      axios
+        .post(url, propsItem)
+        .then((response) => {
+          const { count, oldPrice } = this.props.item;
+          this.props.item = response.data;
+          this.props.item.count = count;
+          this.props.item.oldPrice = oldPrice;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    handleItemChange(id, code, value) {
+      this.$emit('onChange', { id, code, value });
+    },
     handleColorPickerButtonClick() {
       this.showPicker = true;
     },
-    handleClickOutsidePicker() {
+    changeColor() {
       if (this.showPicker && this.color.hex) {
-        this.$apollo.mutate({
-          mutation: gql`mutation {
-            updateGood(input: {
-              id: ${this.props.item.id}
-              color: "${this.color.hex}"
-            }) {
-              id
-            }
-          }`,
-        }).then(() => {
-          console.log('success');
-        }).catch((error) => {
-          console.error(error);
-        });
+        this.changeProps('color', this.color.hex);
       }
 
       this.showPicker = false;
     },
-    changeSortIndex(e) {
-      this.$apollo.mutate({
-        mutation: gql`mutation {
-          updateGood(input: {
-            id: ${this.props.item.id}
-            sortIndex: ${+e.target.value}
-          }) {
-            id
-          }
-        }`,
-      }).then(() => {
-        console.log('success');
-      }).catch((error) => {
-        console.error(error);
-      });
-    },
-    changeName(e) {
-      this.$apollo.mutate({
-        mutation: gql`mutation {
-          updateGood(input: {
-            id: ${this.props.item.id}
-            name: "${e.target.value}"
-          }) {
-            id
-          }
-        }`,
-      }).then(() => {
-        console.log('success');
-      }).catch((error) => {
-        console.error(error);
-      });
-    },
-    handleItemChange(prop) {
-      return e => {
-        const { value } = e.target;
-
-        if (value) {
-          this.$emit("onChange", { id: this.props.item.id, value, prop });
-        }
-      };
-    },
     deleteItem(id) {
-      this.$emit("deleteItem", id);
-    },
-    updateItem(data) {
-      let props = {
-        id: this.props.item.id,
-      };
-
-      props = Object.assign(props, data);
-
-      this.$apollo.mutate({
-        mutation: gql`mutation (
-          $props: UpdateGood!
-        ) {
-          updateGood(input: $props) {
-            id
-          }
-        }`,
-        variables: {
-          props,
-        },
-      }).then(() => {
-        console.log('success');
-      }).catch((error) => {
-        console.error(error);
-      });
+      this.$emit('deleteItem', id);
     },
   },
   mounted() {
     this.color = this.props.item.color;
-  }
+  },
 };
 </script>
 

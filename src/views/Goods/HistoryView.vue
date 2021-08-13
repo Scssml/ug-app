@@ -30,7 +30,7 @@
         </v-list-tile>
       </v-list>
     </v-dialog>
-    <template v-if="!$apollo.queries.purchaseList.loading">
+    <template>
       <v-card>
         <v-card-title>
           <v-layout row wrap>
@@ -52,11 +52,11 @@
               ></v-text-field>
             </v-flex>
             <v-flex
-              v-if="purchase.purchaseType"
+              v-if="purchase.operation_type"
             >
               <v-text-field
                 label="Тип изменения"
-                :value="purchase.purchaseType.name"
+                :value="typeEdit.find((item) => item.id === purchase.operation_type).name"
                 hide-details
                 class="pr-4"
                 readonly
@@ -65,7 +65,7 @@
             <v-flex>
               <v-text-field
                 label="Закупка"
-                :value="purchase.purchase"
+                :value="purchase.arrival"
                 hide-details
                 class="pr-4"
                 readonly
@@ -74,7 +74,7 @@
             <v-flex>
               <v-text-field
                 label="Приход"
-                :value="purchase.arrival"
+                :value="purchase.amount"
                 hide-details
                 class="pr-4"
                 readonly
@@ -90,22 +90,22 @@
               ></v-text-field>
             </v-flex>
             <v-flex
-              v-if="purchase.company"
+              v-if="purchase.company_name"
             >
               <v-text-field
                 label="Компания"
-                v-model="purchase.company.name"
+                v-model="purchase.company_name"
                 hide-details
                 class="pr-4"
                 readonly
               ></v-text-field>
             </v-flex>
             <v-flex
-              v-if="purchase.createdBy"
+              v-if="purchase.user_name"
             >
               <v-text-field
                 label="Менеджер"
-                :value="purchase.createdBy.name"
+                :value="purchase.user_name"
                 hide-details
                 class="pr-4"
                 readonly
@@ -127,7 +127,7 @@
         </v-card-title>
         <v-data-table
           :headers="headersTable"
-          :items="purchase.purchasedGoods"
+          :items="purchase.purchase_goods"
           hide-actions
           no-data-text="Товаров не найдено"
           no-results-text="Товаров не найдено"
@@ -135,12 +135,12 @@
           disable-initial-sort
         >
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.good.name }}</td>
-            <td>{{ props.item.stockQuantity - props.item.estimate }}</td>
-            <td>{{ props.item.estimate }}</td>
-            <td>{{ props.item.stockQuantity }}</td>
-            <td>{{ props.item.oldPrice }}</td>
-            <td>{{ props.item.newPrice }}</td>
+            <td>{{ props.item.name }}</td>
+            <td>{{ props.item.old_stock }}</td>
+            <td>{{ props.item.new_stock - props.item.old_stock }}</td>
+            <td>{{ props.item.new_stock }}</td>
+            <td>{{ props.item.old_price }}</td>
+            <td>{{ props.item.new_price }}</td>
           </template>
         </v-data-table>
       </v-card>
@@ -149,9 +149,7 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
+import axios from 'axios';
 
 export default {
   name: 'HistoryView',
@@ -166,17 +164,35 @@ export default {
           id: 'purchase',
         },
       ],
+      typeEdit: [
+        {
+          id: 'coming',
+          name: 'Приход',
+        },
+        {
+          id: 'revaluation',
+          name: 'Переоценка',
+        },
+        {
+          id: 'inventory',
+          name: 'Инвентаризация',
+        },
+        {
+          id: 'defect',
+          name: 'Брак',
+        },
+      ],
       search: '',
       headersTable: [
         {
           text: 'Название',
           align: 'left',
-          value: 'id',
+          value: 'name',
         },
         {
           text: 'Было на складе',
           align: 'left',
-          value: 'stockQuantity',
+          value: 'old_stock',
         },
         {
           text: 'Пришло',
@@ -186,69 +202,21 @@ export default {
         {
           text: 'Стало',
           align: 'left',
-          value: 'stockQuantityNew',
+          value: 'new_stock',
         },
         {
           text: 'Старая цена',
           align: 'left',
-          value: 'oldPrice',
+          value: 'old_price',
         },
         {
           text: 'Цена',
           align: 'left',
-          value: 'newPrice',
+          value: 'new_price',
         },
       ],
       purchase: {},
     };
-  },
-  apollo: {
-    purchaseList: {
-      query: gql`
-        query purchaseList(
-          $id: bigint
-        ) {
-          purchaseList: purchases(
-            where: {
-              id: { _eq: $id }
-            },
-          ) {
-            id,
-            created_at
-            purchaseType {
-              name
-            }
-            purchase
-            arrival
-            revaluation
-            company {
-              name
-            }
-            createdBy {
-              name
-            }
-            purchasedGoods {
-              good {
-                name
-              }
-              stockQuantity
-              estimate
-              oldPrice
-              newPrice
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          id: this.$route.params.id,
-        };
-      },
-      update({ purchaseList }) {
-        this.purchase = purchaseList.shift();
-        this.purchase.created_at = this.formatDate(this.purchase.created_at, 'dd.MM.yyyy HH:mm:ss');
-      },
-    },
   },
   computed: {
     loadingDialog: function loadingDialog() {
@@ -257,41 +225,36 @@ export default {
     },
     markup() {
       let markupVal = 0;
-      if (this.purchase.arrival !== 0) {
-        markupVal = 100 - ((this.purchase.purchase * 100) / this.purchase.arrival);
+      if (this.purchase.amount !== 0) {
+        markupVal = 100 - ((this.purchase.arrival * 100) / this.purchase.amount);
       }
 
       return +markupVal.toFixed(2);
     },
   },
   methods: {
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
+    getPurchase() {
+      const loadData = this.loadingData.find(item => item.id === 'purchase');
+      const url = `purchases/${this.$route.params.id}`;
+
+      axios
+        .get(url)
+        .then((response) => {
+          const item = response.data;
+          this.purchase = item;
+
+          loadData.title = 'Поставоки получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения поставок!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
-    getPurchaseList: function getPurchaseList() {
-      const itemParams = {
-        type: 'purchase',
-        id: this.$route.params.id,
-      };
-
-      const successData = 'Закупки получены!';
-      const errorData = 'Ошибка получения закупок!';
-
-      this.$store.dispatch('getItem', itemParams).then((response) => {
-        this.purchase = {
-          ...response,
-          purchasedGoods: !response.purchasedGoods ? [] : response.purchasedGoods,
-        };
-
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = successData;
-        loadData.loading = false;
-      }).catch(() => {
-        const loadData = this.loadingData.find(item => item.id === itemParams.type);
-        loadData.title = errorData;
-        loadData.error = true;
-      });
-    },
+  },
+  mounted() {
+    this.getPurchase();
   },
 };
 </script>

@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
+import axios from 'axios';
 
 export default {
   props: {
@@ -47,25 +47,19 @@ export default {
       this.$emit('cancel');
     },
     submitForm() {
-      const goodId = this.id;
+      const url = `goods/${this.id}`;
 
-      this.$apollo.mutate({
-        mutation: gql`mutation removeGood (
-          $props: Int!
-        ) {
-          removeGood(input: $props)
-        }`,
-        variables: {
-          props: goodId,
-        },
-      }).then(() => {
-        this.success = true;
-        setTimeout(() => {
-          this.$emit('cancel', true);
-        }, 1000);
-      }).catch((error) => {
-        console.error(error);
-      });
+      axios
+        .delete(url)
+        .then(() => {
+          this.success = true;
+          setTimeout(() => {
+            this.$emit('cancel');
+          }, 1000);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

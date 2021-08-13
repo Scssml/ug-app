@@ -1,8 +1,8 @@
-require("dotenv").config();
+require('dotenv').config();
 
 module.exports = {
   devServer: {
-    proxy: 'http://85.113.45.98:89',
+    proxy: process.env.VUE_APP_DEV_SERVER_PROXY,
   },
   lintOnSave: true,
   chainWebpack: (config) => {

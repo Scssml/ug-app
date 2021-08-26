@@ -259,7 +259,7 @@ export default {
       clientsList: [],
       deleteId: 0,
       take: 20,
-      page: 0,
+      page: 1,
       tableLoading: false,
       selectedClientType: 0,
       selectedClientName: '',
@@ -276,7 +276,6 @@ export default {
     getClientsList() {
       const loadData = this.loadingData.find(item => item.id === 'clients');
       const url = 'clients';
-      this.page += 1;
 
       axios
         .get(url, {
@@ -300,7 +299,7 @@ export default {
         });
     },
     changeFilter() {
-      this.page = 0;
+      this.page = 1;
       this.getClientsList();
     },
     closeDialog() {
@@ -308,7 +307,6 @@ export default {
       this.editedItem = {};
       this.deleteId = 0;
 
-      this.page -= 1;
       this.getClientsList();
     },
     editItem(item) {
@@ -330,14 +328,16 @@ export default {
     changeShowElem() {
       localStorage.setItem('countElemPage', this.take);
       this.$store.commit('setCountElemPage', this.take);
-      this.page = 0;
+      this.page = 1;
       this.getClientsList();
     },
     prevPage() {
       this.page -= 1;
+      this.getClientsList();
     },
     nextPage() {
       this.page += 1;
+      this.getClientsList();
     },
   },
   mounted() {

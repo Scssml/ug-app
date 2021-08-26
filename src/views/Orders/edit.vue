@@ -1,79 +1,34 @@
 <template>
   <v-card class="order">
-    <v-alert
-      :value="createdSuccess"
-      type="success"
-      class="my-0"
-    >Заказ изменен</v-alert>
-    <v-form
-      ref="form"
-      lazy-validation
+    <v-alert :value="createdSuccess" type="success" class="my-0"
+      >Заказ изменен</v-alert
     >
-      <v-card-title
-        class="px-4 py-2"
-      >
+    <v-form ref="form" lazy-validation>
+      <v-card-title class="px-4 py-2">
         <span class="headline">Изменение заказа</span>
       </v-card-title>
       <v-divider></v-divider>
-      <v-card-text
-        class="px-4 pt-1"
-        @click="autocompleteClose"
-      >
-        <v-layout
-          row
-          wrap
-        >
+      <v-card-text class="px-4 pt-1" @click="autocompleteClose">
+        <v-layout row wrap>
           <v-flex
-            :xs7="editedItem.deliveryType === 2"
+            :xs7="editedItem.delivery_type === 'delivery'"
             style="padding-right: 15px;"
           >
-            <v-layout
-              row
-              wrap
-            >
-              <v-flex
-                :xs6="editedItem.deliveryType === 2"
-              >
-                <v-select
-                  label="КТО"
-                  :items="[userInfo]"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  item-text="name"
-                  item-value="id"
-                  v-model.number="editedItem.createdBy"
-                  hide-details
-                  readonly
-                ></v-select>
-
+            <v-layout row wrap>
+              <v-flex :xs6="editedItem.delivery_type === 'delivery'">
                 <v-select
                   label="Т/С"
                   :items="tsList"
                   :rules="[v => v.length > 0 || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model="editedItem.orderSourceType"
+                  v-model="editedItem.order_source_type"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                   chips
                   multiple
+                  @change="handleDirty"
                 ></v-select>
-
-                <!-- <v-text-field
-                  label="Т/С другой вариант"
-                  v-model="editedItem.tsText"
-                  hide-details
-                  class="mb-4"
-                  v-if="editedItem.ts === 7"
-                ></v-text-field> -->
-
-                <v-text-field
-                  label="Д/П"
-                  v-model="editedItem.createdAt"
-                  hide-details
-                  class="mb-4"
-                  readonly
-                ></v-text-field>
 
                 <v-select
                   label="Способ доставки"
@@ -81,11 +36,10 @@
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.deliveryType"
+                  v-model="editedItem.delivery_type"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  @change="editedItem.delivery = ($event === 2)"
+                  @change="handleDirty();"
                 ></v-select>
 
                 <v-menu
@@ -98,60 +52,55 @@
                   full-width
                   min-width="290px"
                   class="mb-2"
-                  v-if="editedItem.deliveryType !== 2"
+                  v-if="editedItem.delivery_type !== 'delivery'"
+                  @change="handleDirty"
                 >
                   <v-text-field
                     slot="activator"
                     label="Дата доставки"
                     :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.deliveryDate"
+                    v-model="editedItem.date"
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
-                    v-model="editedItem.deliveryDate"
+                    v-model="editedItem.date"
                     @input="dataPicker = false"
                     no-title
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
-                    :readonly="editedItemReadOnly"
+                    @change="handleDirty"
                   ></v-date-picker>
                 </v-menu>
 
-                <v-layout
-                  row
-                  wrap
-                >
-                  <v-flex
-                    xs7
-                  >
+                <v-layout row wrap>
+                  <v-flex xs7>
                     <v-text-field
                       label="Время доставки"
                       :rules="[v => !!v || 'Заполните поле']"
-                      v-model="editedItem.deliveryTime"
+                      v-model="editedItem.delivery_time"
                       hide-details
                       class="mb-4"
-                      :readonly="editedItemReadOnly"
-                      v-if="editedItem.deliveryType !== 2"
+                      v-if="editedItem.delivery_type !== 'delivery'"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex
-                    xs5
-                  >
+                  <v-flex xs5>
                     <v-select
                       label="Время суток"
                       :items="deliveryTimeOfDayList"
                       :rules="[v => !!v || 'Заполните поле']"
                       item-text="name"
                       item-value="id"
-                      v-model.number="editedItem.deliveryTimeOfDay"
+                      v-model="editedItem.times_of_day"
                       hide-details
                       class="mb-4"
-                      :readonly="editedItemReadOnly"
-                      v-if="editedItem.deliveryType !== 2"
+                      v-if="editedItem.delivery_type !== 'delivery'"
+                      @change="handleDirty"
                     ></v-select>
                   </v-flex>
                 </v-layout>
@@ -162,26 +111,27 @@
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.orderStatus"
+                  v-model="editedItem.order_status"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-autocomplete
                   ref="clientSelect"
                   label="Клиент"
                   :items="clientsList"
-                  :filter="clientsFilter"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.client"
+                  v-model.number="editedItem.client_id"
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
-                  :readonly="editedItemReadOnly"
                   clearable
-                  @change="setDataClient()"
+                  @change="
+                    handleDirty();
+                    setDataClient();
+                  "
                   :search-input.sync="clientName"
                 ></v-autocomplete>
 
@@ -191,124 +141,90 @@
                   :rules="[v => !!v || 'Заполните поле']"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.clientType"
+                  v-model="editedItem.client_type"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-select>
 
                 <v-text-field
                   label="Имя"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.clientName"
+                  v-model="editedItem.client_name"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
                   label="Телефон"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-model="editedItem.clientPhone"
+                  v-model="editedItem.client_phone"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                ></v-text-field>
-
-                <v-autocomplete
-                  ref="responsibleSelect"
-                  label="Ответственный"
-                  :items="responsibleList"
-                  :filter="clientsFilter"
-                  item-text="name"
-                  item-value="id"
-                  v-model.number="editedItem.responsible"
-                  hide-details
-                  class="mb-4"
-                  no-data-text="Не надено"
-                  :readonly="editedItemReadOnly"
-                  clearable
-                  @change="setDataResponsible()"
-                  v-if="editedItem.clientType === 2"
-                ></v-autocomplete>
-
-                <v-select
-                  label="Тип клиента"
-                  :items="typeClient"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  item-text="name"
-                  item-value="id"
-                  v-model.number="responsible.type"
-                  hide-details
-                  class="mb-4"
-                  readonly
-                  v-if="!!responsible"
-                ></v-select>
-
-                <v-text-field
-                  label="Имя"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="responsible.name"
-                  hide-details
-                  class="mb-4"
-                  readonly
-                  v-if="!!responsible"
-                ></v-text-field>
-
-                <v-text-field
-                  label="Телефон"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="responsible.phone"
-                  hide-details
-                  class="mb-4"
-                  readonly
-                  v-if="!!responsible"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
                   label="Сумма"
-                  v-model="editedItem.orderCost"
+                  v-model.number="editedItem.cost"
                   hide-details
+                  placeholder="0"
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  type="text"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
-                  label="Стоимость доставки"
-                  v-model="editedItem.deliveryCost"
+                  label="Стоимость доствки"
+                  v-model.number="editedItem.delivery_cost"
                   hide-details
+                  placeholder="0"
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  type="text"
-                  v-if="editedItem.deliveryType !== 1"
+                  v-if="editedItem.delivery_type !== 'pickup'"
+                  @change="handleDirty"
                 />
 
                 <v-text-field
                   label="Предоплата"
-                  v-model.number="editedItem.prePayment"
+                  v-model.number="editedItem.pre_payment"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                   type="text"
+                  @change="handleDirty"
+                />
+
+                <v-select
+                  label="Канал поступления предоплаты"
+                  :items="paymentTypesList"
+                  class="mb-4"
+                  v-model="editedItem.pay_channel"
+                  item-value="id"
+                  item-text="name"
+                  :rules="[
+                    v =>
+                      (!!editedItem.pre_payment || editedItem.already_paid) && !v
+                        ? 'Заполните поле'
+                        : false
+                  ]"
+                  @change="handleDirty();"
                 />
 
                 <v-checkbox
                   label="Оплачен"
-                  v-model="editedItem.alreadyPaid"
+                  v-model="editedItem.already_paid"
                   color="primary"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty()"
                 ></v-checkbox>
               </v-flex>
 
               <v-flex
                 xs6
-                v-if="editedItem.deliveryType === 2"
+                v-if="editedItem.delivery_type === 'delivery'"
                 style="padding-left: 15px;"
               >
-                <v-select
+                <!-- <v-select
                   label="Курьер"
                   :items="couriersList"
                   :rules="[v => !!v || 'Заполните поле']"
@@ -318,9 +234,9 @@
                   no-data-text="Не надено"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  v-if="editedItem.orderStatus === 3 || editedItem.orderStatus === 6"
-                ></v-select>
+                  v-if="editedItem.orderStatus === 3"
+                  @change="handleDirty"
+                ></v-select> -->
 
                 <v-menu
                   :close-on-content-click="false"
@@ -337,53 +253,51 @@
                     slot="activator"
                     label="Дата доставки"
                     :rules="[v => !!v || 'Заполните поле']"
-                    v-model="editedItem.deliveryDate"
+                    v-model="editedItem.date"
                     prepend-icon="event"
                     hide-details
                     readonly
+                    @change="handleDirty"
                   ></v-text-field>
                   <v-date-picker
-                    v-model="editedItem.deliveryDate"
+                    v-model="editedItem.date"
                     @input="dataPicker = false"
-                    @change="skipQuery = false"
+                    @change="
+                      skipQuery = false;
+                      handleDirty();
+                    "
                     no-title
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
-                    :readonly="editedItemReadOnly"
                   ></v-date-picker>
                 </v-menu>
 
-                <v-layout
-                  row
-                  wrap
-                >
-                  <v-flex
-                    xs7
-                  >
+                <v-layout row wrap>
+                  <v-flex xs7>
                     <v-text-field
                       label="Время доставки"
                       :rules="[v => !!v || 'Заполните поле']"
-                      v-model="editedItem.deliveryTime"
+                      v-model="editedItem.delivery_time"
                       hide-details
                       class="mb-4"
-                      :readonly="editedItemReadOnly"
+                      @change="handleDirty"
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex
-                    xs5
-                  >
+                  <v-flex xs5>
                     <v-select
                       label="Время суток"
                       :items="deliveryTimeOfDayList"
                       :rules="[v => !!v || 'Заполните поле']"
                       item-text="name"
                       item-value="id"
-                      v-model.number="editedItem.deliveryTimeOfDay"
+                      v-model="editedItem.times_of_day"
+                      @change="
+                        handleDirty();
+                      "
                       hide-details
                       class="mb-4"
-                      :readonly="editedItemReadOnly"
                     ></v-select>
                   </v-flex>
                 </v-layout>
@@ -394,85 +308,78 @@
                   color="primary"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                 ></v-checkbox>
 
                 <v-checkbox
                   label="Заказчик-получатель"
-                  v-model="editedItem.isCustomerRecipient"
+                  v-model="editedItem.is_recipient_client"
                   color="primary"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
                 ></v-checkbox>
 
                 <v-autocomplete
                   ref="addresseeSelect"
                   label="Получатель"
                   :items="clientsList"
-                  :filter="clientsFilter"
                   item-text="name"
                   item-value="id"
-                  v-model.number="editedItem.addressee"
+                  v-model.number="editedItem.recipient_id"
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
-                  :readonly="editedItemReadOnly"
                   clearable
-                  @change="setDataAddressee()"
-                  v-if="!editedItem.isCustomerRecipient"
+                  @change="
+                    setDataAddressee();
+                    handleDirty();
+                  "
+                  v-if="!editedItem.is_recipient_client"
                   :search-input.sync="addresseeName"
                 ></v-autocomplete>
 
                 <v-text-field
                   label="Имя получателя"
-                  v-model="editedItem.addresseeName"
+                  v-model="editedItem.recipient_name"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  v-if="!editedItem.isCustomerRecipient"
+                  v-if="!editedItem.is_recipient_client"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
                   label="Телефон получателя"
-                  v-model="editedItem.addresseePhone"
+                  v-model="editedItem.recipient_phone"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  v-if="!editedItem.isCustomerRecipient"
+                  v-if="!editedItem.is_recipient_client"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <autocomplete-address
-                  :value="editedItem.address"
-                  :readonly="editedItemReadOnly"
-                  @change="updateAddress($event)"
-                />
+                  :value="editedItem.recipient_address"
+                  @change="
+                    updateAddress($event);
+                    handleDirty();
+                  "
+                  :readonly="false"
+                ></autocomplete-address>
 
                 <v-text-field
                   label="Квартира"
-                  v-model="editedItem.flat"
+                  v-model="editedItem.recipient_flat_number"
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
-                  :readonly="editedItemReadOnly"
-                ></v-text-field>
-
-                <v-text-field
-                  label="Подъезд"
-                  v-model="editedItem.entrance"
-                  hide-details
-                  class="mb-4"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-text-field>
 
                 <v-text-field
                   label="Этаж"
-                  v-model="editedItem.floor"
+                  v-model="editedItem.recipient_floor"
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
             </v-layout>
@@ -485,19 +392,7 @@
               :key="'bouquet-' + index"
               align-center
             >
-              <v-flex
-                xs7
-                class="pr-3"
-              >
-                <!-- <v-text-field
-                  label="Название"
-                  :rules="[v => !!v || 'Заполните поле']"
-                  v-model="bouquet.name"
-                  hide-details
-                  class="mb-4"
-                  :readonly="editedItemReadOnly"
-                ></v-text-field> -->
-
+              <v-flex xs7 class="pr-3">
                 <v-textarea
                   label="Название"
                   :rules="[v => !!v || 'Заполните поле']"
@@ -506,165 +401,82 @@
                   row-height="6"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
+                  @change="handleDirty"
                 ></v-textarea>
               </v-flex>
-              <v-flex
-                xs2
-                class="pr-3"
-              >
+              <v-flex xs2 class="pr-3">
                 <v-text-field
                   label="Кол-во"
                   :rules="[v => !!v || 'Заполните поле']"
-                  v-model="bouquet.count"
+                  v-model.number="bouquet.count"
                   hide-details
                   class="mb-4"
-                  :readonly="editedItemReadOnly"
-                  @change="checkNumber(index)"
+                  @change="handleDirty; checkNumber(index)"
                 ></v-text-field>
               </v-flex>
-              <v-flex
-                xs2
-                class="pr-3"
-              >
+              <v-flex xs2 class="pr-3">
                 <v-text-field
                   label="Место"
                   hide-details
                   class="mb-4"
                   v-model="bouquet.place"
+                  @change="handleDirty"
                 ></v-text-field>
               </v-flex>
-              <v-flex
-                xs1
-              >
-                <v-icon
-                  @click="bouquetDelete(index)"
-                >
+              <v-flex xs1>
+                <v-icon @click="bouquetDelete(index)">
                   delete
                 </v-icon>
               </v-flex>
             </v-layout>
-            <v-icon
-              @click="bouquetAdd()"
-            >
+            <v-icon @click="bouquetAdd()">
               add
             </v-icon>
 
             <v-textarea
               label="Комментарий"
               auto-grow
-              v-model="editedItem.description"
+              v-model="editedItem.comment"
               row-height="12"
               hide-details
               class="my-4"
-              :readonly="editedItemReadOnly"
+              @change="handleDirty"
             ></v-textarea>
           </v-flex>
 
-          <v-flex
-            xs5
-            v-if="editedItem.deliveryType === 2 && !loadOrder"
-          >
+          <v-flex xs5 v-if="editedItem.delivery_type === 'delivery'">
             <div style="position: relative; height: 100%; overflow: hidden;">
-              <delivery-map
-                      :delivery-time-of-day-list="this.deliveryTimeOfDayList"
-                      :edited-item="editedItem"
-                      :zones="deliveryZones"
-                      :placemarks="placemarks"
-              />
+              <!-- <delivery-map
+                :delivery-time-of-day-list="this.deliveryTimeOfDayList"
+                :edited-item="editedItem"
+                :zones="deliveryZones"
+                :placemarks="placemarks"
+              /> -->
             </div>
-          </v-flex>
-          <v-flex
-            xs12
-            my-4
-          >
-            <v-btn
-              @click.native="showHistory = !showHistory"
-            >Показать историю</v-btn>
-            <template v-if="showHistory">
-              <v-data-table
-                :headers="headersTableHistory"
-                :items="history"
-                hide-actions
-                item-key="updated_at"
-                :pagination.sync="pagination"
-                no-data-text="Изменений не найдено"
-                no-results-text="Изменений не найдено"
-              >
-                <template slot="items" slot-scope="props">
-                  <tr @click="props.expanded = !props.expanded">
-                    <td>{{ props.item.updated_atStr }}</td>
-                    <td>
-                      <template v-if="props.item.updatedBy">
-                        {{ props.item.updatedBy.name }}
-                      </template>
-                    </td>
-                  </tr>
-                </template>
-                <template slot="expand" slot-scope="props">
-                  <v-card flat>
-                    <v-card-text>
-                      <b>Активность:</b> {{ (props.item.active) ? 'Да': 'Нет' }}
-                      <br><b>Адрес:</b> {{ props.item.address }}
-                      <br><b>Получатель:</b> {{ props.item.addresseeId }}
-                      <br><b>Имя получателя:</b> {{ props.item.addresseeName }}
-                      <br><b>Телефон получателя:</b> {{ props.item.addresseePhone }}
-                      <br><b>Клиент:</b> {{ props.item.clientId }}
-                      <br><b>Имя клиента:</b> {{ props.item.clientName }}
-                      <br><b>Телефон клиента:</b> {{ props.item.clientPhone }}
-                      <br><b>Тип клиента:</b> {{ props.item.clientTypeStr }}
-                      <br><b>Координаты:</b> {{ props.item.coordinates }}
-                      <br><b>Курьер:</b> {{ props.item.courierStr }}
-                      <br><b>Кто создал:</b> {{ props.item.createdById }}
-                      <br><b>Дата создания:</b> {{ props.item.created_atStr }}
-                      <br><b>Доставка:</b> {{ (props.item.delivery) ? 'Да': 'Нет' }}
-                      <br><b>Дата доставки:</b> {{ props.item.deliveryDateStr }}
-                      <br><b>Время доставки:</b> {{ props.item.deliveryTime }}
-                      <br><b>Тип доставки:</b> {{ props.item.deliveryTypeStr }}
-                      <br><b>Комментарий:</b> {{ props.item.description }}
-                      <br><b>Подъезд:</b> {{ props.item.entrance }}
-                      <br><b>Квартира:</b> {{ props.item.flat }}
-                      <br><b>Этаж:</b> {{ props.item.floor }}
-                      <br><b>№ заказа:</b> {{ props.item.id }}
-                      <br><b>Инкогнито:</b> {{ (props.item.incognito) ? 'Да': 'Нет' }}
-                      <br><b>Стоимость:</b> {{ props.item.orderCost }}
-                      <br><b>Т/С:</b> {{ props.item.orderSourceTypesStr }}
-                      <br><b>Статус:</b> {{ props.item.orderStatusStr }}
-                    </v-card-text>
-                  </v-card>
-                </template>
-              </v-data-table>
-            </template>
           </v-flex>
         </v-layout>
       </v-card-text>
-      <v-card-actions
-        class="px-4 py-2"
-      >
-        <v-btn
-          @click.native="cancel()"
-        >Отмена</v-btn>
+      <v-card-actions class="px-4 py-2">
+        <v-btn @click.native="cancel()">Отмена</v-btn>
         <v-spacer></v-spacer>
-        <v-btn
-          color="info"
-          @click="submitForm"
-          v-if="!editedItemReadOnly"
-        >Сохранить</v-btn>
+        <v-btn color="info" @click="submitForm">Сохранить</v-btn>
       </v-card-actions>
     </v-form>
   </v-card>
 </template>
 
 <script>
-import gql from "graphql-tag";
+import axios from 'axios';
 import { yandexMap, ymapMarker } from 'vue-yandex-maps';
-import inside from 'point-in-geopolygon';
-import { getDistance } from 'geolib';
-import DeliveryMap from './deliveryMap.vue';
 import AutocompleteAddress from '../../components/AutocompleteAddressYandex.vue';
+import inside from 'point-in-geopolygon';
+import DeliveryMap from './deliveryMap.vue';
+import { getDistance } from 'geolib';
 import geocoder from 'geocoder';
 
-const baseCoordinates = [53.186104, 50.160200];
+const baseCoordinates = [53.186104, 50.1602];
+const unSaveChangesText =
+  'На форме есть несохраненные данные. Вы уверены, что хотите закрыть форму?';
 
 export default {
   components: {
@@ -678,307 +490,211 @@ export default {
       type: Number,
       required: true,
     },
-    editedItemReadOnly: {
-      type: Boolean,
-      default: false,
-    },
-    copy: {
-      type: Boolean,
-      default: false,
-    },
-    // orderSourceType: {
-    //   type: Array,
-    //   required: true,
-    // },
   },
   data() {
     return {
-      // clientAddressee: false,
-      dataPicker: false,
       editedItem: {
-        coordsMap: [53.05, 50.101783],
+        already_paid: false,
+        bouquets: [],
+        client_id: 0,
+        client_name: '',
+        client_phone: '',
+        client_type: '',
+        comment: '',
+        cost: 0,
+        date: '',
+        delivery_cost: 0,
+        delivery_time: '',
+        delivery_type: 'pickup',
+        incognito: false,
+        is_recipient_client: false,
+        order_source_type: '',
+        order_status: 'accept',
+        pay_channel: '',
+        pre_payment: 0,
+        recipient_address: '',
+        recipient_client_type: 'individual',
+        recipient_flat_number: 0,
+        recipient_floor: 0,
+        recipient_id: 0,
+        recipient_name: '',
+        recipient_phone: '',
+        times_of_day: '',
       },
-      createdSuccess: false,
-      userInfo: {},
-      tsList: [],
-      deliveryList: [],
-      statusList: [],
-      clientsList: [],
-      typeClient: [],
-      couriersList: [],
-      ordersList: [],
-      history: [],
-      showHistory: false,
-      headersTableHistory: [
+      paymentTypesList: [
         {
-          text: 'Дата',
-          align: 'left',
-          value: 'updated_at',
+          id: 'Комиссия',
+          name: 'Комиссия',
         },
         {
-          text: 'Пользователь',
-          align: 'left',
-          value: 'user',
+          id: 'cashless',
+          name: 'Газпром',
+        },
+        {
+          id: 'cashless',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'Расходы',
+          name: 'Расходы',
+        },
+        {
+          id: 'Инкассация',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
         },
       ],
-      pagination: {
-        sortBy: 'updated_at',
-        descending: true,
-        rowsPerPage: -1,
-      },
-      expand: false,
-      loadOrder: true,
+      tsList: [
+        {
+          id: 'phone',
+          name: 'Телефон',
+        },
+        {
+          id: 'site',
+          name: 'Сайт',
+        },
+        {
+          id: 'chat',
+          name: 'Чаты',
+        },
+        {
+          id: 'myself',
+          name: 'Сам',
+        },
+        {
+          id: 'viber',
+          name: 'Вайбер',
+        },
+        {
+          id: 'whatsApp',
+          name: 'Whatsapp',
+        },
+        {
+          id: 'Инстаграм',
+          name: 'Инстаграм',
+        },
+        {
+          id: 'Другое',
+          name: 'Другое',
+        },
+      ],
+      deliveryList: [
+        {
+          id: 'pickup',
+          name: 'Самовывоз',
+        },
+        {
+          id: 'delivery',
+          name: 'Доставка',
+        },
+      ],
+      statusList: [
+        {
+          name: 'Принят',
+          id: 'accept',
+        },
+        {
+          name: 'Выполнен',
+          id: 'completed',
+        },
+        {
+          name: 'Дозаказ',
+          id: 'additionalOrder',
+        },
+        {
+          name: 'Доставлен',
+          id: 'delivered',
+        },
+        {
+          name: 'Отдан в доставку',
+          id: 'deliveredForDelivery',
+        },
+        {
+          name: 'Отменен',
+          id: 'canceled',
+        },
+        {
+          name: 'Завершен',
+          id: 'ended',
+        },
+      ],
+      typeClient: [
+        {
+          id: 'individual',
+          name: 'Физ. лицо',
+        },
+        {
+          id: 'legal',
+          name: 'Юр. лицо',
+        },
+        {
+          id: 'counter_party',
+          name: 'Контрагент',
+        },
+        {
+          id: 'our',
+          name: 'Наш',
+        },
+      ],
       deliveryTimeOfDayList: [
         {
           name: 'Утро',
-          id: 1,
+          id: 'morning',
         },
         {
           name: 'День',
-          id: 2,
+          id: 'noon',
         },
         {
           name: 'Вечер',
-          id: 3,
+          id: 'evening',
         },
       ],
+      couriersList: [],
+      clientsList: [],
+
+      createdSuccess: false,
+      userInfo: {},
+      dataPicker: false,
+      ordersList: [],
+      coordsMap: [53.05, 50.101783],
       responsible: undefined,
       clientName: '',
       addresseeName: '',
+      isDirty: false,
       skipQuery: true,
     };
-  },
-  apollo: {
-    clients: {
-      query: gql`
-        query clients(
-          $limit: Int
-          $offset: Int
-          $orderBy: [clients_order_by!]
-        ) {
-          clients: clients(
-            where: {
-              deleted_at: { _is_null: true }
-            }
-          ) {
-            id
-            name
-            phone
-            typeId
-            address
-            entrance
-            flat
-            floor
-          }
-        }
-      `,
-      update({ clients }) {
-        // this.clientsList = this.clientsList.concat(clients);
-        this.clientsList = clients;
-      },
-    },
-    typeClient: {
-      query: gql`
-        query {
-          typeClient: clientTypes {
-            id
-            name
-          }
-        }
-      `
-    },
-    tsList: {
-      query: gql`
-        query {
-          tsList: orderSourceTypes {
-            id
-            name
-          }
-        }
-      `
-    },
-    deliveryList: {
-      query: gql`
-        query {
-          deliveryList: deliveryTypes {
-            id
-            name
-          }
-        }
-      `
-    },
-    statusList: {
-      query: gql`
-        query {
-          statusList: orderStatuses {
-            id
-            name
-          }
-        }
-      `
-    },
-    couriersList: {
-      query: gql`
-        query  {
-          couriersList: users(
-            where: { groupId: { _eq: "4" } }
-          ) {
-            id
-            name
-          }
-        }
-      `,
-    },
-    paymentTypesList: {
-      query: gql`
-        query {
-          paymentTypesList: paymentTypes {
-            id
-            name
-          }
-        }
-      `
-    },
-    ordersList: {
-      query: gql`
-        query ordersList(
-          $date: date,
-          $deliveryTimeOfDay: bigint
-        ) {
-          ordersList: orders(
-            where: {
-              deliveryTypeId: { _eq: "2" },
-              orderStatusId: { _in: [1, 2, 3] },
-              deliveryTimeOfDay: { _eq: $deliveryTimeOfDay },
-              deliveryDate: { _eq: $date }
-            }
-          ) {
-            id
-            coordinates
-          }
-        }
-      `,
-      variables() {
-        return {
-          date: this.editedItem.deliveryDate,
-          deliveryTimeOfDay: (this.editedItem.deliveryTimeOfDay)
-            ? this.editedItem.deliveryTimeOfDay
-            : undefined,
-        };
-      },
-      skip() {
-        return this.skipQuery;
-      },
-    },
-    order: {
-      query: gql`
-        query order(
-          $id: bigint,
-        ) {
-          order: orders(
-            where: {
-              id: { _eq: $id },
-            }
-          ) {
-            id
-            isCustomerRecipient
-            client: clientId
-            clientName
-            clientPhone
-            courier: courierId
-            delivery
-            deliveryDate
-            deliveryTime
-            deliveryTimeOfDay
-            createdBy: createdById
-            createdByItem: createdBy {
-              id
-              name
-            }
-            orderSourceType: orderSourceTypeIds
-            description
-            orderCost
-            addressee: addresseeId
-            addresseeName
-            addresseePhone
-            address
-            entrance
-            flat
-            floor
-            orderStatus: orderStatusId
-            clientType: clientTypeId
-            deliveryType: deliveryTypeId
-            deliveryCost
-            incognito
-            coordinates
-            bouquets: orderBouquets {
-              count
-              name
-              place
-              id
-            }
-            responsibleId
-            prePayment
-            alreadyPaid
-            createdAt: created_at
-          }
-        }
-      `,
-      variables() {
-        return {
-          id: this.id,
-        };
-      },
-      update({ order }) {
-        const item = order.shift();
-
-        this.userInfo = item.createdByItem;
-        delete item.createdByItem;
-
-        item.bouquets = (item.bouquets) ? item.bouquets : [];
-
-
-        if (this.copy) {
-          item.orderStatus = 1;
-          item.courier = null;
-          item.deliveryTimeOfDay = 1;
-          item.deliveryTime = '';
-          item.deliveryDate = '';
-          item.bouquets = item.bouquets.map((elem) => {
-            delete elem.id;
-            return elem;
-          });
-        }
-
-        item.coordsMap = [53.05, 50.101783];
-
-        this.editedItem = item;
-
-        this.skipQuery = false;
-        this.loadOrder = false;
-      },
-    },
-  },
-  watch: {
-    clientName(val) {
-      const clientId = this.editedItem.client;
-      if (clientId === undefined && val) {
-        this.editedItem.clientPhone = val;
-      }
-    },
-    addresseeName(val) {
-      const addresseeId = this.editedItem.addressee;
-      if (addresseeId === undefined && val) {
-        this.editedItem.addresseePhone = val;
-      }
-    },
   },
   computed: {
     deliveryZones() {
       return this.$store.state.deliveryZones;
-    },
-    responsibleList() {
-      return this.clientsList.filter(item => +item.referenceId === +this.editedItem.client);
     },
     placemarks() {
       return this.ordersList
@@ -990,112 +706,113 @@ export default {
     },
   },
   methods: {
+    getItem() {
+      const url = `orders/${this.id}`;
+
+      axios
+        .get(url)
+        .then((response) => {
+          const item = response.data;
+
+          this.editedItem = {
+            already_paid: item.already_paid,
+            bouquets: [],
+            client_id: item.client_id,
+            client_name: '',
+            client_phone: '',
+            client_type: '',
+            comment: item.comment,
+            cost: item.cost,
+            date: item.date,
+            delivery_cost: item.delivery_cost,
+            delivery_time: item.delivery_time,
+            delivery_type: item.delivery_type,
+            incognito: item.incognito,
+            is_recipient_client: item.is_recipient_client,
+            order_source_type: item.order_source,
+            order_status: item.status,
+            pay_channel: item.pay_channel,
+            pre_payment: item.pre_payment,
+            recipient_address: '',
+            recipient_client_type: 'individual',
+            recipient_flat_number: 0,
+            recipient_floor: 0,
+            recipient_id: item.recipient_id,
+            recipient_name: '',
+            recipient_phone: '',
+            times_of_day: item.times_of_day,
+          };
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getClients() {
+      const url = 'clients';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.clientsList = items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    handleBeforeUnload(e) {
+      if (this.isDirty) {
+        e.returnValue = unSaveChangesText;
+      }
+    },
     checkNumber(index) {
       let val = this.editedItem.bouquets[index].count;
       val = (!isNaN(val)) ? +val : 0;
       this.editedItem.bouquets[index].count = val;
     },
-    clientsFilter(item, queryText) {
-      const textOne = item.name.toLowerCase();
-      const textTwo = item.phone.replace(/[^0-9]/gim, '');
-      const searchText = queryText.toLowerCase();
-
-      return textOne.indexOf(searchText) > -1 ||
-        textTwo.indexOf(searchText) > -1;
+    handleDirty() {
+      if (!this.isDirty) {
+        this.isDirty = true;
+      }
     },
     setDataClient() {
-      const clientId = this.editedItem.client;
+      const clientId = this.editedItem.client_id;
       const findClient = this.clientsList.find(item => item.id === clientId);
 
       if (findClient !== undefined) {
-        this.editedItem.clientName = findClient.name;
-        this.editedItem.clientPhone = findClient.phone;
-        if (findClient.type !== undefined) {
-          this.editedItem.clientType = findClient.typeId;
-        }
-
-        this.editedItem.address = findClient.address;
-        this.editedItem.entrance = findClient.entrance;
-        this.editedItem.flat = findClient.flat;
-        this.editedItem.floor = findClient.floor;
-
-        findClient.address && this.setPointByClientAddress(findClient.address);
+        this.editedItem.client_name = findClient.name;
+        this.editedItem.client_phone = findClient.phone;
+        this.editedItem.client_type = findClient.client_type;
+        this.editedItem.recipient_address = findClient.address;
+        this.editedItem.recipient_flat_number = findClient.flat_number;
+        this.editedItem.recipient_floor = findClient.floor;
       } else {
-        this.editedItem.clientName = '';
-        this.editedItem.clientPhone = '';
-        this.editedItem.clientType = '';
-        this.editedItem.address = '';
-        this.editedItem.entrance = '';
-        this.editedItem.flat = '';
-        this.editedItem.floor = '';
+        this.editedItem.client_name = '';
+        this.editedItem.client_phone = '';
+        this.editedItem.client_type = '';
+        this.editedItem.recipient_address = '';
+        this.editedItem.recipient_flat_number = 0;
+        this.editedItem.recipient_floor = 0;
       }
     },
     setDataAddressee() {
-      const clientId = this.editedItem.addressee;
+      const clientId = this.editedItem.recipient_id;
       const findClient = this.clientsList.find(item => item.id === clientId);
 
-      if (findClient !== undefined) {
-        this.editedItem.addresseeName = findClient.name;
-        this.editedItem.addresseePhone = findClient.phone;
-        this.editedItem.address = findClient.address;
-        this.editedItem.entrance = findClient.entrance;
-        this.editedItem.flat = findClient.flat;
-        this.editedItem.floor = findClient.floor;
-
-        findClient.address && this.setPointByClientAddress(findClient.address);
+      if (findClient) {
+        this.editedItem.recipient_name = findClient.name;
+        this.editedItem.recipient_phone = findClient.phone;
+        this.editedItem.recipient_address = findClient.address;
+        this.editedItem.recipient_flat_number = findClient.flat_number;
+        this.editedItem.recipient_floor = findClient.floor;
       } else {
-        this.editedItem.addresseeName = '';
-        this.editedItem.addresseePhone = '';
-        this.editedItem.address = '';
-        this.editedItem.entrance = '';
-        this.editedItem.flat = '';
-        this.editedItem.floor = '';
+        this.editedItem.recipient_name = '';
+        this.editedItem.recipient_phone = '';
+        this.editedItem.recipient_address = '';
+        this.editedItem.recipient_flat_number = 0;
+        this.editedItem.recipient_floor = 0;
       }
     },
-    setDataResponsible() {
-      const clientId = this.editedItem.responsible;
-      const findClient = this.clientsList.find(item => item.id === clientId);
-
-      this.responsible = findClient;
-    },
-    updateAddress(data) {
-      this.editedItem.address = data.address;
-
-      if (data && data.geo[0] && data.geo[1] && this.editedItem) {
-        this.editedItem.coordinates = data.geo;
-        this.editedItem.coordinates = data.geo;
-        this.calculateAndSetDeliveryCost(data.geo);
-      }
-    },
-    calculateAndSetDeliveryCost(geo) {
-      for (const zone of this.deliveryZones) {
-        if (inside.polygon(zone.coordinates, geo)) {
-          this.editedItem.deliveryCost = zone.priceForKm
-            ? getDistance(
-              { longitude: geo[0], latitude: geo[1] },
-              { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
-              1000,
-            ) * zone.priceForKm / 1000
-            : zone.price;
-          break;
-        }
-      }
-    },
-    // getPaymentTypesList() {
-    //   const itemParams = {
-    //     type: 'paymentTypes',
-    //     filter: {
-    //       isActive: true,
-    //     },
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     console.log(response);
-    //     this.paymentTypesList = response;
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
     setPointByClientAddress(address) {
       geocoder.geocode(
         address,
@@ -1115,276 +832,42 @@ export default {
         { language: 'ru', key: window.GOOGLE_API_KEY },
       );
     },
-    getItem() {
-      if (this.id) {
-        const itemParams = {
-          type: 'orders',
-          id: this.id,
-        };
+    updateAddress(data) {
+      this.editedItem.recipient_address = data.address;
 
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          const props = response;
-          this.usersList = props.createdBy;
-          // props.orderCost = +props.orderCost;
-
-          // props.orderSourceType = [props.orderSourceType];
-
-          // let orderSourceTypeId = [];
-
-          // if (Array.isArray(this.orderSourceType)) {
-          //   orderSourceTypeId = this.orderSourceType.map(item => item.id);
-          // }
-
-          // props.orderSourceType = orderSourceTypeId;
-
-          // props.orderSourceType = (props.orderSourceType) ? +props.orderSourceType.id : 0];
-          // props.orderSourceType = [(props.orderSourceType) ? +props.orderSourceType.id : 0];
-
-          props.orderSourceType = (props.orderSourceType) ? props.orderSourceType : [];
-
-          props.addressee = (props.addressee) ? +props.addressee.id : null;
-          props.client = (props.client) ? +props.client.id : 0;
-          props.createdBy = (props.createdBy) ? +props.createdBy.id : 0;
-          props.clientType = (props.clientType) ? +props.clientType.id : 0;
-          props.deliveryType = (props.deliveryType) ? +props.deliveryType.id : 0;
-          props.bouquets = (props.bouquets) ? props.bouquets : [];
-
-          props.responsible = (props.responsible) ? +props.responsible.id : null;
-
-          if (this.copy) {
-            props.orderStatus = 1;
-            props.courier = null;
-            props.deliveryTimeOfDay = 1;
-            props.deliveryTime = '';
-            props.deliveryDate = '';
-          } else {
-            props.orderStatus = (props.orderStatus) ? +props.orderStatus.id : 0;
-            props.courier = (props.courier) ? +props.courier.id : null;
-            props.deliveryTimeOfDay = +props.deliveryTimeOfDay;
-          }
-
-          if (this.copy) {
-            props.bouquets = props.bouquets.map((item) => {
-              const elem = item;
-              delete elem.id;
-
-              return elem;
-            });
-
-            props.courier = null;
-          }
-
-          this.editedItem = props;
-          this.editedItem.coordsMap = [53.05, 50.101783];
-
-          this.setDataResponsible();
-
-          this.getOrdersList();
-          this.getUsersList();
-
-          this.loadOrder = false;
-        }).catch(() => {
-          console.log('error');
-        });
+      if (data && data.geo[0] && data.geo[1] && this.editedItem) {
+        // this.editedItem.coordinates = data.geo;
+        // this.editedItem.coordsMap = data.geo;
+        this.calculateAndSetDeliveryCost(data.geo);
       }
     },
-    getItemHistory() {
-      if (this.id) {
-        const itemParams = {
-          type: 'orders',
-          id: `${this.id}/history`,
-        };
+    calculateAndSetDeliveryCost(geo) {
+      for (const zone of this.deliveryZones) {
+        if (inside.polygon(zone.coordinates, geo)) {
+          this.editedItem.delivery_cost = zone.priceForKm
+            ? (getDistance(
+              { longitude: geo[0], latitude: geo[1] },
+              { longitude: baseCoordinates[0], latitude: baseCoordinates[1] },
+              1000,
+            ) *
+                zone.priceForKm) /
+              1000
+            : zone.price;
 
-        this.$store.dispatch('getItem', itemParams).then((response) => {
-          this.history = response.map((item) => {
-            const elem = item;
-            let date = new Date(elem.updated_at);
-            elem.updated_atStr = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: 'numeric',
-              second: 'numeric',
-            });
-
-            date = new Date(elem.created_at);
-            elem.created_atStr = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: 'numeric',
-              second: 'numeric',
-            });
-
-            date = new Date(elem.deliveryDate);
-            elem.deliveryDateStr = date.toLocaleString('ru', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            });
-
-            const clientType = this.typeClient.find(item => item.id === +elem.clientTypeId);
-            elem.clientTypeStr = (clientType) ? clientType.name : elem.clientTypeId;
-
-            const courier = this.couriersList.find(item => item.id === +elem.courierId);
-            elem.courierStr = (courier) ? courier.name : elem.courierId;
-
-            const deliveryType = this.deliveryList.find(item => item.id === +elem.deliveryTypeId);
-            elem.deliveryTypeStr = (deliveryType) ? deliveryType.name : elem.deliveryTypeId;
-
-            const status = this.statusList.find(item => item.id === +elem.orderStatusId);
-            elem.orderStatusStr = (status) ? status.name : elem.orderStatusId;
-
-            elem.orderSourceTypesStr = elem.orderSourceTypeIds.map((itemId) => {
-              const ts = this.tsList.find(item => item.id === +itemId);
-              return (ts) ? ts.name : itemId;
-            });
-
-            return elem;
-          });
-        }).catch(() => {
-          console.log('error');
-        });
+            this.editedItem.delivery_cost += this.editedItem.delivery_cost;
+          break;
+        }
       }
     },
-    // getTsList() {
-    //   const itemParams = {
-    //     type: 'order-source',
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.tsList = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     });
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getDeliveryList() {
-    //   const itemParams = {
-    //     type: 'delivery-type',
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.deliveryList = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     });
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getStatusList() {
-    //   const itemParams = {
-    //     type: 'order-status',
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.statusList = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     });
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getClientsList() {
-    //   const itemParams = {
-    //     type: 'clients',
-    //     filter: {
-    //       active: true,
-    //     },
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.clientsList = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     }).filter(i => i.id !== 0);
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getClientTypeList() {
-    //   const itemParams = {
-    //     type: 'client-type',
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.typeClient = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     });
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getCouriersList() {
-    //   const itemParams = {
-    //     type: 'users',
-    //     filter: {
-    //       isActive: true,
-    //       group: 4,
-    //     },
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.couriersList = response.map((item) => {
-    //       item.id = +item.id;
-    //       return item;
-    //     });
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getOrdersList: function getOrdersList() {
-    //   const itemParams = {
-    //     type: 'orders',
-    //     filter: {
-    //       deliveryDate: this.editedItem.deliveryDate,
-    //       deliveryTimeOfDay: this.editedItem.deliveryTimeOfDay,
-    //       deliveryType: 2,
-    //       orderStatus: [1, 2, 3],
-    //     },
-    //   };
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     this.ordersList = response.orders;
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
-    // getUsersList() {
-    //   const itemParams = {};
-
-    //   if (this.copy) {
-    //     itemParams.type = 'login';
-    //   } else {
-    //     itemParams.type = 'users';
-    //     itemParams.filter = {
-    //       id: +this.editedItem.createdBy,
-    //     };
-    //   }
-
-    //   this.$store.dispatch('getItemsList', itemParams).then((response) => {
-    //     let user = {};
-    //     if (this.copy) {
-    //       user = response;
-    //     } else {
-    //       [user] = response;
-    //     }
-
-    //     this.userInfo = user;
-    //     this.userInfo.id = +this.userInfo.id;
-    //     this.editedItem.createdBy = +this.userInfo.id;
-    //   }).catch(() => {
-    //     console.log('error');
-    //   });
-    // },
     cancel() {
+      if (this.isDirty) {
+        const exitConfirmation = confirm(unSaveChangesText);
+
+        if (!exitConfirmation) {
+          return;
+        }
+      }
+
       this.editedItem = {};
       this.createdSuccess = false;
       this.$emit('cancel');
@@ -1392,54 +875,74 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        const propsItem = Object.assign({}, this.editedItem);
-        delete propsItem.id;
-
-        propsItem.delivery = false;
-
-        if (propsItem.deliveryType === 1) {
-          propsItem.address = '';
-          propsItem.entrance = '';
-          propsItem.flat = '';
-          propsItem.floor = '';
-        }
-
-        if (!propsItem.coordinates) {
-          propsItem.coordinates = [];
-        }
-
-        if (!propsItem.description) {
-          propsItem.description = '';
-        }
-
-        const itemParams = {
-          type: 'orders',
-
-          props: propsItem,
-        };
-
-        let methods = 'updateItem';
-
-        if (this.copy) {
-          methods = 'addItem';
+        if (this.editedItem.client_id) {
+          this.addOrder();
         } else {
-          itemParams.id = this.id;
+          this.addClient();
         }
+      }
+    },
+    addOrder() {
+      const propsItem = Object.assign({}, this.editedItem);
 
-        this.$store.dispatch(methods, itemParams).then(() => {
+      const url = 'orders';
+
+      if (propsItem.delivery_type === 'pickup') {
+        propsItem.recipient_address = '';
+        propsItem.recipient_flat_number = 0;
+        propsItem.recipient_floor = 0;
+      }
+
+      propsItem.order_source_type = propsItem.order_source_type.join(', ');
+
+      // if (!propsItem.coordinates) {
+      //   propsItem.coordinates = [];
+      // }
+
+      axios
+        .post(url, propsItem)
+        .then(() => {
           this.createdSuccess = true;
+
           setTimeout(() => {
             this.$emit('cancel');
           }, 1000);
+        })
+        .catch((error) => {
+          console.log(error);
         });
-      }
+    },
+    addClient() {
+      const url = 'clients';
+      const propsItem = {
+        active: true,
+        address: this.editedItem.recipient_address,
+        bill: 0,
+        birth_day: '1900-01-01',
+        client_type: this.editedItem.client_type,
+        flat_number: this.editedItem.recipient_flat_number,
+        floor: this.editedItem.recipient_floor,
+        limit: 0,
+        name: this.editedItem.client_name,
+        phone: this.editedItem.client_phone,
+        sale: 0,
+      };
+
+      axios
+        .post(url, propsItem)
+        .then((response) => {
+          this.editedItem.client_id = response.data.id;
+          this.addOrder();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     bouquetAdd() {
       this.editedItem.bouquets.push({
-        name: null,
+        name: '',
         count: null,
         place: '',
-        isReady: false,
       });
     },
     bouquetDelete(index) {
@@ -1467,29 +970,31 @@ export default {
       }
     },
   },
+  created() {
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
+  },
+  beforeDestroy() {
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
+  },
   mounted() {
-    // this.getTsList();
-    // this.getDeliveryList();
-    // this.getStatusList();
-    // this.getCouriersList();
-    // this.getItem();
-    this.getItemHistory();
+    this.getClients();
+    this.getItem();
   },
 };
 </script>
 
 <style lang="scss">
-  .order.v-card {
-    position: relative;
-  }
-  .order .v-card__text {
-    padding-bottom: 52px;
-  }
-  .order .v-card__actions {
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    background: #fff;
-    box-shadow: 0 0 5px;
-  }
+.order.v-card {
+  position: relative;
+}
+.order .v-card__text {
+  padding-bottom: 52px;
+}
+.order .v-card__actions {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  background: #fff;
+  box-shadow: 0 0 5px;
+}
 </style>

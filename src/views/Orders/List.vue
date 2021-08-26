@@ -104,23 +104,33 @@
             <v-flex xs2 class="px-2">
               <v-select
                 label="Статус"
-                :items="[{ id: 0, name: 'Все' }].concat(statusList)"
+                :items="statusList"
                 item-text="name"
                 item-value="id"
-                v-model="filter.orderStatus"
+                v-model="filter.order_status"
                 hide-details
                 @change="customFilter()"
               ></v-select>
             </v-flex>
-            <v-flex class="px-2 py-3">
-              <autosuggest
+            <v-flex xs2 class="px-2">
+              <v-select
+                label="Клиент"
+                :items="clientsList"
+                item-text="name"
+                item-value="id"
+                v-model="filter.client_id"
+                hide-details
+                clearable
+                @change="customFilter()"
+              ></v-select>
+              <!-- <autosuggest
                 :suggestions="clientSuggestions"
                 placeholder="Клиенты"
                 :value="filter.client"
                 @onChange="onClientsInputChange"
                 @onSelect="onClientSelect"
                 class="view-filter"
-              />
+              /> -->
             </v-flex>
 
             <v-flex
@@ -130,11 +140,12 @@
             >
               <v-select
                 label="Менеджер"
-                :items="[{ id: 0, name: 'Все' }].concat(usersList)"
+                :items="usersList"
                 item-text="name"
                 item-value="id"
-                v-model="filter.createdBy"
+                v-model="filter.user_id"
                 hide-details
+                clearable
                 @change="customFilter()"
               ></v-select>
             </v-flex>
@@ -142,12 +153,10 @@
             <v-flex xs2 class="px-2">
               <v-select
                 label="Время суток"
-                :items="
-                  [{ id: 0, name: 'Все' }].concat(deliveryTimeOfDayFilter)
-                "
+                :items="deliveryTimeOfDayFilter"
                 item-text="name"
                 item-value="id"
-                v-model="filter.deliveryTimeOfDay"
+                v-model="filter.times_of_day"
                 hide-details
                 @change="customFilter()"
               ></v-select>
@@ -167,19 +176,19 @@
                 <v-text-field
                   slot="activator"
                   label="Дата доставки (с)"
-                  v-model="filter.dateStart"
+                  v-model="filter.start_date"
                   prepend-icon="event"
                   hide-details
                   readonly
                 ></v-text-field>
                 <v-date-picker
-                  v-model="filter.dateStart"
+                  v-model="filter.start_date"
                   @input="dataStartPicker = false"
                   no-title
                   scrollable
                   locale="ru-ru"
                   first-day-of-week="1"
-                  :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+                  :max="!!filter.end_date ? filter.end_date : undefined"
                   @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
@@ -199,19 +208,19 @@
                 <v-text-field
                   slot="activator"
                   label="Дата доставки (по)"
-                  v-model="filter.dateEnd"
+                  v-model="filter.end_date"
                   prepend-icon="event"
                   hide-details
                   readonly
                 ></v-text-field>
                 <v-date-picker
-                  v-model="filter.dateEnd"
+                  v-model="filter.end_date"
                   @input="dataEndPicker = false"
                   no-title
                   locale="ru-ru"
                   scrollable
                   first-day-of-week="1"
-                  :min="!!filter.dateStart ? filter.dateStart : undefined"
+                  :min="!!filter.start_date ? filter.start_date : undefined"
                   @change="customFilter()"
                 ></v-date-picker>
               </v-menu>
@@ -279,48 +288,9 @@
           class="orders-table"
           select-all
           v-model="selectedOrders"
-          item-key="id"
-          :loading="$apollo.queries.ordersList.loading"
         >
-          <template slot="headers" slot-scope="props">
-            <tr>
-              <th class="px-1 text-xs-left">
-                <v-checkbox
-                  :input-value="props.all"
-                  :indeterminate="props.indeterminate"
-                  color="primary"
-                  hide-details
-                  @click.stop="toggleAll"
-                ></v-checkbox>
-              </th>
-              <th
-                v-for="header in props.headers"
-                class="px-1 text-xs-left"
-                :key="header.text"
-                :class="[
-                  'column sortable',
-                  pagination.descending ? 'desc' : 'asc',
-                  header.value === pagination.sortBy ? 'active' : ''
-                ]"
-                :style="{
-                  width: `${header.width}px`,
-                  maxWidth: `${header.width}px`,
-                  minWidth: `${header.width}px`
-                }"
-                @click="changeSort(header.value)"
-              >
-                <v-icon small>arrow_upward</v-icon>
-                {{ header.text }}
-              </th>
-            </tr>
-          </template>
           <template slot="items" slot-scope="props">
-            <tr
-              :class="[
-                props.item.orderStatus.color,
-                props.item.isTopLine ? 'top-line' : ''
-              ]"
-            >
+            <tr>
               <td
                 style="width: 30px; max-width: 30px; min-width: 30px;"
                 class="px-1"
@@ -331,145 +301,46 @@
                   hide-details
                 ></v-checkbox>
               </td>
-              <template v-for="(col, colIndex) in userSettings">
-                <td
-                  class="px-1"
-                  :style="{
-                    width: `${col.width}px`,
-                    maxWidth: `${col.width}px`,
-                    minWidth: `${col.width}px`
-                  }"
-                  :key="`col-${colIndex}`"
-                >
-                  <template v-for="(prop, propIndex) in col.dataFields">
-                    <div :key="`prop-${colIndex}-${propIndex}`">
-                      <template v-if="prop.displayName">
-                        {{ prop.displayName }}:
-                      </template>
-                      <template
-                        v-if="
-                          props.item[prop.field] ||
-                            prop.field === 'incognito' ||
-                            prop.field === 'description' ||
-                            prop.field === 'alreadyPaid' ||
-                            prop.field === 'orderSourceType'
-                        "
-                      >
-                        <template v-if="prop.field === 'deliveryTimeOfDay'">
-                          {{ deliveryTimeOfDayList[props.item[prop.field]] }}
-                        </template>
-                        <template v-else-if="prop.field === 'createdAt'">
-                          {{ formatDate(props.item[prop.field], "dd.LL") }}
-                        </template>
-                        <template v-else-if="prop.field === 'createdBy'">
-                          {{ props.item[prop.field].name }}
-                        </template>
-                        <template v-else-if="prop.field === 'orderSourceType'">
-                          {{
-                            props.item["orderSourceTypeIds"]
-                              .map(
-                                st =>
-                                  orderSourceTypes.find(t => t.id === st).name
-                              )
-                              .join(", ")
-                          }}
-                        </template>
-                        <template v-else-if="prop.field === 'incognito'">
-                          {{ props.item[prop.field] ? "Да" : "Нет" }}
-                        </template>
-                        <template v-else-if="prop.field === 'alreadyPaid'">
-                          <change-already-paid
-                            :order="props.item"
-                          ></change-already-paid>
-                          <!-- {{ (props.item[prop.field]) ? 'Да' : 'Нет' }} -->
-                        </template>
-                        <template v-else-if="prop.field === 'description'">
-                          <div
-                            @click="changeDescription(props.item.id)"
-                            :style="
-                              !props.item[prop.field]
-                                ? 'min-height: 20px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);'
-                                : ''
-                            "
-                          >
-                            {{ props.item[prop.field] }}
-                          </div>
-                        </template>
-                        <template v-else-if="prop.field === 'bouquets'">
-                          <div @click.prevent="changeBouquets(props.item.id)">
-                            <template
-                              v-for="(item, key) in props.item[prop.field]"
-                            >
-                              <div
-                                :class="
-                                  item.readyBouquetCount.aggregate.count !== 0
-                                    ? 'green'
-                                    : ''
-                                "
-                              >
-                                {{ item.name }} - {{ item.count }}
-                                <template v-if="item.place">
-                                  ({{ item.place }})
-                                </template>
-                              </div>
-                              <br :key="key" />
-                            </template>
-                          </div>
-                        </template>
-                        <template v-else-if="prop.field === 'orderStatus'">
-                          <div
-                            @click="changeStatus(props.item.id)"
-                            style="display: inline"
-                          >
-                            {{ props.item[prop.field].name }}
-                          </div>
-                        </template>
-                        <template v-else-if="prop.field === 'deliveryType'">
-                          {{ props.item[prop.field].name }}
-                        </template>
-                        <template v-else-if="prop.field === 'deliveryDate'">
-                          {{ formatDate(props.item[prop.field], "eee dd.MM") }}
-                        </template>
-                        <template v-else-if="prop.field === 'courier'">
-                          {{ props.item[prop.field].name }}
-                        </template>
-                        <template v-else-if="prop.field === 'responsible'">
-                          {{ props.item[prop.field].name }}
-                          <br />{{ props.item[prop.field].phone }}
-                        </template>
-                        <template v-else-if="prop.field === 'clientType'">
-                          {{ props.item[prop.field].name }}
-                        </template>
-                        <template v-else-if="prop.field === 'orderCost'">
-                          <div :class="props.item.alreadyPaid ? 'green' : ''">
-                            {{ props.item[prop.field] }}
-                          </div>
-                        </template>
-                        <template v-else-if="prop.field === 'prePayment'">
-                          <div
-                            :class="
-                              !props.item.alreadyPaid &&
-                              props.item.prePayment > 0
-                                ? 'orange'
-                                : ''
-                            "
-                          >
-                            {{ props.item[prop.field] }}
-                          </div>
-                        </template>
-                        <template v-else>
-                          {{ props.item[prop.field] }}
-                        </template>
-                      </template>
-                    </div>
+              <td>
+                №{{ props.item.id }}
+                <br>Статус: {{ props.item.status}}
+                <br>{{ props.item.user.name }}
+                <br>Т/С: {{ props.item.order_source}}
+              </td>
+              <td>
+                Заказчик: {{ props.item.client.name }}
+
+                <template v-if="props.item.recipient_id">
+                  <br>Получатель: {{ props.item.recipient.name }}
+                </template>
+              </td>
+              <td>
+                <template v-for="(item, index) in props.item.bouquets">
+                  <p :key="index">{{ item.name }} - {{ item.count }} ({{ item.place }})</p>
+                </template>
+              </td>
+              <td></td>
+              <td>
+                Стоимость: {{ props.item.cost }}
+
+                <template v-if="props.item.delivery_cost">
+                  <br>Доставка: {{ props.item.delivery_cost }}
+                </template>
+
+                <template v-if="props.item.pre_payment">
+                  <br>Предоплата: {{ props.item.pre_payment }}
+                  <br>Оплачено: {{ (props.item.already_paid) ? 'Да' : 'Нет' }}
+
+                  <template v-if="props.item.already_paid">
+                    <br>Способ: {{ props.item.pay_channel }}
                   </template>
-                </td>
-              </template>
+                </template>
+              </td>
               <td
                 class="text-xs-right px-1"
                 style="width: 100px; max-width: 100px; min-width: 100px;"
               >
-                <v-icon
+                <!-- <v-icon
                   left
                   @click="createdBouquet(props.item)"
                   v-if="
@@ -489,13 +360,13 @@
                   add_to_photos
                 </v-icon>
 
-                <br />
+                <br /> -->
 
                 <v-icon left @click="editItem(props.item.id)" title="Изменить">
                   edit
                 </v-icon>
 
-                <v-menu style="vertical-align: top;">
+                <!-- <v-menu style="vertical-align: top;">
                   <v-icon
                     left
                     slot="activator"
@@ -526,7 +397,7 @@
                       >
                     </v-list-tile>
                   </v-list>
-                </v-menu>
+                </v-menu> -->
               </td>
             </tr>
           </template>
@@ -545,7 +416,7 @@
               small
               color="info"
               class="ml-3"
-              :disabled="page === 0"
+              :disabled="page === 1"
               @click="prevPage()"
             >
               <v-icon dark>keyboard_arrow_left</v-icon>
@@ -570,24 +441,18 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
-import isAfter from "date-fns/isAfter";
-import parse from "date-fns/parse";
+import axios from 'axios';
 import OrderEdit from "./edit.vue";
 import OrderAdd from "./add.vue";
 import ChangeStatus from "./changeStatus.vue";
 import changeDescription from "./changeDescription.vue";
 import changeAlreadyPaid from "./changeAlreadyPaid.vue";
 import userSettings from "./userSettings.vue";
-import Autosuggest from "../../components/Autosuggest";
 import editBouquets from './editOrderBouquets.vue';
 
 export default {
-  name: "Orders",
+  name: 'Orders',
   components: {
-    autosuggest: Autosuggest,
     OrderEdit,
     OrderAdd,
     ChangeStatus,
@@ -599,31 +464,62 @@ export default {
   data() {
     return {
       filter: {
-        orderStatus: 0,
-        client: null,
-        clientItem: null,
-        deliveryTimeOfDay: 0,
-        dateStart: null,
-        dateEnd: null,
-        createdBy: 0,
-        bitrix: false,
+        order_status: '',
+        client_id: null,
+        user_id: null,
+        times_of_day: 0,
+        start_date: null,
+        end_date: null,
       },
       loadingData: [
         {
-          title: "Получение заказов",
+          title: 'Получение заказов',
           error: false,
-          loading: true,
-          color: "amber",
-          id: "orders"
-        }
+          loading: false,
+          color: 'amber',
+          id: 'orders',
+        },
       ],
-      dateNowStr: "",
+      dateNowStr: '',
       dataStartPicker: false,
       dataEndPicker: false,
-      search: "",
+      search: '',
       dialogForm: false,
       ordersList: [],
-      statusList: [],
+      statusList: [
+        {
+          name: 'Все',
+          id: '',
+        },
+        {
+          name: 'Принят',
+          id: 'accept',
+        },
+        {
+          name: 'Выполнен',
+          id: 'completed',
+        },
+        {
+          name: 'Дозаказ',
+          id: 'additionalOrder',
+        },
+        {
+          name: 'Доставлен',
+          id: 'delivered',
+        },
+        {
+          name: 'Отдан в доставку',
+          id: 'deliveredForDelivery',
+        },
+        {
+          name: 'Отменен',
+          id: 'canceled',
+        },
+        {
+          name: 'Завершен',
+          id: 'ended',
+        },
+      ],
       clientsList: [],
       usersList: [],
       editedId: 0,
@@ -632,7 +528,7 @@ export default {
       editDescription: false,
       editSettings: false,
       editOrderBouquets: false,
-      dataNowStr: "",
+      dataNowStr: '',
       todayDeliveriesCount: 0,
       ordersCount: 0,
       deliveryPrinted: [],
@@ -651,328 +547,70 @@ export default {
       },
       deliveryTimeOfDayFilter: [
         {
-          name: "Утро",
-          id: 1
+          name: 'Все',
+          id: '',
         },
         {
-          name: "День",
-          id: 2
+          name: 'Утро',
+          id: 'morning',
         },
         {
-          name: "Вечер",
-          id: 3
-        }
+          name: 'День',
+          id: 'noon',
+        },
+        {
+          name: 'Вечер',
+          id: 'evening',
+        },
       ],
       take: 20,
-      page: 0,
+      page: 1,
       tableLoading: false,
       skipQuery: false,
       orderSourceTypeIds: [],
       clientSuggestions: [],
       skipClientsQuery: true,
       clientsQueryName: "",
+
+      headersTable: [
+        {
+          text: '№',
+          align: 'left',
+          value: 'id',
+          sortable: false,
+        },
+        {
+          text: 'Заказчик',
+          align: 'left',
+          value: 'id',
+          sortable: false,
+        },
+        {
+          text: 'Состав',
+          align: 'left',
+          value: 'id',
+          sortable: false,
+        },
+        {
+          text: 'Адрес',
+          align: 'left',
+          value: 'id',
+          sortable: false,
+        },
+        {
+          text: 'Оплата',
+          align: 'left',
+          value: 'id',
+          sortable: false,
+        },
+        {
+          text: '',
+          align: 'right',
+          sortable: false,
+          value: 'action',
+        },
+      ],
     };
-  },
-  apollo: {
-    ordersList: {
-      query: function() {
-        return gql`
-        query OrderList(
-          $limit: Int
-          $offset: Int
-          $startDate: date
-          $endDate: date
-          $orderStatus: bigint
-          $createdBy: bigint
-          $deliveryTimeOfDay: bigint
-          $clientId: bigint
-          $bitrix: Int_comparison_exp
-        ) {
-          ordersList: orders(
-            limit: $limit
-            offset: $offset
-            where: {
-              _and: [
-                { deliveryDate: { _gte: $startDate } }
-                { deliveryDate: { _lte: $endDate } }
-                { orderStatusId: { _eq: $orderStatus } }
-                { createdById: { _eq: $createdBy } }
-                { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
-                { clientId: { _eq: $clientId } }
-                { bitrix: $bitrix }
-              ]
-            }
-            order_by: { ${this.pagination.sortBy}: ${
-          this.pagination.descending ? "desc" : "asc"
-        } }
-          ) {
-            id
-            deliveryTimeOfDay
-            orderSourceTypeIds
-            incognito
-            alreadyPaid
-            prePayment
-            description
-            clientName
-            clientPhone
-            coordinates
-            address
-            entrance
-            flat
-            floor
-            addresseeName
-            addresseePhone
-            deliveryCost
-            isAlreadyPrinted
-            deliveryType {
-              id
-              name
-            }
-            deliveryDate
-            deliveryTime
-            clientType {
-              id
-              name
-            }
-            orderCost
-            responsible {
-              name
-              phone
-            }
-            clientTypeId
-            courier {
-              name
-            }
-            client {
-              id
-              name
-              bill
-            }
-            bouquets: orderBouquets {
-              name
-              count
-              place
-              readyBouquetCount: bouquets_aggregate {
-                aggregate {
-                  count
-                }
-              }
-            }
-            createdAt: created_at
-            createdBy {
-              id
-              name
-            }
-            orderStatus {
-              id
-              name
-              color
-            }
-            orderSourceType: orderSourceTypeIds,
-          }
-          ordersCount: orders_aggregate(
-            where: {
-              _and: [
-                { deliveryDate: { _gte: $startDate } }
-                { deliveryDate: { _lte: $endDate } }
-                { orderStatusId: { _eq: $orderStatus } }
-                { createdById: { _eq: $createdBy } }
-                { deliveryTimeOfDay: { _eq: $deliveryTimeOfDay } }
-                { clientId: { _eq: $clientId } }
-                { bitrix: $bitrix }
-              ]
-            }
-          ) {
-            aggregate {
-              count
-            }
-          }
-        }
-      `;
-      },
-      variables() {
-        return {
-          offset: +this.page * +this.take,
-          limit: +this.take,
-          startDate: this.filter.dateStart
-            ? this.filter.dateStart
-            : undefined,
-          endDate: this.filter.dateEnd
-            ? this.filter.dateEnd
-            : undefined,
-          clientId: this.filter.clientItem
-            ? this.filter.clientItem.id
-            : undefined,
-          orderStatus:
-            this.filter.orderStatus !== 0 ? this.filter.orderStatus : undefined,
-          createdBy:
-            this.filter.createdBy !== 0 ? this.filter.createdBy : undefined,
-          deliveryTimeOfDay:
-            this.filter.deliveryTimeOfDay !== 0
-              ? this.filter.deliveryTimeOfDay
-              : undefined,
-          bitrix:
-            this.filter.bitrix ? { _gte: 0 } : undefined,
-        };
-      },
-      update({ ordersList, ordersCount }) {
-        const parseDateFormat = "yyyy-LL-dd";
-        let prevItem = null;
-
-        for (let order of ordersList) {
-          order.isTopLine =
-            prevItem &&
-            isAfter(
-              parse(order.deliveryDate, parseDateFormat, new Date()),
-              parse(prevItem, parseDateFormat, new Date())
-            );
-
-          prevItem = order.deliveryDate;
-        }
-
-        this.ordersCount = ordersCount.aggregate.count;
-
-        return ordersList;
-      },
-      skip() {
-        return this.skipQuery;
-      },
-      result() {
-        const loadData = this.loadingData.find(item => item.id === "orders");
-        loadData.title = "Заказы получены!";
-        loadData.loading = false;
-      }
-    },
-    orderSourceTypes: {
-      query: gql`
-        query {
-          orderSourceTypes {
-            id
-            name
-          }
-        }
-      `
-    },
-    statusList: {
-      query: gql`
-        query {
-          statusList: orderStatuses {
-            id
-            name
-          }
-        }
-      `
-    },
-    usersList: {
-      query: gql`
-        query {
-          usersList: users(
-            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
-          ) {
-            id
-            name
-          }
-        }
-      `
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($name: String) {
-          clientsList: clients(
-            where: {
-              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
-            }
-            limit: 50
-          ) {
-            id
-            name
-          }
-        }
-      `,
-      update({ clientsList: data }) {
-        this.clientSuggestions = [{ data }];
-
-        return data;
-      },
-      variables() {
-        return {
-          name: this.clientsQueryName
-        };
-      },
-      skip() {
-        return this.skipClientsQuery;
-      }
-    },
-    userSettings: {
-      query: gql`
-        query UserSettings($userId: bigint) {
-          userSettings: users(where: { id: { _eq: $userId } }) {
-            userSettings: settings
-          }
-        }
-      `,
-      variables() {
-        return {
-          userId: this.$store.getters.getAuthUser
-        };
-      },
-      update({ userSettings: [{ userSettings: { orderSettings } = {} }] }) {
-        const userSort = this.$store.getters.getOrderSort;
-
-        this.userSettings = orderSettings || [];
-
-        if (userSort.sortBy) {
-          this.pagination.sortBy = userSort.sortBy;
-          this.pagination.descending = userSort.descending;
-          this.getOrdersList();
-        } else if (orderSettings) {
-          const colSort = this.userSettings.find(item => item.sortOrder);
-
-          if (colSort) {
-            this.pagination.sortBy = colSort.sortField;
-            this.pagination.descending = colSort.sortOrder === "desc";
-
-            const sort = {
-              sortBy: this.pagination.sortBy,
-              descending: this.pagination.descending
-            };
-
-            this.$store.commit("setOrderSort", sort);
-          }
-        }
-
-        return orderSettings;
-      }
-    },
-    todayDeliveriesCount: {
-      query: gql`
-        query TodayDeliveriesCount($currentDate: date) {
-          orders_aggregate(where: { deliveryDate: { _eq: $currentDate } }) {
-            aggregate {
-              count
-            }
-          }
-        }
-      `,
-      variables() {
-        const today = new Date();
-
-        const year = today.getFullYear();
-        const month = (`0${(today.getMonth() + 1)}`).slice(-2);
-        const date = today.getDate();
-
-        return {
-          currentDate: `${year}-${month}-${date}`
-        };
-      },
-      update({
-        orders_aggregate: {
-          aggregate: { count }
-        }
-      }) {
-        return count;
-      }
-    }
   },
   watch: {
     dialogForm(newValue) {
@@ -1001,36 +639,91 @@ export default {
       const editElem = this.ordersList.find(item => item.id === this.editedId);
       return editElem ? editElem.orderSourceTypeIds : [];
     },
-    headersTable() {
-      const cols = this.userSettings.map(item => {
-        const elem = {
-          text: item.columnName,
-          align: "left",
-          value: item.sortField,
-          width: item.width
-        };
+    // headersTable() {
+    //   const cols = this.userSettings.map(item => {
+    //     const elem = {
+    //       text: item.columnName,
+    //       align: "left",
+    //       value: item.sortField,
+    //       width: item.width
+    //     };
 
-        return elem;
-      });
+    //     return elem;
+    //   });
 
-      const colAction = {
-        text: "",
-        align: "right",
-        sortable: false,
-        value: "action"
-      };
+    //   const colAction = {
+    //     text: "",
+    //     align: "right",
+    //     sortable: false,
+    //     value: "action"
+    //   };
 
-      cols.push(colAction);
+    //   cols.push(colAction);
 
-      return cols;
-    },
+    //   return cols;
+    // },
     printOrdersIds() {
       return this.selectedOrders.map(item => item.id);
     }
   },
   methods: {
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
+    getClients() {
+      const url = 'clients';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.clientsList = items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getUsers() {
+      const url = 'users';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.usersList = items;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getOrdersList() {
+      const loadData = this.loadingData.find(item => item.id === 'orders');
+      const url = 'orders';
+
+      const propsItem = {
+        page: this.page,
+        page_limit: this.take,
+      };
+
+      Object.keys(this.filter).forEach((key) => {
+        if (this.filter[key]) {
+          propsItem[key] = this.filter[key];
+        }
+      });
+
+      axios
+        .get(url, {
+          params: propsItem,
+        })
+        .then((response) => {
+          const items = response.data;
+          this.ordersList = items;
+
+          loadData.title = 'Заказы получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения заказов!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
     onClientSelect(item) {
       this.filter.clientItem = item;
@@ -1064,24 +757,22 @@ export default {
       window.open(url, "_blank");
     },
     customFilter() {
-      this.page = 0;
-
-      if (this.$route.query.client === undefined) {
-        this.$store.commit("setOrderFilter", this.filter);
-      }
+      this.page = 1;
       this.getOrdersList();
     },
     changeShowElem() {
       localStorage.setItem("countElemPage", this.take);
       this.$store.commit("setCountElemPage", this.take);
-      this.page = 0;
+      this.page = 1;
       this.getOrdersList();
     },
     prevPage() {
       this.page -= 1;
+      this.getOrdersList();
     },
     nextPage() {
       this.page += 1;
+      this.getOrdersList();
     },
     clientsFilter(item, queryText) {
       const textOne = item.name.toLowerCase();
@@ -1091,9 +782,6 @@ export default {
       return (
         textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
       );
-    },
-    getOrdersList() {
-      this.$apollo.queries.ordersList.refresh();
     },
     closeDialog() {
       this.getOrdersList();
@@ -1178,16 +866,16 @@ export default {
       return date.toISOString().split("T")[0];
     },
     setFilterDateNow() {
-      this.filter.dateStart = this.dateNowStr;
-      this.filter.dateEnd = this.dateNowStr;
-      this.filter.bitrix = false;
-      this.page = 0;
+      this.filter.start_date = this.dateNowStr;
+      this.filter.end_date = this.dateNowStr;
+
+      this.customFilter();
     },
     setFilterDateWeek() {
-      this.filter.dateStart = this.getWeekStartDate();
-      this.filter.dateEnd = this.getWeekEndDate();
-      this.filter.bitrix = false;
-      this.page = 0;
+      this.filter.start_date = this.getWeekStartDate();
+      this.filter.end_date = this.getWeekEndDate();
+
+      this.customFilter();
     },
     setFilterDateMonth() {
       const date = new Date();
@@ -1203,36 +891,37 @@ export default {
         0,
         23,
         59,
-        59
+        59,
       );
       const dateStart = firstDay.toISOString().split("T")[0];
       const dateEnd = lastDay.toISOString().split("T")[0];
 
-      this.filter.dateStart = dateStart;
-      this.filter.dateEnd = dateEnd;
-      this.filter.bitrix = false;
-      this.page = 0;
+      this.filter.start_date = dateStart;
+      this.filter.end_date = dateEnd;
+
+      this.customFilter();
     },
     setFilter14February() {
       const date = new Date();
-      this.filter.dateStart = `${date.getFullYear()}-03-06`;
-      this.filter.dateEnd = `${date.getFullYear()}-03-06`;
-      this.filter.bitrix = false;
-      this.page = 0;
+      this.filter.start_date = `${date.getFullYear()}-03-06`;
+      this.filter.end_date = `${date.getFullYear()}-03-06`;
+
+      this.customFilter();
     },
     setFilter8March() {
       const date = new Date();
-      this.filter.dateStart = `${date.getFullYear()}-03-08`;
-      this.filter.dateEnd = `${date.getFullYear()}-03-08`;
-      this.filter.bitrix = false;
-      this.page = 0;
+      this.filter.start_date = `${date.getFullYear()}-03-08`;
+      this.filter.end_date = `${date.getFullYear()}-03-08`;
+
+      this.customFilter();
     },
     setFilterNewOrderSite() {
-      this.filter.dateStart = "";
-      this.filter.dateEnd = "";
-      this.filter.bitrix = true;
-      this.filter.orderStatus = 1;
-      this.page = 0;
+      this.filter.start_date = '';
+      this.filter.end_date = '';
+
+      this.filter.order_status = 'accept';
+
+      this.customFilter();
     },
     toggleAll() {
       if (this.selectedOrders.length) {
@@ -1258,35 +947,18 @@ export default {
     }
   },
   mounted() {
-    const userFilter = this.$store.getters.getOrderFilter;
+    this.getOrdersList();
+    this.getClients();
+    this.getUsers();
 
-    const date = new Date();
-    const dateNowStr = date.toISOString().split("T")[0];
-    this.dateNowStr = dateNowStr;
+    const dateNow = new Date();
+    const year = dateNow.getFullYear();
+    let month = dateNow.getMonth() + 1;
+    month = `0${month}`.slice(-2);
+    const day = dateNow.getDate();
 
-    const dateStart = dateNowStr;
-
-    date.setDate(date.getDate() + 7);
-    const dateEnd = date.toISOString().split("T")[0];
-
-    this.take =
-      localStorage.getItem("countElemPage") ||
-      this.$store.getters.getCountElemPage;
-
-    if (this.$route.query.clientId && this.$route.query.clientName) {
-      this.filter.client = this.$route.query.clientName;
-      this.filter.clientItem = {
-        id: +this.$route.query.clientId,
-        name: this.$route.query.clientName
-      };
-      this.$router.replace({ query: {} });
-    } else if (Object.keys(userFilter).length !== 0) {
-      this.filter = userFilter;
-    } else {
-      this.filter.dateStart = dateStart;
-      this.filter.dateEnd = dateEnd;
-    }
-  }
+    this.dateNowStr = `${year}-${month}-${day}`;
+  },
 };
 </script>
 

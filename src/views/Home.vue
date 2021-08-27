@@ -290,14 +290,14 @@ export default {
         {
           title: 'Получение флористов',
           error: false,
-          loading: true,
+          loading: false,
           color: 'cyan',
           id: 'florists',
         },
         {
           title: 'Получение товаров',
           error: false,
-          loading: true,
+          loading: false,
           color: 'blue-grey',
           id: 'goods',
         },
@@ -337,62 +337,6 @@ export default {
         limit: 200,
       },
     };
-  },
-  apollo: {
-    floristsList: {
-      query: gql`
-        query {
-          floristsList: florists {
-            id
-            name
-          }
-        }
-      `,
-      result() {
-        this.handleLoadingSuccess('florists', 'Флористы получены!');
-      },
-      error() {
-        this.handleLoadingFailed('florists', 'Ошибка получения флористов!');
-      },
-    },
-    goodsList: {
-      query: gql`
-        query {
-          goodsList: goods(
-            order_by: { sortIndex: desc }
-            where: { deleted_at: { _is_null: true } }
-          ) {
-            id
-            name
-            price
-            stockBalance
-            color
-          }
-        }
-      `,
-      result() {
-        this.handleLoadingSuccess('goods', 'Товары получены!');
-      },
-      error() {
-        this.handleLoadingFailed('goods', 'Ошибка получения товаров!');
-      },
-      update({ goodsList }) {
-        return goodsList.map(g => ({
-          ...g,
-          originalBalance: g.stockBalance,
-        }));
-      },
-    },
-    paymentTypesList: {
-      query: gql`
-        query {
-          paymentTypesList: paymentTypes {
-            id
-            name
-          }
-        }
-      `,
-    },
   },
   computed: {
     priceList() {

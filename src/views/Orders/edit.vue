@@ -690,9 +690,28 @@ export default {
       addresseeName: '',
       isDirty: false,
       skipQuery: true,
+
+      loadingOrder: true,
+      loadingClients: true,
     };
   },
+  watch: {
+    loading(val) {
+      if (!val) {
+        if (this.editedItem.client_id) {
+          this.setDataClient();
+        }
+
+        if (this.editedItem.recipient_id) {
+          this.setDataAddressee();
+        }
+      }
+    },
+  },
   computed: {
+    loading() {
+      return !!(this.loadingOrder || this.loadingClients);
+    },
     deliveryZones() {
       return this.$store.state.deliveryZones;
     },
@@ -723,13 +742,13 @@ export default {
             client_type: '',
             comment: item.comment,
             cost: item.cost,
-            date: item.date,
+            date: item.date.substr(0, 10),
             delivery_cost: item.delivery_cost,
             delivery_time: item.delivery_time,
             delivery_type: item.delivery_type,
             incognito: item.incognito,
             is_recipient_client: item.is_recipient_client,
-            order_source_type: item.order_source,
+            order_source_type: item.order_source.split(', '),
             order_status: item.status,
             pay_channel: item.pay_channel,
             pre_payment: item.pre_payment,
@@ -742,6 +761,8 @@ export default {
             recipient_phone: '',
             times_of_day: item.times_of_day,
           };
+
+          this.loadingOrder = false;
         })
         .catch((error) => {
           console.log(error);
@@ -755,6 +776,7 @@ export default {
         .then((response) => {
           const items = response.data;
           this.clientsList = items;
+          this.loadingClients = false;
         })
         .catch((error) => {
           console.log(error);
@@ -875,68 +897,35 @@ export default {
     submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
-        if (this.editedItem.client_id) {
-          this.addOrder();
-        } else {
-          this.addClient();
+        const propsItem = Object.assign({}, this.editedItem);
+
+        const url = `orders/${this.id}`;
+
+        if (propsItem.delivery_type === 'pickup') {
+          propsItem.recipient_address = '';
+          propsItem.recipient_flat_number = 0;
+          propsItem.recipient_floor = 0;
         }
+
+        propsItem.order_source_type = propsItem.order_source_type.join(', ');
+
+        // if (!propsItem.coordinates) {
+        //   propsItem.coordinates = [];
+        // }
+
+        axios
+          .post(url, propsItem)
+          .then(() => {
+            this.createdSuccess = true;
+
+            setTimeout(() => {
+              this.$emit('cancel');
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
-    },
-    addOrder() {
-      const propsItem = Object.assign({}, this.editedItem);
-
-      const url = 'orders';
-
-      if (propsItem.delivery_type === 'pickup') {
-        propsItem.recipient_address = '';
-        propsItem.recipient_flat_number = 0;
-        propsItem.recipient_floor = 0;
-      }
-
-      propsItem.order_source_type = propsItem.order_source_type.join(', ');
-
-      // if (!propsItem.coordinates) {
-      //   propsItem.coordinates = [];
-      // }
-
-      axios
-        .post(url, propsItem)
-        .then(() => {
-          this.createdSuccess = true;
-
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-    addClient() {
-      const url = 'clients';
-      const propsItem = {
-        active: true,
-        address: this.editedItem.recipient_address,
-        bill: 0,
-        birth_day: '1900-01-01',
-        client_type: this.editedItem.client_type,
-        flat_number: this.editedItem.recipient_flat_number,
-        floor: this.editedItem.recipient_floor,
-        limit: 0,
-        name: this.editedItem.client_name,
-        phone: this.editedItem.client_phone,
-        sale: 0,
-      };
-
-      axios
-        .post(url, propsItem)
-        .then((response) => {
-          this.editedItem.client_id = response.data.id;
-          this.addOrder();
-        })
-        .catch((error) => {
-          console.log(error);
-        });
     },
     bouquetAdd() {
       this.editedItem.bouquets.push({

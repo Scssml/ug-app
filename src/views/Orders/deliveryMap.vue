@@ -1,6 +1,6 @@
 <template v-if="editedItem">
   <yandex-map
-    :coords="editedItem.coordsMap"
+    :coords="coordsMap"
     zoom="10"
     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
     :controls="['trafficControl']"
@@ -48,7 +48,7 @@ export default {
   },
   beforeUpdate() {
     if (this.$refs.yMaps) {
-      this.$refs.yMaps.myMap.geoObjects.removeAll();
+      // this.$refs.yMaps.myMap.geoObjects.removeAll();
     }
   },
   updated() {

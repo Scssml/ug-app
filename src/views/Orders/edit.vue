@@ -339,7 +339,7 @@
 
                 <v-text-field
                   label="Имя получателя"
-                  v-model="editedItem.recipient_name"
+                  v-model="editedItem.addressee_name"
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.is_recipient_client"
@@ -348,7 +348,7 @@
 
                 <v-text-field
                   label="Телефон получателя"
-                  v-model="editedItem.recipient_phone"
+                  v-model="editedItem.addressee_phone"
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.is_recipient_client"
@@ -356,7 +356,7 @@
                 ></v-text-field>
 
                 <autocomplete-address
-                  :value="editedItem.recipient_address"
+                  :value="editedItem.address"
                   @change="
                     updateAddress($event);
                     handleDirty();
@@ -365,8 +365,17 @@
                 ></autocomplete-address>
 
                 <v-text-field
+                  label="Подъезд"
+                  v-model="editedItem.entrance"
+                  hide-details
+                  class="mb-4"
+                  :rules="[v => !!v || 'Заполните поле']"
+                  @change="handleDirty"
+                ></v-text-field>
+
+                <v-text-field
                   label="Квартира"
-                  v-model="editedItem.recipient_flat_number"
+                  v-model="editedItem.flat"
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
@@ -375,7 +384,7 @@
 
                 <v-text-field
                   label="Этаж"
-                  v-model="editedItem.recipient_floor"
+                  v-model="editedItem.floor"
                   hide-details
                   class="mb-4"
                   :rules="[v => !!v || 'Заполните поле']"
@@ -452,6 +461,13 @@
                 :zones="deliveryZones"
                 :placemarks="placemarks"
               /> -->
+
+              <delivery-map
+                :delivery-time-of-day-list="[]"
+                :edited-item="editedItem"
+                :zones="deliveryZones"
+                :placemarks="[]"
+              />
             </div>
           </v-flex>
         </v-layout>
@@ -494,6 +510,9 @@ export default {
   data() {
     return {
       editedItem: {
+        address: '',
+        addressee_name: '',
+        addressee_phone: '',
         already_paid: false,
         bouquets: [],
         client_id: 0,
@@ -501,24 +520,23 @@ export default {
         client_phone: '',
         client_type: '',
         comment: '',
+        coordinates: [],
         cost: 0,
         date: '',
         delivery_cost: 0,
         delivery_time: '',
         delivery_type: 'pickup',
+        entrance: '',
+        flat: '',
+        floor: '',
         incognito: false,
         is_recipient_client: false,
         order_source_type: '',
-        order_status: 'accept',
+        order_status: 'accepted',
         pay_channel: '',
         pre_payment: 0,
-        recipient_address: '',
-        recipient_client_type: 'individual',
-        recipient_flat_number: 0,
-        recipient_floor: 0,
         recipient_id: 0,
         recipient_name: '',
-        recipient_phone: '',
         times_of_day: '',
       },
       paymentTypesList: [
@@ -618,7 +636,7 @@ export default {
       statusList: [
         {
           name: 'Принят',
-          id: 'accept',
+          id: 'accepted',
         },
         {
           name: 'Выполнен',
@@ -734,31 +752,32 @@ export default {
           const item = response.data;
 
           this.editedItem = {
+            address: item.already_paid,
+            addressee_name: item.addressee_name,
+            addressee_phone: item.addressee_phone,
             already_paid: item.already_paid,
-            bouquets: [],
+            bouquets: item.bouquets,
             client_id: item.client_id,
             client_name: '',
             client_phone: '',
             client_type: '',
             comment: item.comment,
+            coordinates: item.coordinates.split(','),
             cost: item.cost,
             date: item.date.substr(0, 10),
             delivery_cost: item.delivery_cost,
             delivery_time: item.delivery_time,
             delivery_type: item.delivery_type,
+            entrance: item.entrance,
+            flat: item.flat,
+            floor: item.floor,
             incognito: item.incognito,
             is_recipient_client: item.is_recipient_client,
             order_source_type: item.order_source.split(', '),
             order_status: item.status,
             pay_channel: item.pay_channel,
             pre_payment: item.pre_payment,
-            recipient_address: '',
-            recipient_client_type: 'individual',
-            recipient_flat_number: 0,
-            recipient_floor: 0,
             recipient_id: item.recipient_id,
-            recipient_name: '',
-            recipient_phone: '',
             times_of_day: item.times_of_day,
           };
 
@@ -805,16 +824,18 @@ export default {
         this.editedItem.client_name = findClient.name;
         this.editedItem.client_phone = findClient.phone;
         this.editedItem.client_type = findClient.client_type;
-        this.editedItem.recipient_address = findClient.address;
-        this.editedItem.recipient_flat_number = findClient.flat_number;
-        this.editedItem.recipient_floor = findClient.floor;
+        this.editedItem.address = findClient.address;
+        this.editedItem.flat = findClient.flat_number;
+        this.editedItem.floor = findClient.floor;
+        this.editedItem.entrance = findClient.entrance;
       } else {
         this.editedItem.client_name = '';
         this.editedItem.client_phone = '';
         this.editedItem.client_type = '';
-        this.editedItem.recipient_address = '';
-        this.editedItem.recipient_flat_number = 0;
-        this.editedItem.recipient_floor = 0;
+        this.editedItem.address = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
+        this.editedItem.entrance = '';
       }
     },
     setDataAddressee() {
@@ -822,17 +843,19 @@ export default {
       const findClient = this.clientsList.find(item => item.id === clientId);
 
       if (findClient) {
-        this.editedItem.recipient_name = findClient.name;
-        this.editedItem.recipient_phone = findClient.phone;
-        this.editedItem.recipient_address = findClient.address;
-        this.editedItem.recipient_flat_number = findClient.flat_number;
-        this.editedItem.recipient_floor = findClient.floor;
+        this.editedItem.addressee_name = findClient.name;
+        this.editedItem.addressee_phone = findClient.phone;
+        this.editedItem.address = findClient.address;
+        this.editedItem.flat = findClient.flat_number;
+        this.editedItem.floor = findClient.floor;
+        this.editedItem.entrance = findClient.entrance;
       } else {
         this.editedItem.recipient_name = '';
         this.editedItem.recipient_phone = '';
-        this.editedItem.recipient_address = '';
-        this.editedItem.recipient_flat_number = 0;
-        this.editedItem.recipient_floor = 0;
+        this.editedItem.address = '';
+        this.editedItem.flat = '';
+        this.editedItem.floor = '';
+        this.editedItem.entrance = findClient.entrance;
       }
     },
     setPointByClientAddress(address) {
@@ -855,10 +878,10 @@ export default {
       );
     },
     updateAddress(data) {
-      this.editedItem.recipient_address = data.address;
+      this.editedItem.address = data.address;
 
       if (data && data.geo[0] && data.geo[1] && this.editedItem) {
-        // this.editedItem.coordinates = data.geo;
+        this.editedItem.coordinates = data.geo;
         // this.editedItem.coordsMap = data.geo;
         this.calculateAndSetDeliveryCost(data.geo);
       }
@@ -901,10 +924,14 @@ export default {
 
         const url = `orders/${this.id}`;
 
+        propsItem.coordinates = propsItem.coordinates.join(',');
+
         if (propsItem.delivery_type === 'pickup') {
-          propsItem.recipient_address = '';
-          propsItem.recipient_flat_number = 0;
-          propsItem.recipient_floor = 0;
+          propsItem.address = '';
+          propsItem.flat = '';
+          propsItem.floor = '';
+          propsItem.entrance = '';
+          propsItem.coordinates = '';
         }
 
         propsItem.order_source_type = propsItem.order_source_type.join(', ');

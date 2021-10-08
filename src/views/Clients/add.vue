@@ -42,12 +42,16 @@
           v-model="editedItem.address"
         ></v-text-field>
         <v-text-field
+          label="Подъезд"
+          v-model="editedItem.entrance"
+        ></v-text-field>
+        <v-text-field
           label="Квартира"
-          v-model.number="editedItem.flat_number"
+          v-model="editedItem.flat_number"
         ></v-text-field>
         <v-text-field
           label="Этаж"
-          v-model.number="editedItem.floor"
+          v-model="editedItem.floor"
         ></v-text-field>
         <v-menu
           :close-on-content-click="false"
@@ -129,8 +133,9 @@ export default {
         bill: 0,
         birth_day: '',
         client_type: 'individual',
-        flat_number: 0,
-        floor: 0,
+        entrance: '',
+        flat_number: '',
+        floor: '',
         limit: 0,
         name: '',
         phone: '',

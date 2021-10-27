@@ -269,6 +269,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import CreatedBouquetCard from '../components/CreatedBouquetCard.vue';
 import SelectCountGoods from '../components/SelectCountGoods.vue';
 import PaymentDay from './Pays/paymentDay.vue';
@@ -290,23 +291,16 @@ export default {
         {
           title: 'Получение флористов',
           error: false,
-          loading: false,
+          loading: true,
           color: 'cyan',
           id: 'florists',
         },
         {
           title: 'Получение товаров',
           error: false,
-          loading: false,
+          loading: true,
           color: 'blue-grey',
           id: 'goods',
-        },
-        {
-          title: 'Получение оплат',
-          error: false,
-          loading: false,
-          color: 'deep-orange',
-          id: 'payments',
         },
       ],
       offsetLeft: 0,
@@ -324,7 +318,56 @@ export default {
       ],
       cardsList: [],
       floristsList: [],
-      paymentTypesList: [],
+      paymentTypesList: [
+        {
+          id: 'Комиссия',
+          name: 'Комиссия',
+        },
+        {
+          id: 'cashless',
+          name: 'Газпром',
+        },
+        {
+          id: 'cashless',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'Расходы',
+          name: 'Расходы',
+        },
+        {
+          id: 'Инкассация',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
+        },
+      ],
       goodsList: [],
       paymentsList: [],
       checkCardList: [],
@@ -332,10 +375,6 @@ export default {
       dialogPay: false,
       sumClient: 0,
       typePay: null,
-      paymentsPagination: {
-        page: 0,
-        limit: 200,
-      },
     };
   },
   computed: {
@@ -345,8 +384,8 @@ export default {
       return priceList;
     },
     goods() {
-      for (const good of this.goodsList.filter(g => g.originalBalance)) {
-        good.stockBalance = good.originalBalance;
+      for (const good of this.goodsList.filter(g => g.stock)) {
+        good.stockBalance = good.stock;
       }
 
       for (const good of this.goodsList) {
@@ -396,6 +435,44 @@ export default {
     },
   },
   methods: {
+    getGoodsList() {
+      const loadData = this.loadingData.find(item => item.id === 'goods');
+      const url = 'goods';
+
+      axios
+        .get(url)
+        .then((response) => {
+          this.goodsList = response.data;
+
+          loadData.title = 'Товары получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения товаров!';
+          loadData.error = true;
+          console.log(error);
+        });
+    },
+    getFloristsList() {
+      const loadData = this.loadingData.find(item => item.id === 'florists');
+      const url = 'users';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.floristsList = items;
+
+          loadData.title = 'Флористы получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения флористов!';
+          loadData.error = true;
+          console.log(error);
+        });
+    },
+
     refreshPayments() {
       this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
     },
@@ -455,105 +532,119 @@ export default {
     },
     saveProps: function saveProps(index, props) {
       const cardItem = this.cardsList[index];
+      cardItem.success = true;
+      this.$set(this.cardsList, index, cardItem);
 
-      const arSuccess = [];
+      this.refreshPayments();
 
-      if (props) {
-        let emptySum = true;
+      const cardNoEmpty = this.cardsList.filter(elem =>
+        (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+          elem.success !== true);
+      localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
 
-        if (cardItem.goods.length > 0) {
-          emptySum = false;
-        }
+      const findIndex = this.checkCardList.findIndex(card => card.index === index);
 
-        const goods = cardItem.goods.map(item => ({
-          count: item.value,
-          goodId: item.id,
-        }));
-
-        props.payment.clientId = (props.payment.clientId) ? props.payment.clientId : 0;
-
-        const propsService = {
-          clientID: props.payment.clientId,
-          userID: this.$store.getters.getAuthUser,
-          payments: [
-            {
-              paymentTypeId: props.payment.paymentTypeId,
-              price: +props.payment.paymentTypeId === PaymentTypes.BALANCE
-                ? -(props.payment.amount / props.bouquetCount)
-                : props.payment.amount / props.bouquetCount,
-              comment: props.payment.description,
-            },
-          ],
-        };
-
-        if (props.floristId) {
-          propsService.floristID = props.floristId;
-        }
-
-        if (props.secondPayment) {
-          propsService.payments.push({
-            paymentTypeId: props.secondPayment.paymentTypeId,
-            price: +props.secondPayment.paymentTypeId === PaymentTypes.BALANCE
-              ? -(props.secondPayment.amount / props.bouquetCount)
-              : props.secondPayment.amount / props.bouquetCount,
-            comment: props.secondPayment.description,
-          });
-        }
-
-        if (emptySum && (props.decorCost || props.sumDecorAdditional || props.deliveryCost)) {
-          propsService.decorPrice = (props.decorCost) ? props.decorCost : null;
-          propsService.additionalDecorPrice = (props.sumDecorAdditional) ? props.sumDecorAdditional : null;
-          propsService.deliveryPrice = (props.deliveryCost) ? props.deliveryCost : null;
-        } else if (!emptySum) {
-          propsService.decorPrice = props.decorCost;
-          propsService.deliveryPrice = props.deliveryCost;
-          propsService.additionalDecorPrice = props.sumDecorAdditional;
-          propsService.decorPercent = props.decorPercent;
-          propsService.deliveryComment = props.comment;
-          propsService.salePercent = props.salePercent;
-          propsService.salePrice = props.sumSale;
-          propsService.serviceGoods = goods;
-          propsService.totalCost = props.totalCost;
-          propsService.orderBouquetID = props.orderBouquet;
-        }
-
-        for (let i = 0; i < props.bouquetCount; i++) {
-          this.$apollo.mutate({
-            mutation: gql`mutation createService (
-              $props: NewService!
-            ) {
-              createService(input: $props) {
-                id
-              }
-            }`,
-            variables: {
-              props: propsService,
-            },
-          }).then(() => {
-            arSuccess.push(true);
-
-            if (arSuccess.length === props.bouquetCount) {
-              cardItem.success = true;
-              this.$set(this.cardsList, index, cardItem);
-
-              this.refreshPayments();
-
-              const cardNoEmpty = this.cardsList.filter(elem =>
-                (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
-                  elem.success !== true);
-              localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
-
-              const findIndex = this.checkCardList.findIndex(card => card.index === index);
-
-              if (findIndex + 1) {
-                this.checkCardList.splice(findIndex, 1);
-              }
-            }
-          }).catch((error) => {
-            console.error(error);
-          });
-        }
+      if (findIndex + 1) {
+        this.checkCardList.splice(findIndex, 1);
       }
+      // const arSuccess = [];
+
+      // if (props) {
+      //   let emptySum = true;
+
+      //   if (cardItem.goods.length > 0) {
+      //     emptySum = false;
+      //   }
+
+      //   const goods = cardItem.goods.map(item => ({
+      //     count: item.value,
+      //     goodId: item.id,
+      //   }));
+
+      //   props.payment.clientId = (props.payment.clientId) ? props.payment.clientId : 0;
+
+      //   const propsService = {
+      //     clientID: props.payment.clientId,
+      //     userID: this.$store.getters.getAuthUser,
+      //     payments: [
+      //       {
+      //         paymentTypeId: props.payment.paymentTypeId,
+      //         price: +props.payment.paymentTypeId === PaymentTypes.BALANCE
+      //           ? -(props.payment.amount / props.bouquetCount)
+      //           : props.payment.amount / props.bouquetCount,
+      //         comment: props.payment.description,
+      //       },
+      //     ],
+      //   };
+
+      //   if (props.floristId) {
+      //     propsService.floristID = props.floristId;
+      //   }
+
+      //   if (props.secondPayment) {
+      //     propsService.payments.push({
+      //       paymentTypeId: props.secondPayment.paymentTypeId,
+      //       price: +props.secondPayment.paymentTypeId === PaymentTypes.BALANCE
+      //         ? -(props.secondPayment.amount / props.bouquetCount)
+      //         : props.secondPayment.amount / props.bouquetCount,
+      //       comment: props.secondPayment.description,
+      //     });
+      //   }
+
+      //   if (emptySum && (props.decorCost || props.sumDecorAdditional || props.deliveryCost)) {
+      //     propsService.decorPrice = (props.decorCost) ? props.decorCost : null;
+      //     propsService.additionalDecorPrice = (props.sumDecorAdditional) ? props.sumDecorAdditional : null;
+      //     propsService.deliveryPrice = (props.deliveryCost) ? props.deliveryCost : null;
+      //   } else if (!emptySum) {
+      //     propsService.decorPrice = props.decorCost;
+      //     propsService.deliveryPrice = props.deliveryCost;
+      //     propsService.additionalDecorPrice = props.sumDecorAdditional;
+      //     propsService.decorPercent = props.decorPercent;
+      //     propsService.deliveryComment = props.comment;
+      //     propsService.salePercent = props.salePercent;
+      //     propsService.salePrice = props.sumSale;
+      //     propsService.serviceGoods = goods;
+      //     propsService.totalCost = props.totalCost;
+      //     propsService.orderBouquetID = props.orderBouquet;
+      //   }
+
+      //   for (let i = 0; i < props.bouquetCount; i++) {
+      //     this.$apollo.mutate({
+      //       mutation: gql`mutation createService (
+      //         $props: NewService!
+      //       ) {
+      //         createService(input: $props) {
+      //           id
+      //         }
+      //       }`,
+      //       variables: {
+      //         props: propsService,
+      //       },
+      //     }).then(() => {
+      //       arSuccess.push(true);
+
+      //       if (arSuccess.length === props.bouquetCount) {
+      //         cardItem.success = true;
+      //         this.$set(this.cardsList, index, cardItem);
+
+      //         this.refreshPayments();
+
+      //         const cardNoEmpty = this.cardsList.filter(elem =>
+      //           (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&
+      //             elem.success !== true);
+      //         localStorage.setItem('cardsList', JSON.stringify(cardNoEmpty));
+
+      //         const findIndex = this.checkCardList.findIndex(card => card.index === index);
+
+      //         if (findIndex + 1) {
+      //           this.checkCardList.splice(findIndex, 1);
+      //         }
+      //       }
+      //     }).catch((error) => {
+      //       console.error(error);
+      //     });
+      //   }
+      // }
     },
     updateProps: function updateProps(index, props) {
       const item = this.cardsList[index];
@@ -630,6 +721,9 @@ export default {
     },
   },
   mounted() {
+    this.getGoodsList();
+    this.getFloristsList();
+
     this.$store.commit('setShowGoodsList', []);
 
     const dateNow = new Date();

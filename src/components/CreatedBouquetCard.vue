@@ -22,21 +22,19 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <autosuggest
-        :suggestions="suggestions"
-        :placeholder="(clientId === 0) ? 'Розничный покупатель' : 'Клиенты'"
-        :value="autosuggestValue"
-        @onChange="onInputChange"
-        @onSelect="onSelected"
-      >
-        <template slot-scope="slotProps">
-          <span
-            >{{ slotProps.suggestion.item.name }} ({{
-              slotProps.suggestion.item.bill
-            }})</span
-          >
-        </template>
-      </autosuggest>
+      <v-select
+        label="Клиент"
+        :items="clientsList"
+        item-text="name"
+        item-value="id"
+        solo
+        flat
+        hide-details
+        v-model.number="clientId"
+        class="scs-small"
+        no-data-text="Не найдено"
+        @change="handleClientChange();"
+      ></v-select>
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -384,16 +382,10 @@
 </template>
 
 <script>
-import Autosuggest from "./Autosuggest";
-import gql from "graphql-tag";
-
-import { ClientTypes, PaymentTypes } from "../constants";
+import axios from 'axios';
 
 export default {
   name: "CreatedBouquetCard",
-  components: {
-    autosuggest: Autosuggest
-  },
   props: {
     goods: {
       type: Array,
@@ -451,72 +443,7 @@ export default {
       suggestions: []
     };
   },
-  apollo: {
-    clientsList: {
-      query: gql`
-        query ClientsList($name: String) {
-          clientsList: clients(
-            where: {
-              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
-              deleted_at: { _is_null: true }
-            }
-            limit: 50
-          ) {
-            id
-            name
-            type: typeId
-            discountPercent: sale
-            bill
-          }
-        }
-      `,
-      update({ clientsList: data }) {
-        this.suggestions = [{ data }];
-
-        return data;
-      },
-      variables() {
-        return {
-          name: this.queryName
-        };
-      },
-      skip() {
-        return this.skipClientsQuery;
-      }
-    },
-    clientOrdersList: {
-      query: gql`
-        query ClientOrdersList($clientId: bigint) {
-          clientOrdersList: orders(where: { clientId: { _eq: $clientId } }) {
-            id
-            prePayment
-            deliveryCost
-            bouquets: orderBouquets {
-              id
-              name
-              count
-              bouquets_aggregate {
-                aggregate {
-                  count
-                }
-              }
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          clientId: this.clientId
-        };
-      }
-    }
-  },
   computed: {
-    autosuggestValue() {
-      return this.client.name
-        ? `${this.client.name} (${this.client.bill})`
-        : "";
-    },
     prePayment() {
       let prePayment = 0;
 
@@ -525,7 +452,7 @@ export default {
           item => item.id === this.order
         );
 
-        prePayment = order ? +order.prePayment : 0;
+        prePayment = order ? +order.pre_payment : 0;
       }
 
       return prePayment;
@@ -534,14 +461,12 @@ export default {
       let orderSelected = null;
 
       if (!!this.clientOrdersList && this.clientOrdersList.length) {
-        orderSelected = this.clientOrdersList.find(
-          item => item.id === this.order
-        );
+        orderSelected = this.clientOrdersList.find((item) => item.id === this.order);
       }
       let orderList = [];
 
       if (orderSelected) {
-        orderList = orderSelected.bouquets.map(item => {
+        orderList = orderSelected.bouquets.map((item) => {
           item.fullName = `${item.name} - ${item.count}шт`;
           return item;
         });
@@ -550,20 +475,21 @@ export default {
       return orderList;
     },
     typePayList() {
-      return this.paymentTypesList.filter(item => {
-        if (
-          item.id === PaymentTypes.PRESENT &&
-          (this.client.type !== ClientTypes.LEGAL || this.goods.length)
-        ) {
-          return false;
-        }
+      return this.paymentTypesList;
+      // return this.paymentTypesList.filter(item => {
+      //   if (
+      //     item.id === PaymentTypes.PRESENT &&
+      //     (this.client.type !== ClientTypes.LEGAL || this.goods.length)
+      //   ) {
+      //     return false;
+      //   }
 
-        if (this.clientId === 0) {
-          return item.id !== 5;
-        }
+      //   if (this.clientId === 0) {
+      //     return item.id !== 5;
+      //   }
 
-        return item.id !== 7;
-      });
+      //   return item.id !== 7;
+      // });
     },
     sumDecor: function decorSum() {
       let sum = 0;
@@ -643,22 +569,50 @@ export default {
     }
   },
   methods: {
+    getClientsList() {
+      const url = 'clients';
+
+      axios
+        .get(url)
+        .then((response) => {
+          this.clientsList = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getOrdersList() {
+      const url = 'orders';
+
+      axios
+        .get(url,{
+          params: {
+            client_id: this.clientId,
+          },
+        })
+        .then((response) => {
+          this.clientOrdersList = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    handleClientChange() {
+      this.order = this.orderBouquet = null;
+      this.delivery = 0;
+      this.updateProps();
+    },
+    handleOrderChange(id) {
+      this.orderBouquet = null;
+      const order = this.clientOrdersList.find(item => item.id === id);
+      this.delivery = order ? order.delivery_cost : 0;
+      this.updateProps();
+    },
+
     handleNumberFieldKeyUp(e, fieldName) {
       if (e.target.value === "") {
         this[fieldName] = 0;
       }
-    },
-    onSelected(item) {
-      this.client = item;
-      this.clientId = item.id;
-      this.updateProps();
-    },
-    getSuggestionValue(suggestion) {
-      return suggestion.item.name;
-    },
-    onInputChange(text) {
-      this.queryName = `%${text}%`;
-      this.skipClientsQuery = false;
     },
     handleSecondSumChange() {
       this.$refs.firstSum.validate();
@@ -668,17 +622,6 @@ export default {
     },
     validateTotalSum(v) {
       return +this.sumClient + +this.secondSumClient >= this.sumPay;
-    },
-    handleOrderChange(id) {
-      const order = this.clientOrdersList.find(item => item.id === id);
-
-      const isHaveReadyBouquets = order.bouquets.some(
-        b => b.bouquets_aggregate.aggregate.count
-      );
-
-      this.delivery = !isHaveReadyBouquets ? order.deliveryCost : 0;
-
-      this.updateProps();
     },
     clearProps() {
       this.florist = 0;
@@ -700,68 +643,121 @@ export default {
         textOne.indexOf(searchText) > -1 || textTwo.indexOf(searchText) > -1
       );
     },
-    submitForm: function submitForm() {
+    submitForm() {
       const validate = this.$refs.form.validate();
       if (validate) {
+        const url = 'bouquet-payment';
         this.btnLoad = true;
 
         const props = {
-          floristId: this.florist,
-          clientId: this.clientId || 0,
-          orderId: this.order,
-          totalCost: this.sumPay / +this.bouquetCount,
-          decorPercent: +this.decorPercent,
-          decorCost: this.sumDecor,
-          sumDecorAdditional: this.sumDecorAdditional,
-          deliveryCost: +this.delivery,
-          salePercent: +this.clientSale,
-          sumSale: this.sumSale,
-          sumPayCustom: this.sumPayCustom,
-          payment: {
-            paymentTypeId: this.typePay,
-            amount:
-              (this.partlyPayment)
-                ? (this.typePay === PaymentTypes.CASH)
-                  ? +this.sumClient - +this.sumChange
-                  : +this.sumClient
-                : (+this.sumPay !== 0)
-                  ? +this.sumPay
-                  : +this.sumPayCustom,
-
-              // this.secondTypePay !== PaymentTypes.CASH &&
-              // this.typePay === PaymentTypes.CASH
-              //   ? (+this.sumClient || +this.sumPayCustom || 0) - +this.sumChange
-              //   : +this.sumPay !== 0
-              //   ? +this.sumPay
-              //   : +this.sumPayCustom || 0,
-            clientId: this.clientId,
-            description: ""
-          },
-          secondPayment: this.partlyPayment
-            ? {
-                paymentTypeId: this.secondTypePay,
-                amount:
-                  this.secondTypePay === PaymentTypes.CASH
-                    ? +this.secondSumClient - +this.sumChange
-                    : +this.secondSumClient,
-                clientId: this.clientId,
-                description: ""
-              }
-            : null,
+          client_id: this.clientId || 0,
           comment: this.comment,
-          orderBouquet: this.orderBouquet,
-          bouquetCount: +this.bouquetCount
-        };
+          decor_cost: this.sumDecor,
+          decor_percent: this.decorPercent,
+          delivery_comment: '',
+          delivery_cost: this.delivery,
+          florist_id: this.florist,
+          order_id: this.order,
+          sale_percent: +this.clientSale,
+          sale_sum: this.sumSale,
+          sum_decor_additional: this.sumDecorAdditional,
+          total_cost: this.sumPay / this.bouquetCount,
+          goods: [],
+          payment: {},
+          second_payment: {},
+        }
 
-        setTimeout(() => {
-          this.$emit("saveProps", props);
-        }, 1000);
+        if (this.goods.length) {
+          this.goods.forEach((item) => {
+            props.goods.push({
+              count: item.value,
+              good_id: item.id,
+            })
+          });
+        }
+
+        if (this.partlyPayment) {
+          props.payment.payment_type = this.typePay;
+          props.payment.comment = '';
+          props.payment.amount = (this.typePay === 'cash') ? +this.sumClient - +this.sumChange : +this.sumClient;
+
+          props.second_payment.payment_type = this.secondTypePay;
+          props.second_payment.comment = '';
+          props.second_payment.amount = (this.secondTypePay === 'cash') ? +this.secondSumClient - +this.sumChange : +this.secondSumClient;
+        } else {
+          props.payment.payment_type = this.typePay;
+          props.payment.comment = '';
+          props.payment.amount = (+this.sumPay !== 0) ? +this.sumPay : +this.sumPayCustom;
+        }
+
+        axios
+          .post(url, props)
+          .then(() => {
+            setTimeout(() => {
+              this.$emit("saveProps", props);
+            }, 1000);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+
+        // const props = {
+        //   floristId: this.florist,
+        //   clientId: this.clientId || 0,
+        //   orderId: this.order,
+        //   totalCost: ,
+        //   decorPercent: +this.decorPercent,
+        //   decorCost: this.sumDecor,
+        //   sumDecorAdditional: this.sumDecorAdditional,this.sumPay / +this.bouquetCount
+        //   deliveryCost: +this.delivery,
+        //   salePercent: +this.clientSale,
+        //   sumSale: this.sumSale,
+        //   sumPayCustom: this.sumPayCustom,
+        //   payment: {
+        //     paymentTypeId: this.typePay,
+        //     amount:
+        //       (this.partlyPayment)
+        //         ? (this.typePay === PaymentTypes.CASH)
+        //           ? +this.sumClient - +this.sumChange
+        //           : +this.sumClient
+        //         : (+this.sumPay !== 0)
+        //           ? +this.sumPay
+        //           : +this.sumPayCustom,
+
+        //       // this.secondTypePay !== PaymentTypes.CASH &&
+        //       // this.typePay === PaymentTypes.CASH
+        //       //   ? (+this.sumClient || +this.sumPayCustom || 0) - +this.sumChange
+        //       //   : +this.sumPay !== 0
+        //       //   ? +this.sumPay
+        //       //   : +this.sumPayCustom || 0,
+        //     clientId: this.clientId,
+        //     description: ""
+        //   },
+        //   secondPayment: this.partlyPayment
+        //     ? {
+        //         paymentTypeId: this.secondTypePay,
+        //         amount:
+        //           this.secondTypePay === PaymentTypes.CASH
+        //             ? +this.secondSumClient - +this.sumChange
+        //             : +this.secondSumClient,
+        //         clientId: this.clientId,
+        //         description: ""
+        //       }
+        //     : null,
+        //   comment: this.comment,
+        //   orderBouquet: this.orderBouquet,
+        //   bouquetCount: +this.bouquetCount
+        // };
+
+        // setTimeout(() => {
+        //   this.$emit("saveProps", props);
+        // }, 1000);
       }
     },
     updateProps: function updateProps() {
       const props = {
         floristId: this.florist,
-        clientId: this.client.id,
+        clientId: this.clientId,
         client: this.client,
         orderId: this.order,
         totalCost: this.sumPay,
@@ -795,7 +791,6 @@ export default {
       if (Object.keys(this.propsDefault).length > 0) {
         this.florist = this.propsDefault.floristId;
         this.clientId = (this.propsDefault.clientId) ? this.propsDefault.clientId : 0;
-        this.client = this.propsDefault.client;
         this.order = this.propsDefault.orderId;
         this.decorPercent = this.propsDefault.decorPercent;
         this.delivery = this.propsDefault.deliveryCost;
@@ -804,18 +799,17 @@ export default {
         this.orderBouquet = this.propsDefault.orderBouquet;
         this.sumDecorAdditional = this.propsDefault.sumDecorAdditional;
         this.clientSaleCustom = this.propsDefault.salePercent;
+
+        if (this.clientId) {
+          this.getOrdersList();
+        }
       }
 
       this.updateProps();
     }
   },
-  updated() {
-    // if ((this.salePersent === null || this.salePersent === '')
-    //   && (this.sumFlowers + this.sumDecor) >= 5000) {
-    //   this.salePersent = 10;
-    // }
-  },
   created() {
+    this.getClientsList();
     this.setValueDefault();
   }
 };

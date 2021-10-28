@@ -31,11 +31,12 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Тип"
-                  :items="[{ id: 0, name: 'Все' }].concat(paymentTypes)"
+                  :items="[{ id: null, name: 'Все' }].concat(paymentTypes)"
                   item-text="name"
                   item-value="id"
-                  v-model="filter.paymentType"
+                  v-model="filter.payment_type"
                   hide-details
+                  @change="customFilter()"
                 ></v-select>
               </v-flex>
               <v-flex xs2 class="px-2">
@@ -52,19 +53,20 @@
                   <v-text-field
                     slot="activator"
                     label="Дата (с)"
-                    v-model="filter.dateStart"
+                    v-model="filter.start_date"
                     prepend-icon="event"
                     hide-details
                     readonly
                   ></v-text-field>
                   <v-date-picker
-                    v-model="filter.dateStart"
+                    v-model="filter.start_date"
                     @input="dataStartPicker = false"
                     no-title
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
-                    :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+                    :max="!!filter.end_date ? filter.end_date : undefined"
+                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -82,46 +84,47 @@
                   <v-text-field
                     slot="activator"
                     label="Дата (по)"
-                    v-model="filter.dateEnd"
+                    v-model="filter.end_date"
                     prepend-icon="event"
                     hide-details
                     readonly
                   ></v-text-field>
                   <v-date-picker
-                    v-model="filter.dateEnd"
+                    v-model="filter.end_date"
                     @input="dataEndPicker = false"
                     no-title
                     locale="ru-ru"
                     scrollable
                     first-day-of-week="1"
-                    :min="!!filter.dateStart ? filter.dateStart : undefined"
+                    :min="!!filter.start_date ? filter.start_date : undefined"
+                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
-                  :items="[{ id: 0, name: 'Все' }].concat(usersList)"
+                  :items="[{ id: null, name: 'Все' }].concat(usersList)"
                   item-text="name"
                   item-value="id"
-                  v-model="filter.createdBy"
+                  v-model="filter.manager_id"
                   hide-details
-                  @change="handleSelectedManagerChange($event)"
+                  @change="customFilter()"
                 ></v-select>
               </v-flex>
               <v-flex xs3 class="px-2">
-                <autosuggest
-                  :suggestions="suggestions"
-                  placeholder="Клиенты"
-                  :value="client && client.name"
-                  @onChange="onInputChange"
-                  @onSelect="onSelected"
-                  class="mt-3 view-filter"
-                />
-
+                <v-select
+                  label="Клиент"
+                  :items="[{ id: null, name: 'Все' }].concat(clientsList)"
+                  item-text="name"
+                  item-value="id"
+                  v-model="filter.client_id"
+                  hide-details
+                  @change="customFilter()"
+                ></v-select>
                 <!-- <v-autocomplete
                   label="Клиент"
-                  :items="[{id: '', name: 'Все', phone: ''}].concat(clientsList)"
+                  :items="[{id: null, name: 'Все', phone: ''}].concat(clientsList)"
                   :filter="clientsFilter"
                   item-text="name"
                   item-value="id"
@@ -139,8 +142,8 @@
 
           <v-dialog v-model="dialogForm" persistent max-width="420px">
             <payment-edit
-              v-if="editedId"
-              :id="editedId"
+              v-if="editedItem"
+              :item="editedItem"
               @cancel="closeDialog()"
             ></payment-edit>
           </v-dialog>
@@ -153,53 +156,27 @@
           no-data-text="Оплат не найдено"
           no-results-text="Оплат не найдено"
           :search="search"
-          :disable-initial-sort="true"
           :pagination.sync="pagination"
-          :loading="!!$apollo.queries.paymentsList.loading"
         >
-          <template slot="headers" slot-scope="props">
-            <tr>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-                class="text-xs-left column"
-                :class="[
-                  'column sortable',
-                  pagination.descending ? 'desc' : 'asc',
-                  header.value === pagination.sortBy ? 'active' : ''
-                ]"
-                @click="header.sortable ? changeSort(header.value) : ''"
-              >
-                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
-                {{ header.text }}
-              </th>
-            </tr>
-          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">
               {{ props.item.id }}
             </td>
-            <td>{{ new Date(props.item.creationDate).toLocaleString() }}</td>
+            <td>{{ new Date(props.item.created_at).toLocaleString() }}</td>
             <td>
               {{ props.item.client && props.item.client.name }}
               <br />{{ props.item.client && props.item.client.phone }}
               <br />Баланс:
               {{ props.item.client && props.item.client.bill }}
             </td>
+            <td>{{ props.item.amount }}</td>
             <td>
-              <template v-if="props.item.paymentType.id === 5">-</template>
-              {{ props.item.amount }}
+              {{ props.item.payment_type && paymentTypes.find((item) => item.id === props.item.payment_type).name }}
             </td>
-            <td>
-              {{ props.item.paymentType && props.item.paymentType.name }}
-              <template v-if="props.item.paymentType && props.item.paymentType.id === 7 && props.item.parent">
-                <br>{{ props.item.parent.paymentType.name }}
-              </template>
-            </td>
-            <td>{{ props.item.manager.name }}</td>
-            <td>{{ props.item.description }}</td>
+            <td>{{ props.item.created_by.name }}</td>
+            <td>{{ props.item.comment }}</td>
             <td class="text-xs-right" style="width: 110px;">
-              <v-icon @click="editItem(props.item.id)" title="Просмотр">
+              <v-icon @click="editItem(props.item)" title="Просмотр">
                 visibility
               </v-icon>
             </td>
@@ -219,7 +196,7 @@
               small
               color="info"
               class="ml-3"
-              :disabled="page === 0"
+              :disabled="page === 1"
               @click="prevPage()"
             >
               <v-icon dark>keyboard_arrow_left</v-icon>
@@ -241,34 +218,31 @@
 </template>
 
 <script>
-import PaymentEdit from "./edit.vue";
-import Autosuggest from "../../components/Autosuggest";
-import gql from "graphql-tag";
+import axios from 'axios';
+import PaymentEdit from './edit.vue';
 
 export default {
   name: "Payments",
   components: {
-    PaymentEdit,
-    Autosuggest
+    PaymentEdit
   },
   data() {
     return {
-      // filterManagerStatus: -1,
       loadingData: [
         {
           title: "Получение оплат",
           error: false,
-          loading: false,
+          loading: true,
           color: "cyan",
           id: "payments"
         }
       ],
       filter: {
-        createdBy: "",
-        paymentType: 0,
-        dateStart: undefined,
-        dateEnd: undefined,
-        clientId: null
+        manager_id: null,
+        payment_type: null,
+        start_date: null,
+        end_date: null,
+        client_id: null,
       },
       dataStartPicker: false,
       dataEndPicker: false,
@@ -279,44 +253,44 @@ export default {
           align: "right",
           value: "id",
           filterable: false,
-          sortable: true
+          sortable: false
         },
         {
           text: "Дата",
           align: "left",
           value: "created_at",
           filterable: false,
-          sortable: true
+          sortable: false
         },
         {
           text: "Клиент",
           align: "left",
           value: "client.name",
-          sortable: true
+          sortable: false
         },
         {
           text: "Стоимость",
           align: "left",
           value: "amount",
-          sortable: true
+          sortable: false
         },
         {
           text: "Тип",
           align: "left",
-          value: "paymentType.name",
-          sortable: true
+          value: "payment_type",
+          sortable: false
         },
         {
           text: "Менеджер",
           align: "left",
-          value: "manager.name",
-          sortable: true
+          value: "created_by.name",
+          sortable: false
         },
         {
           text: "Комментарий",
           align: "left",
-          value: "description",
-          sortable: true
+          value: "comment",
+          sortable: false
         },
         {
           text: "",
@@ -326,15 +300,66 @@ export default {
         }
       ],
       usersList: [],
+      paymentTypes: [
+        {
+          id: 'Комиссия',
+          name: 'Комиссия',
+        },
+        {
+          id: 'cashless',
+          name: 'Газпром',
+        },
+        {
+          id: 'cashless',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'Расходы',
+          name: 'Расходы',
+        },
+        {
+          id: 'Инкассация',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
+        },
+      ],
+      clientsList: [],
       dialogForm: false,
-      editedId: 0,
+      editedItem: {},
       pagination: {
         sortBy: "id",
         rowsPerPage: -1,
         descending: true
       },
       take: 20,
-      page: 0,
+      page: 1,
       tableLoading: false,
       paymentsList: [],
       selectedManagerId: null,
@@ -344,138 +369,6 @@ export default {
       suggestions: []
     };
   },
-  apollo: {
-    paymentsList: {
-      query: gql`
-        query PaymentsList(
-          $managerId: bigint_comparison_exp
-          $paymentTypeId: bigint_comparison_exp
-          $clientId: bigint
-          $startDate: timestamptz
-          $endDate: timestamptz
-          $limit: Int
-          $offset: Int
-          $orderBy: [payments_order_by!]
-        ) {
-          paymentsList: payments(
-            order_by: $orderBy
-            where: {
-              _and: [
-                { managerId: $managerId }
-                { paymentTypeId: $paymentTypeId }
-                { clientId: { _eq: $clientId } }
-                { created_at: { _gte: $startDate } }
-                { created_at: { _lte: $endDate } }
-              ]
-            }
-            limit: $limit
-            offset: $offset
-          ) {
-            id
-            client {
-              name
-              phone
-              bill
-            }
-            manager {
-              name
-            }
-            paymentType {
-              id
-              name
-            }
-            parent {
-              paymentType {
-                name
-              }
-            }
-            creationDate: created_at
-            description
-            amount
-          }
-        }
-      `,
-      variables() {
-        return {
-          managerId: this.selectedManagerId
-            ? {
-                _eq: this.selectedManagerId
-              }
-            : undefined,
-          paymentTypeId: this.filter.paymentType
-            ? {
-                _eq: this.filter.paymentType
-              }
-            : {
-              _neq: 15,
-            },
-          clientId:
-            this.filter.clientId >= 0 && this.filter.clientId !== ""
-              ? this.filter.clientId
-              : undefined,
-          startDate: `${this.filter.dateStart} 00:00:00`,
-          endDate: `${this.filter.dateEnd} 23:59:59`,
-          offset: this.page * this.take,
-          limit: this.take,
-          orderBy: this.orderBy
-        };
-      }
-    },
-    usersList: {
-      query: gql`
-        query {
-          usersList: users(
-            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
-          ) {
-            id
-            name
-          }
-        }
-      `
-    },
-    paymentTypes: {
-      query: gql`
-        query {
-          paymentTypes: paymentTypes(where: { active: { _eq: true } }) {
-            id
-            name
-          }
-        }
-      `
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($name: String) {
-          clientsList: clients(
-            where: {
-              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
-            }
-            limit: 50
-          ) {
-            id
-            name
-            type: clientType {
-              id
-            }
-            discountPercent: sale
-          }
-        }
-      `,
-      update({ clientsList: data }) {
-        this.suggestions = [{ data }];
-
-        return data;
-      },
-      variables() {
-        return {
-          name: this.queryName
-        };
-      },
-      skip() {
-        return this.skipClientsQuery;
-      }
-    }
-  },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(
@@ -483,160 +376,103 @@ export default {
       );
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    orderBy() {
-      const sortFields = this.pagination.sortBy.split(".");
-      let sortObject = {};
-      const sortOrder = this.pagination.descending
-        ? "desc_nulls_last"
-        : "asc_nulls_last";
-
-      if (sortFields.length === 3) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: {
-              [sortFields[2]]: sortOrder
-            }
-          }
-        };
-      } else if (sortFields.length === 2) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: sortOrder
-          }
-        };
-      } else {
-        sortObject[sortFields[0]] = sortOrder;
-      }
-
-      return sortObject;
-    }
   },
   methods: {
-    changeSort(column) {
-      this.paymentsList = [];
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-    },
-    // filterByManager(filter) {
-    //   this.filterManagerStatus = filter;
-    // },
-    onSelected(item) {
-      this.client = item;
-      this.filter.clientId = item.id;
-    },
-    onInputChange(text) {
-      this.queryName = `%${text}%`;
-      this.skipClientsQuery = false;
+    getManagerList() {
+      const url = 'users';
 
-      if (text === "") {
-        this.filter.clientId = "";
-      }
+      axios
+        .get(url)
+        .then((response) => {
+          this.usersList = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
-    handleSelectedManagerChange(selectedId) {
-      this.selectedManagerId = selectedId !== 0 ? selectedId : undefined;
-      this.page = 0;
-    },
-    getPaymentsList(loading = true) {
-      if (loading) {
-        this.tableLoading = false;
-        this.reviewsList = [];
-      }
+    getClients() {
+      const url = 'clients';
 
-      const orderFilter = {
-        creationDate: []
+      axios
+        .get(url)
+        .then((response) => {
+          this.clientsList = response.data;;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    customFilter() {
+      this.page = 1;
+      this.getPaymentsList();
+    },
+    getPaymentsList() {
+      const loadData = this.loadingData.find(item => item.id === 'payments');
+      const url = 'payments';
+
+      const propsItem = {
+        page: this.page,
+        page_limit: this.take,
       };
 
-      Object.keys(this.filter).forEach(key => {
-        const val = this.filter[key];
-
-        if (val) {
-          if (key === "dateStart") {
-            orderFilter.creationDate[0] = `${val} 00:00:00`;
-          } else if (key === "dateEnd") {
-            orderFilter.creationDate[1] = `${val} 23:59:59`;
-          } else {
-            orderFilter[key] = val;
-          }
+      Object.keys(this.filter).forEach((key) => {
+        if (this.filter[key]) {
+          propsItem[key] = this.filter[key];
         }
       });
 
-      const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = this.pagination.descending
-        ? "desc"
-        : "asc";
+      axios
+        .get(url, {
+          params: propsItem,
+        })
+        .then((response) => {
+          this.paymentsList = response.data;
 
-      const itemParams = {
-        type: "payments",
-        sort: {
-          id: "desc"
-        },
-        filter: orderFilter,
-        skip: this.page * this.take,
-        take: this.take
-      };
-
-      const successData = "Оплаты получены!";
-      const errorData = "Ошибка получения оплат!";
-
-      const loadData = this.loadingData.find(
-        item => item.id === itemParams.type
-      );
-      loadData.title = successData;
-      loadData.loading = false;
-
-      // this.$store
-      //   .dispatch("getItemsList", itemParams)
-      //   .then((response) => {
-      //     this.paymentsList = response;
-      //     this.tableLoading = false;
-      //
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = successData;
-      //     loadData.loading = false;
-      //   })
-      //   .catch(() => {
-      //     const loadData = this.loadingData.find(
-      //       item => item.id === itemParams.type
-      //     );
-      //     loadData.title = errorData;
-      //     loadData.error = true;
-      //   });
+          loadData.title = 'Оплаты получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения оплат!';
+          loadData.error = true;
+          console.log(error);
+        });
     },
     closeDialog() {
       this.dialogForm = false;
-      this.editedId = 0;
+      this.editedItem = {};
     },
-    editItem(id) {
-      this.editedId = +id;
+    editItem(item) {
+      this.editedItem = item;
       this.dialogForm = true;
     },
     changeShowElem() {
       localStorage.setItem("countElemPage", this.take);
       this.$store.commit("setCountElemPage", this.take);
-      this.page = 0;
+      this.page = 1;
+      this.getPaymentsList();
     },
     prevPage() {
       this.page -= 1;
+      this.getPaymentsList();
     },
     nextPage() {
       this.page += 1;
-    }
+      this.getPaymentsList();
+    },
   },
   mounted() {
+    this.getPaymentsList();
+    this.getManagerList();
+    this.getClients();
+
     const date = new Date();
     const dateEnd = date.toISOString().split("T")[0];
 
     date.setDate(date.getDate() - 30);
     const dateStart = date.toISOString().split("T")[0];
 
-    this.filter.dateStart = dateStart;
-    this.filter.dateEnd = dateEnd;
+    this.filter.start_date = dateStart;
+    this.filter.end_date = dateEnd;
   }
 };
 </script>

@@ -40,44 +40,44 @@
             ></v-text-field>
             <v-text-field
               label="Менеджер"
-              :value="editedItem.user.name"
+              :value="editedItem.created_by.name"
               readonly
             ></v-text-field>
             <v-text-field
               label="Оформление"
-              :value="`${editedItem.decorCost} (${editedItem.decorPercent}%)`"
+              :value="`${editedItem.decor_cost} (${editedItem.decor_percent}%)`"
               readonly
             ></v-text-field>
             <v-text-field
               label="Оформление (дополнительное)"
-              :value="editedItem.sumDecorAdditional"
+              :value="editedItem.sum_decor_additional"
               readonly
-              v-if="editedItem.sumDecorAdditional"
+              v-if="editedItem.sum_decor_additional"
             ></v-text-field>
             <v-text-field
               label="Скидка"
-              :value="`${editedItem.sumSale} (${editedItem.salePercent}%)`"
+              :value="`${editedItem.sum_sale} (${editedItem.sale_percent}%)`"
               readonly
             ></v-text-field>
             <v-text-field
               label="Доставка"
-              :value="editedItem.deliveryCost"
+              :value="editedItem.delivery_cost"
               readonly
             ></v-text-field>
             <v-textarea
               label="Комментарий к доставке"
               auto-grow
-              :value="editedItem.deliveryComment"
+              :value="editedItem.comment"
               row-height="15"
               readonly
             ></v-textarea>
             <v-text-field
               label="Заказ"
-              :value="editedItem.orderBouquet.orderId"
+              :value="editedItem.order_id"
               readonly
-              v-if="editedItem.orderBouquet"
+              v-if="editedItem.order_id"
             ></v-text-field>
-            <v-text-field
+            <!-- <v-text-field
               label="Букет из заказа"
               :value="editedItem.orderBouquet.name + ' - ' + editedItem.orderBouquet.count + 'шт'"
               readonly
@@ -90,7 +90,7 @@
               :rules="[v => !!v || 'Заполните поле']"
               v-model="editedItem.orderBouquet.place"
               v-if="editedItem.orderBouquet"
-            ></v-textarea>
+            ></v-textarea> -->
           </v-flex>
 
           <v-flex
@@ -102,29 +102,30 @@
               <v-card
                 :key="index"
                 flat
+                v-if="payment.payment_type"
               >
                 <v-text-field
                   label="Дата"
-                  :value="payment.created_at"
+                  :value="new Date(payment.created_at).toLocaleString()"
                   readonly
                 ></v-text-field>
                 <v-text-field
                   label="Стоимость"
-                  :value="(payment.paymentType.id === 5) ? `-${payment.amount}` : payment.amount"
+                  :value="payment.amount"
                   readonly
                 ></v-text-field>
                 <v-text-field
                   label="Тип оплаты"
-                  :value="payment.paymentType.name"
+                  :value="paymentTypes.find((item) => item.id === payment.payment_type).name"
                   readonly
                 ></v-text-field>
                 <v-textarea
                   label="Комментарий к оплате"
                   auto-grow
-                  :value="payment.description"
+                  :value="payment.comment"
                   row-height="20"
                   readonly
-                  v-if="payment.description"
+                  v-if="payment.comment"
                 ></v-textarea>
               </v-card>
             </template>
@@ -133,19 +134,20 @@
             xs12
             px-2
             mt-4
+            v-if="editedItem.goods.length"
           >
             <p class="title mb-4">Товары</p>
             <v-data-table
               :headers="headersTableGoods"
-              :items="editedItem.bouquetGoodsMappings"
+              :items="editedItem.goods"
               hide-actions
               no-data-text="Товаров не найдено"
               no-results-text="Товаров не найдено"
             >
               <template slot="items" slot-scope="props">
                 <td>{{ props.item.good.name }}</td>
-                <td>{{ props.item.good.price }}</td>
-                <td>{{ props.item.goodsCount }}</td>
+                <td>{{ props.item.original_price }}</td>
+                <td>{{ props.item.count }}</td>
               </template>
             </v-data-table>
           </v-flex>
@@ -158,19 +160,17 @@
           @click.native="cancel()"
         >Отмена</v-btn>
         <v-spacer></v-spacer>
-        <v-btn
+        <!-- <v-btn
           color="info"
           @click="submitForm()"
-        >Сохранить</v-btn>
+        >Сохранить</v-btn> -->
       </v-card-actions>
     </v-form>
   </v-card>
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
+import axios from 'axios';
 
 export default {
   props: {
@@ -193,7 +193,7 @@ export default {
         {
           text: 'Стоимость',
           align: 'left',
-          value: 'good.price',
+          value: 'original_price',
         },
         {
           text: 'Количество',
@@ -203,124 +203,83 @@ export default {
       ],
       order: {},
       place: '',
+      paymentTypes: [
+        {
+          id: 'Комиссия',
+          name: 'Комиссия',
+        },
+        {
+          id: 'cashless',
+          name: 'Газпром',
+        },
+        {
+          id: 'cashless',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'Расходы',
+          name: 'Расходы',
+        },
+        {
+          id: 'Инкассация',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
+        },
+      ],
     };
   },
-  apollo: {
-    bouquetsList: {
-      query: gql`
-        query bouquetsList(
-          $id: bigint
-        ) {
-          bouquetsList: bouquets(
-            where: {
-              id: { _eq: $id }
-            }
-          ) {
-            id
-            client {
-              name
-              phone
-            }
-            florist {
-              name
-            }
-            user {
-              name
-            }
-            decorCost
-            decorPercent
-            sumDecorAdditional
-            sumSale
-            salePercent
-            deliveryCost
-            deliveryComment
-            orderBouquet {
-              orderId
-              name
-              count
-              place
-            }
-            payments {
-              created_at
-              amount
-              paymentType {
-                name
-                id
-              }
-              description
-            }
-            bouquetGoodsMappings {
-              good {
-                price
-                name
-              }
-              goodsCount
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          id: this.id,
-        };
-      },
-      update({ bouquetsList }) {
-        this.editedItem = bouquetsList.shift();
-        this.editedItem.payments = this.editedItem.payments.map((item) => {
-          item.created_at = this.formatDate(item.created_at, 'dd.MM.yyyy HH:mm:ss');
-          return item;
-        });
-        this.loading = false;
-      },
-    },
-  },
   methods: {
+    getItem() {
+      const url = `bouquets/${this.id}`;
+
+      axios
+        .get(url)
+        .then((response) => {
+          const item = response.data;
+
+          this.editedItem = item;
+
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
     cancel() {
       this.editedItem = {};
       this.createdSuccess = false;
       this.$emit('cancel');
     },
-    formatDate(date, dateFormat) {
-      return format(new Date(date), dateFormat, { locale: ru });
-    },
-    submitForm() {
-      const validate = this.$refs.form.validate();
-      if (validate) {
-        const bouquetOrderIndex = this.order.bouquets.findIndex(item => item.id === this.editedItem.orderBouquet.id);
-        this.order.bouquets[bouquetOrderIndex].place = this.place;
-
-        const propsItem = Object.assign({}, this.order);
-        delete propsItem.id;
-
-        const itemParams = {
-          type: 'orders',
-          id: this.order.id,
-          props: propsItem,
-        };
-
-        this.$store.dispatch('updateItem', itemParams).then(() => {
-          this.createdSuccess = true;
-          setTimeout(() => {
-            this.$emit('cancel');
-          }, 1000);
-        });
-        // const propsItem = Object.assign({}, this.editedItem);
-        // delete propsItem.id;
-
-        // const itemParams = {
-        //   type: 'payments',
-        //   id: this.editedItem.id,
-        //   props: propsItem,
-        // };
-
-        // this.$store.dispatch('updateItem', itemParams).then(() => {
-        //   this.createdSuccess = true;
-        //   setTimeout(() => {
-        //     this.$emit('cancel');
-        //   }, 1000);
-        // });
-      }
-    },
   },
+  mounted() {
+    this.getItem();
+  }
 };
 </script>

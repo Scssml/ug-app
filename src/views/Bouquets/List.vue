@@ -28,94 +28,6 @@
         <v-card-title>
           <v-flex>
             <v-layout row wrap>
-              <!-- <v-text-field
-                v-model="search"
-                prepend-icon="search"
-                label="Поиск"
-                single-line
-                hide-details
-              ></v-text-field> -->
-
-              <!-- <v-flex
-                xs2
-                class="px-2"
-              >
-                <v-menu
-                  :close-on-content-click="false"
-                  v-model="dataStartPicker"
-                  :nudge-right="40"
-                  lazy
-                  transition="scale-transition"
-                  offset-y
-                  full-width
-                  min-width="290px"
-                >
-                  <v-text-field
-                    slot="activator"
-                    label="Дата (с)"
-                    v-model="filter.dateStart"
-                    prepend-icon="event"
-                    hide-details
-                    readonly
-                  ></v-text-field>
-                  <v-date-picker
-                    v-model="filter.dateStart"
-                    @input="dataStartPicker = false"
-                    no-title
-                    scrollable
-                    locale="ru-ru"
-                    first-day-of-week="1"
-                    :max="(!!filter.dateEnd) ? filter.dateEnd : undefined"
-                    @change="customFilter()"
-                  ></v-date-picker>
-                </v-menu>
-              </v-flex>
-              <v-flex
-                xs2
-                class="px-2"
-              >
-                <v-menu
-                  :close-on-content-click="false"
-                  v-model="dataEndPicker"
-                  :nudge-right="40"
-                  lazy
-                  transition="scale-transition"
-                  offset-y
-                  full-width
-                  min-width="290px"
-                >
-                  <v-text-field
-                    slot="activator"
-                    label="Дата (по)"
-                    v-model="filter.dateEnd"
-                    prepend-icon="event"
-                    hide-details
-                    readonly
-                  ></v-text-field>
-                  <v-date-picker
-                    v-model="filter.dateEnd"
-                    @input="dataEndPicker = false"
-                    no-title
-                    locale="ru-ru"
-                    scrollable
-                    first-day-of-week="1"
-                    :min="(!!filter.dateStart) ? filter.dateStart : undefined"
-                    @change="customFilter()"
-                  ></v-date-picker>
-                </v-menu>
-              </v-flex> -->
-
-              <v-flex xs2 class="px-2">
-                <v-select
-                  label="Тип"
-                  :items="[{ id: 0, name: 'Все' }].concat(paymentTypes)"
-                  item-text="name"
-                  item-value="id"
-                  v-model="filter.paymentType"
-                  hide-details
-                ></v-select>
-              </v-flex>
-
               <v-flex xs2 class="px-2">
                 <v-menu
                   :close-on-content-click="false"
@@ -130,19 +42,20 @@
                   <v-text-field
                     slot="activator"
                     label="Дата (с)"
-                    v-model="filter.dateStart"
+                    v-model="filter.start_date"
                     prepend-icon="event"
                     hide-details
                     readonly
                   ></v-text-field>
                   <v-date-picker
-                    v-model="filter.dateStart"
+                    v-model="filter.start_date"
                     @input="dataStartPicker = false"
                     no-title
                     scrollable
                     locale="ru-ru"
                     first-day-of-week="1"
-                    :max="!!filter.dateEnd ? filter.dateEnd : undefined"
+                    :max="!!filter.end_date ? filter.end_date : undefined"
+                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -160,19 +73,20 @@
                   <v-text-field
                     slot="activator"
                     label="Дата (по)"
-                    v-model="filter.dateEnd"
+                    v-model="filter.end_date"
                     prepend-icon="event"
                     hide-details
                     readonly
                   ></v-text-field>
                   <v-date-picker
-                    v-model="filter.dateEnd"
+                    v-model="filter.end_date"
                     @input="dataEndPicker = false"
                     no-title
                     locale="ru-ru"
                     scrollable
                     first-day-of-week="1"
-                    :min="!!filter.dateStart ? filter.dateStart : undefined"
+                    :min="!!filter.start_date ? filter.start_date : undefined"
+                    @change="customFilter()"
                   ></v-date-picker>
                 </v-menu>
               </v-flex>
@@ -180,38 +94,25 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
-                  :items="[{ id: 0, name: 'Все' }].concat(usersList)"
+                  :items="[{ id: null, name: 'Все' }].concat(usersList)"
                   item-text="name"
                   item-value="id"
-                  v-model="filter.user"
+                  v-model="filter.manager_id"
                   hide-details
-                  @change="handleManagerChange($event)"
+                  @change="customFilter()"
                 ></v-select>
               </v-flex>
 
               <v-flex xs3 class="px-2">
-                <autosuggest
-                  :suggestions="suggestions"
-                  placeholder="Клиенты"
-                  :value="client.name"
-                  @onChange="onInputChange"
-                  @onSelect="onSelected"
-                  class="mt-3 view-filter"
-                />
-                <!-- <v-autocomplete
+                <v-select
                   label="Клиент"
-                  :items="
-                    [{ id: 0, name: 'Все', phone: '' }].concat(clientsList)
-                  "
-                  :filter="clientsFilter"
+                  :items="[{ id: null, name: 'Все' }].concat(clientsList)"
                   item-text="name"
                   item-value="id"
-                  v-model="filter.client"
+                  v-model="filter.client_id"
                   hide-details
-                  class="mb-4"
-                  no-data-text="Не надено"
-                  @change="handleClientChange($event)"
-                ></v-autocomplete> -->
+                  @change="customFilter()"
+                ></v-select>
               </v-flex>
             </v-layout>
           </v-flex>
@@ -244,32 +145,12 @@
         <v-data-table
           :headers="headersTable"
           :items="bouquetsList"
-          :disable-initial-sort="true"
           hide-actions
           no-data-text="Букетов не найдено"
           no-results-text="Букетов не найдено"
           :search="search"
           :pagination.sync="pagination"
-          :loading="!!$apollo.queries.bouquetsList.loading"
         >
-          <template slot="headers" slot-scope="props">
-            <tr>
-              <th
-                v-for="header in props.headers"
-                :key="header.text"
-                class="text-xs-left column"
-                :class="[
-                  'column sortable',
-                  pagination.descending ? 'desc' : 'asc',
-                  header.value === pagination.sortBy ? 'active' : ''
-                ]"
-                @click="header.sortable ? changeSort(header.value) : ''"
-              >
-                <v-icon small v-if="header.sortable">arrow_upward</v-icon>
-                {{ header.text }}
-              </th>
-            </tr>
-          </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-right" style="width: 30px;">
               {{ props.item.id }}
@@ -277,26 +158,28 @@
             <td>
               {{ props.item.client.name }}
               <br />{{ props.item.client.phone }}
-              <template v-if="props.item.orderId">
-                <br />Заказ: {{ props.item.orderId }}
+              <template v-if="props.item.order_id">
+                <br />Заказ: {{ props.item.order_id }}
               </template>
             </td>
             <td>{{ props.item.florist ? props.item.florist.name : "" }}</td>
-            <td>{{ props.item.user.name }}</td>
+            <td>{{ props.item.created_by.name }}</td>
             <td>
               {{
                 props.item.payments.reduce((acc, item) => {
-                  return acc + (item.paymentType.id === 5) ? -1 * item.amount : +item.amount;
+                  return acc + item.amount;
                 }, 0)
               }}р <br />{{
                 new Date(
                   props.item.payments[
                     props.item.payments.length - 1
-                  ].creationDate
+                  ].created_at
                 ).toLocaleString()
               }}
               <br />{{
-                props.item.payments.map(p => p.paymentType.name).join(", ")
+                props.item.payments.map(p => {
+                  return (p.payment_type) ? paymentTypes.find((item) => item.id === p.payment_type).name : '';
+                }).join(", ")
               }}
             </td>
             <td class="text-xs-right" style="width: 200px;">
@@ -328,7 +211,7 @@
               >
                 <v-icon>loop</v-icon>
               </v-btn>
-              <v-btn
+              <!-- <v-btn
                 flat
                 icon
                 @click="cancelItem(props.item.id)"
@@ -339,7 +222,7 @@
                 title="Возврат"
               >
                 <v-icon>delete</v-icon>
-              </v-btn>
+              </v-btn> -->
             </td>
           </template>
         </v-data-table>
@@ -357,7 +240,7 @@
               small
               color="info"
               class="ml-3"
-              :disabled="page === 0"
+              :disabled="page === 1"
               @click="prevPage()"
             >
               <v-icon dark>keyboard_arrow_left</v-icon>
@@ -379,18 +262,16 @@
 </template>
 
 <script>
+import axios from 'axios';
 import BouquetEdit from "./edit.vue";
 import BouquetCancel from "./cancel.vue";
 import BouquetChangeClient from "./changeClient.vue";
-import Autosuggest from "../../components/Autosuggest";
-import gql from "graphql-tag";
 
 export default {
   name: "Bouquets",
   components: {
     BouquetEdit,
     BouquetCancel,
-    Autosuggest,
     BouquetChangeClient,
   },
   data() {
@@ -399,17 +280,16 @@ export default {
         {
           title: "Получение букетов",
           error: false,
-          loading: false,
+          loading: true,
           color: "cyan",
           id: "bouquets"
         }
       ],
       filter: {
-        user: 0,
-        clientId: "",
-        dateStart: undefined,
-        dateEnd: undefined,
-        paymentType: 0
+        manager_id: null,
+        start_date: null,
+        end_date: null,
+        client_id: null,
       },
       search: "",
       headersTable: [
@@ -417,30 +297,30 @@ export default {
           text: "ID",
           align: "right",
           value: "id",
-          sortable: true
+          sortable: false
         },
         {
           text: "Клиент",
           align: "left",
           value: "client.name",
-          sortable: true
+          sortable: false
         },
         {
           text: "Флорист",
           align: "left",
           value: "florist.name",
-          sortable: true
+          sortable: false
         },
         {
           text: "Менеджер",
           align: "left",
-          value: "user.name",
-          sortable: true
+          value: "created_by.name",
+          sortable: false
         },
         {
           text: "Оплата",
           align: "left",
-          value: "payments.amount",
+          value: "amount",
           sortable: false
         },
         {
@@ -449,6 +329,56 @@ export default {
           sortable: false,
           value: "action"
         }
+      ],
+      paymentTypes: [
+        {
+          id: 'Комиссия',
+          name: 'Комиссия',
+        },
+        {
+          id: 'cashless',
+          name: 'Газпром',
+        },
+        {
+          id: 'cashless',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'Расходы',
+          name: 'Расходы',
+        },
+        {
+          id: 'Инкассация',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
+        },
       ],
       dialogForm: false,
       editDialog: false,
@@ -464,7 +394,7 @@ export default {
         descending: true
       },
       take: 20,
-      page: 0,
+      page: 1,
       tableLoading: false,
       skipQuery: false,
       selectedClientId: 0,
@@ -477,159 +407,6 @@ export default {
       dataEndPicker: false
     };
   },
-  apollo: {
-    bouquetsList: {
-      query: gql`
-        query BouquetsList(
-          $clientId: bigint
-          $selectedManagerId: bigint
-          $paymentTypeId: [bigint!]
-          $startDate: timestamptz
-          $endDate: timestamptz
-          $limit: Int
-          $offset: Int
-          $orderBy: [bouquets_order_by!]
-        ) {
-          bouquetsList: bouquets(
-            order_by: $orderBy
-            limit: $limit
-            offset: $offset
-            where: {
-              _and: [
-                { clientId: { _eq: $clientId } }
-                { user: { id: { _eq: $selectedManagerId } } }
-                { payments: { paymentTypeId: { _in: $paymentTypeId } } }
-                { created_at: { _gte: $startDate } }
-                { created_at: { _lte: $endDate } }
-                { orderBouquetId: { _is_null: false } }
-              ]
-            }
-          ) {
-            id
-            decorCost
-            decorPercent
-            sumSale
-            salePercent
-            deliveryCost
-            comment
-            client {
-              id
-              name
-              phone
-              bill
-            }
-            orderBouquet {
-              name
-              count
-              order {
-                id
-              }
-            }
-            florist {
-              name
-            }
-            user {
-              id
-              name
-            }
-            payments {
-              amount
-              creationDate: created_at
-              paymentType {
-                name
-                id
-              }
-            }
-            goods: bouquetGoodsMappings {
-              good {
-                name
-                price
-              }
-              count: goodsCount
-            }
-          }
-        }
-      `,
-      variables() {
-        return {
-          selectedManagerId:
-            this.selectedManagerId !== 0 ? this.selectedManagerId : undefined,
-          clientId:
-            this.filter.clientId >= 0 && this.filter.clientId !== ""
-              ? this.filter.clientId
-              : undefined,
-          paymentTypeId:
-            this.filter.paymentType !== 0 ? [this.filter.paymentType] : [1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 14],
-          startDate: this.filter.dateStart
-            ? `${this.filter.dateStart} 00:00:00`
-            : undefined,
-          endDate: this.filter.dateEnd
-            ? `${this.filter.dateEnd} 23:59:59`
-            : undefined,
-          offset: this.page * this.take,
-          limit: this.take,
-          orderBy: this.orderBy
-        };
-      },
-      skip() {
-        return this.skipQuery;
-      },
-    },
-    paymentTypes: {
-      query: gql`
-        query {
-          paymentTypes: paymentTypes(where: { active: { _eq: true } }) {
-            id
-            name
-          }
-        }
-      `
-    },
-    clientsList: {
-      query: gql`
-        query ClientsList($name: String) {
-          clientsList: clients(
-            where: {
-              _or: [{ name: { _ilike: $name } }, { phone: { _ilike: $name } }]
-            }
-            limit: 50
-          ) {
-            id
-            name
-            type: clientType {
-              id
-            }
-            discountPercent: sale
-          }
-        }
-      `,
-      update({ clientsList: data }) {
-        this.suggestions = [{ data }];
-
-        return data;
-      },
-      variables() {
-        return {
-          name: this.queryName
-        };
-      },
-      skip() {
-        return this.skipClientsQuery;
-      }
-    },
-    usersList: {
-      query: gql`
-        query {
-          usersList: users(
-            where: { _or: [{ groupId: { _eq: 1 } }, { groupId: { _eq: 2 } }] }
-          ) {
-            id
-            name
-          }
-        }
-      `
-    }
-  },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(
@@ -637,62 +414,34 @@ export default {
       );
       return loadData.length === this.loadingData.length ? 0 : 1;
     },
-    orderBy() {
-      const sortFields = this.pagination.sortBy.split(".");
-      let sortObject = {};
-      const sortOrder = this.pagination.descending
-        ? "desc_nulls_last"
-        : "asc_nulls_last";
-
-      if (sortFields.length === 3) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: {
-              [sortFields[2]]: sortOrder
-            }
-          }
-        };
-      } else if (sortFields.length === 2) {
-        sortObject = {
-          [sortFields[0]]: {
-            [sortFields[1]]: sortOrder
-          }
-        };
-      } else {
-        sortObject[sortFields[0]] = sortOrder;
-      }
-
-      return sortObject;
-    }
   },
   methods: {
-    changeSort(column) {
-      this.bouquetsList = [];
-      if (this.pagination.sortBy === column) {
-        this.pagination.descending = !this.pagination.descending;
-      } else {
-        this.pagination.sortBy = column;
-        this.pagination.descending = false;
-      }
-    },
-    onSelected(item) {
-      this.client = item;
-      this.filter.clientId = item.id;
-    },
-    onInputChange(text) {
-      this.queryName = `%${text}%`;
-      this.skipClientsQuery = false;
+    getManagerList() {
+      const url = 'users';
 
-      if (text === "") {
-        this.filter.clientId = "";
-      }
+      axios
+        .get(url)
+        .then((response) => {
+          this.usersList = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
-    handleManagerChange(managerId) {
-      this.selectedManagerId = managerId !== 0 ? managerId : undefined;
-      this.page = 0;
+    getClients() {
+      const url = 'clients';
+
+      axios
+        .get(url)
+        .then((response) => {
+          this.clientsList = response.data;;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
-    customFilter: function customFilter() {
-      this.page = 0;
+    customFilter() {
+      this.page = 1;
       this.getBouquetsList();
     },
     printDoc(id) {
@@ -701,83 +450,34 @@ export default {
       window.open(url, "_blank");
     },
     getBouquetsList(loading = true) {
-      if (loading) {
-        this.tableLoading = true;
-        this.bouquetsList = [];
-      }
+      const loadData = this.loadingData.find(item => item.id === 'bouquets');
+      const url = 'bouquets';
 
-      const orderFilter = {
-        created_at: []
+      const propsItem = {
+        page: this.page,
+        page_limit: this.take,
       };
 
-      Object.keys(this.filter).forEach(key => {
-        const val = this.filter[key];
-
-        if (val) {
-          if (key === "dateStart") {
-            orderFilter.created_at[0] = `${val} 00:00:00`;
-          } else if (key === "dateEnd") {
-            orderFilter.created_at[1] = `${val} 23:59:59`;
-          } else {
-            orderFilter[key] = val;
-          }
+      Object.keys(this.filter).forEach((key) => {
+        if (this.filter[key]) {
+          propsItem[key] = this.filter[key];
         }
       });
 
-      const sortSettings = {};
-      sortSettings[this.pagination.sortBy] = this.pagination.descending
-        ? "desc"
-        : "asc";
+      axios
+        .get(url, {
+          params: propsItem,
+        })
+        .then((response) => {
+          this.bouquetsList = response.data;
 
-      const itemParams = {
-        type: "bouquets",
-        sort: {
-          id: "desc"
-        },
-        filter: orderFilter,
-        skip: this.page * this.take,
-        take: this.take
-      };
-
-      const successData = "Букеты получены!";
-      const errorData = "Ошибка получения букетов!";
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.bouquetsList = response;
-          this.tableLoading = false;
-
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = successData;
+          loadData.title = 'Букеты получены!';
           loadData.loading = false;
         })
-        .catch(() => {
-          const loadData = this.loadingData.find(
-            item => item.id === itemParams.type
-          );
-          loadData.title = errorData;
+        .catch((error) => {
+          loadData.title = 'Ошибка получения букетов!';
           loadData.error = true;
-        });
-    },
-    getUsersList() {
-      const itemParams = {
-        type: "users",
-        filter: {
-          active: true,
-          group: [1, 2]
-        }
-      };
-
-      this.$store
-        .dispatch("getItemsList", itemParams)
-        .then(response => {
-          this.usersList = response;
-        })
-        .catch(() => {
-          console.log("error");
+          console.log(error);
         });
     },
     closeDialog() {
@@ -786,6 +486,8 @@ export default {
       this.cancelDialog = false;
       this.editDialog = false;
       this.changeClientDialog = false;
+
+      // this.getBouquetsList();
     },
     editItem(id) {
       this.editedId = +id;
@@ -805,30 +507,34 @@ export default {
     changeShowElem() {
       localStorage.setItem("countElemPage", this.take);
       this.$store.commit("setCountElemPage", this.take);
-      this.page = 0;
+      this.page = 1;
+      this.getBouquetsList();
     },
     prevPage() {
       this.page -= 1;
+      this.getBouquetsList();
     },
     nextPage() {
       this.page += 1;
+      this.getBouquetsList();
     }
   },
   mounted() {
+    this.getBouquetsList();
+    this.getManagerList();
+    this.getClients();
+
     const date = new Date();
     const dateEnd = date.toISOString().split("T")[0];
 
     date.setDate(date.getDate() - 30);
     const dateStart = date.toISOString().split("T")[0];
 
-    this.filter.dateStart = dateStart;
-    this.filter.dateEnd = dateEnd;
+    this.filter.start_date = dateStart;
+    this.filter.end_date = dateEnd;
 
-    if (this.$route.query.clientId && this.$route.query.clientName) {
-      this.filter.clientId = +this.$route.query.clientId;
-      this.client = {
-        name: this.$route.query.clientName
-      };
+    if (this.$route.query.clientId) {
+      this.filter.client_id = +this.$route.query.clientId;
       this.$router.replace({ query: {} });
     }
   }

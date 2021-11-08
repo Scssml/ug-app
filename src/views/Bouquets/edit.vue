@@ -30,7 +30,7 @@
             <p class="title mb-4">Букет</p>
             <v-text-field
               label="Клиент"
-              :value="`${editedItem.client.name} (${editedItem.client.phone})`"
+              :value="(editedItem.client) ? `${editedItem.client.name} (${editedItem.client.phone})` : ''"
               readonly
             ></v-text-field>
             <v-text-field

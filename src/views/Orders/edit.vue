@@ -343,6 +343,7 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.is_recipient_client"
+                  :rules="[v => (!!v) || 'Заполните поле']"
                   @change="handleDirty"
                 ></v-text-field>
 
@@ -352,6 +353,7 @@
                   hide-details
                   class="mb-4"
                   v-if="!editedItem.is_recipient_client"
+                  :rules="[v => (!!v) || 'Заполните поле']"
                   @change="handleDirty"
                 ></v-text-field>
 
@@ -369,7 +371,6 @@
                   v-model="editedItem.entrance"
                   hide-details
                   class="mb-4"
-                  :rules="[v => !!v || 'Заполните поле']"
                   @change="handleDirty"
                 ></v-text-field>
 
@@ -932,6 +933,9 @@ export default {
           propsItem.floor = '';
           propsItem.entrance = '';
           propsItem.coordinates = '';
+          propsItem.recipient_id = 0;
+          propsItem.addressee_name = '';
+          propsItem.addressee_phone = '';
         }
 
         propsItem.order_source_type = propsItem.order_source_type.join(', ');

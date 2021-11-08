@@ -156,14 +156,21 @@
               {{ props.item.id }}
             </td>
             <td>
-              {{ props.item.client.name }}
-              <br />{{ props.item.client.phone }}
+              <template v-if="props.item.client">
+                {{ props.item.client.name }}
+                <br />{{ props.item.client.phone }}
+              </template>
+
               <template v-if="props.item.order_id">
                 <br />Заказ: {{ props.item.order_id }}
               </template>
             </td>
-            <td>{{ props.item.florist ? props.item.florist.name : "" }}</td>
-            <td>{{ props.item.created_by.name }}</td>
+            <td>
+              {{ props.item.florist ? props.item.florist.name : "" }}
+            </td>
+            <td>
+              {{ props.item.created_by.name }}
+            </td>
             <td>
               {{
                 props.item.payments.reduce((acc, item) => {

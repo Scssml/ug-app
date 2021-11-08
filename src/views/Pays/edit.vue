@@ -25,7 +25,7 @@
         ></v-text-field>
         <v-text-field
           label="Клиент"
-          :value="`${item.client.name} (${item.client.phone})`"
+          :value="(item.client) ? `${item.client.name} (${item.client.phone})` : ''"
           readonly
         ></v-text-field>
         <v-text-field
@@ -35,7 +35,7 @@
         ></v-text-field>
         <v-text-field
           label="Тип оплаты"
-          :value="paymentTypes.find((elem) => elem.id === item.payment_type).name"
+          :value="(item.payment_type) ? paymentTypes.find((elem) => elem.id === item.payment_type).name : ''"
           readonly
         ></v-text-field>
         <!-- <v-text-field

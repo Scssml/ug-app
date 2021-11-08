@@ -164,10 +164,12 @@
             </td>
             <td>{{ new Date(props.item.created_at).toLocaleString() }}</td>
             <td>
-              {{ props.item.client && props.item.client.name }}
-              <br />{{ props.item.client && props.item.client.phone }}
-              <br />Баланс:
-              {{ props.item.client && props.item.client.bill }}
+              <template v-if="props.item.client">
+                {{ props.item.client && props.item.client.name }}
+                <br />{{ props.item.client && props.item.client.phone }}
+                <br />Баланс:
+                {{ props.item.client && props.item.client.bill }}
+              </template>
             </td>
             <td>{{ props.item.amount }}</td>
             <td>

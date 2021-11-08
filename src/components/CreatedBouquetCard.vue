@@ -304,7 +304,7 @@
               label="Сумма"
               :rules="[v => validateTotalSum(v) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="!isEmptySum && (partlyPayment || typePay === 1)"
+              v-if="!isEmptySum && (partlyPayment || typePay === 'cash')"
               @keyup="handleFirstSumChange"
               ref="firstSum"
             ></v-text-field>
@@ -345,7 +345,7 @@
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="!isEmptySum && (partlyPayment || typePay === 1)"
+              v-if="!isEmptySum && (partlyPayment || typePay === 'cash')"
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="px-4 pb-4">
@@ -688,6 +688,8 @@ export default {
           props.payment.payment_type = this.typePay;
           props.payment.comment = '';
           props.payment.amount = (+this.sumPay !== 0) ? +this.sumPay : +this.sumPayCustom;
+
+          props.second_payment = null;
         }
 
         axios

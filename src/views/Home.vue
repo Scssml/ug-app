@@ -37,9 +37,9 @@
 
     <payment-day
       v-if="!loadingDialog"
-      :payments-list="paymentsList"
-      ref="paymentDayRef"
       class="print-hidden"
+      :upadate="upadatePayments"
+      @updateComplete="upadatePayments = false"
     ></payment-day>
 
     <v-layout row wrap v-if="!loadingDialog" class="print-hidden">
@@ -320,27 +320,23 @@ export default {
       floristsList: [],
       paymentTypesList: [
         {
-          id: 'Комиссия',
-          name: 'Комиссия',
-        },
-        {
-          id: 'cashless',
+          id: 'gazprom',
           name: 'Газпром',
         },
         {
-          id: 'cashless',
+          id: 'tinkoff',
           name: 'Тинькофф',
         },
         {
-          id: 'terminal',
+          id: 'terminal_ug2',
           name: 'Терминал юг-2',
         },
         {
-          id: 'Расходы',
+          id: 'expenses',
           name: 'Расходы',
         },
         {
-          id: 'Инкассация',
+          id: 'collection',
           name: 'Инкассация',
         },
         {
@@ -367,14 +363,18 @@ export default {
           id: 'cash',
           name: 'Наличные',
         },
+        {
+          id: 'balance',
+          name: 'На баланс',
+        },
       ],
       goodsList: [],
-      paymentsList: [],
       checkCardList: [],
       createdSuccess: false,
       dialogPay: false,
       sumClient: 0,
       typePay: null,
+      upadatePayments: false,
     };
   },
   computed: {
@@ -472,10 +472,6 @@ export default {
           console.log(error);
         });
     },
-
-    refreshPayments() {
-      this.$refs.paymentDayRef && this.$refs.paymentDayRef.refreshPayments();
-    },
     handleLoadingSuccess(loadingBarId, msg) {
       const loadData = this.loadingData.find(item => item.id === loadingBarId);
       loadData.title = msg;
@@ -531,11 +527,11 @@ export default {
       }
     },
     saveProps: function saveProps(index, props) {
+      this.upadatePayments = true;
+
       const cardItem = this.cardsList[index];
       cardItem.success = true;
       this.$set(this.cardsList, index, cardItem);
-
-      this.refreshPayments();
 
       const cardNoEmpty = this.cardsList.filter(elem =>
         (elem.goods.length > 0 || Object.keys(elem.props).length > 0) &&

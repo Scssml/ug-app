@@ -35,7 +35,7 @@
         ></v-text-field>
         <v-text-field
           label="Тип оплаты"
-          :value="(item.payment_type) ? paymentTypes.find((elem) => elem.id === item.payment_type).name : ''"
+          :value="(item.payment_type) ? ((type = paymentTypes.find((elem) => elem.id === item.payment_type)) ? type.name : '') : ''"
           readonly
         ></v-text-field>
         <!-- <v-text-field
@@ -91,27 +91,23 @@ export default {
       createdSuccess: false,
       paymentTypes: [
         {
-          id: 'Комиссия',
-          name: 'Комиссия',
-        },
-        {
-          id: 'cashless',
+          id: 'gazprom',
           name: 'Газпром',
         },
         {
-          id: 'cashless',
+          id: 'tinkoff',
           name: 'Тинькофф',
         },
         {
-          id: 'terminal',
+          id: 'terminal_ug2',
           name: 'Терминал юг-2',
         },
         {
-          id: 'Расходы',
+          id: 'expenses',
           name: 'Расходы',
         },
         {
-          id: 'Инкассация',
+          id: 'collection',
           name: 'Инкассация',
         },
         {
@@ -137,6 +133,10 @@ export default {
         {
           id: 'cash',
           name: 'Наличные',
+        },
+        {
+          id: 'balance',
+          name: 'На баланс',
         },
       ],
     };

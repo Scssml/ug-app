@@ -1,14 +1,25 @@
 <template>
   <div class="statPayBlock">
-    <v-layout row wrap align-center>
+    <template v-for="(item, key) in paymentTypesSum">
+      <v-layout row wrap align-center :key="key">
+        <v-flex xs7>
+          <b>{{ item.name }}:</b>
+        </v-flex>
+        <v-flex xs5>
+          {{ item.sum }}
+        </v-flex>
+      </v-layout>
+    </template>
+
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма наличка:</b>
       </v-flex>
       <v-flex xs5>
         {{ allSumPayCash }}
       </v-flex>
-    </v-layout>
-    <template v-for="(item, key) in walletsList">
+    </v-layout> -->
+    <!-- <template v-for="(item, key) in walletsList">
       <v-layout row wrap align-center :key="key">
         <v-flex xs7>
           <b>{{ item.name }}:</b>
@@ -17,7 +28,7 @@
           {{ item.balance }}
         </v-flex>
       </v-layout>
-    </template>
+    </template> -->
     <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Терминал:</b>
@@ -42,7 +53,7 @@
         {{ allSumPayYandex }}
       </v-flex>
     </v-layout> -->
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Сумма возвратов:</b>
       </v-flex>
@@ -57,7 +68,7 @@
       <v-flex xs5>
         {{ allSumEncashment }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
     <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Терминал ЮГ-2:</b>
@@ -82,7 +93,7 @@
         {{ gazprom }}
       </v-flex>
     </v-layout> -->
-    <v-layout row wrap align-center>
+    <!-- <v-layout row wrap align-center>
       <v-flex xs7>
         <b>Расход:</b>
       </v-flex>
@@ -97,7 +108,7 @@
       <v-flex xs5>
         {{ cashNow }}
       </v-flex>
-    </v-layout>
+    </v-layout> -->
 
     <v-btn color="info" small @click="dialog = true">Сдать инкассацию</v-btn>
     <v-btn color="info" small @click="dialogCloseDay = true">Закрыть день</v-btn>
@@ -145,8 +156,7 @@
 </template>
 
 <script>
-import { PaymentTypes } from "../../constants";
-import gql from "graphql-tag";
+import axios from 'axios';
 
 const startCurrentDate = new Date();
 startCurrentDate.setHours(0, 0, 0, 0);
@@ -164,10 +174,10 @@ endPrevDate.setHours(23, 59, 59, 999);
 
 export default {
   props: {
-    paymentsList: {
-      type: Array,
-      required: true
-    }
+    upadate: {
+      default: false,
+      type: Boolean,
+    },
   },
   data() {
     return {
@@ -192,452 +202,82 @@ export default {
       gazprom: 0,
       expenses: 0,
       walletsList: [],
+
+      paymentsList: [],
+      paymentTypesList: [
+        {
+          id: 'gazprom',
+          name: 'Газпром',
+        },
+        {
+          id: 'tinkoff',
+          name: 'Тинькофф',
+        },
+        {
+          id: 'terminal_ug2',
+          name: 'Терминал юг-2',
+        },
+        {
+          id: 'expenses',
+          name: 'Расходы',
+        },
+        {
+          id: 'collection',
+          name: 'Инкассация',
+        },
+        {
+          id: 'return',
+          name: 'Возврат',
+        },
+        {
+          id: 'cashless',
+          name: 'Безнал',
+        },
+        {
+          id: 'terminal',
+          name: 'Терминал',
+        },
+        {
+          id: 'cart',
+          name: 'Карта',
+        },
+        {
+          id: 'yandex',
+          name: 'Яндекс',
+        },
+        {
+          id: 'cash',
+          name: 'Наличные',
+        },
+        {
+          id: 'balance',
+          name: 'На баланс',
+        },
+      ],
     };
   },
-  apollo: {
-    queryValue: {
-      query: gql`
-        query(
-          $todayStartDate: timestamptz
-          $todayEndDate: timestamptz
-          $prevStartDate: timestamptz
-          $prevEndDate: timestamptz
-          $cashType: bigint
-          $terminalType: bigint
-          $cardType: bigint
-          $yandexType: bigint
-          $encashmentType: bigint
-          $ug2Type: bigint
-          $tinkoffType: bigint
-          $gazpromType: bigint
-          $expensesType: bigint
-          $returnType: bigint
-        ) {
-          allSumPayCash: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $cashType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { parent: { paymentTypeId: { _eq: $cashType } } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          # allSumPayTerminal: payments_aggregate(
-          #   where: {
-          #     _or: [
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeId: { _eq: $terminalType } }
-          #         ]
-          #       }
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeBeforeReturnId: { _eq: $terminalType } }
-          #           { paymentTypeId: { _eq: $returnType } }
-          #         ]
-          #       }
-          #     ]
-          #   }
-          # ) {
-          #   aggregate {
-          #     sum {
-          #       amount
-          #     }
-          #   }
-          # }
-          allSumPayCard: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $cardType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { parent: { paymentTypeId: { _eq: $cardType } } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          # allSumPayYandex: payments_aggregate(
-          #   where: {
-          #     _or: [
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeId: { _eq: $yandexType } }
-          #         ]
-          #       }
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeBeforeReturnId: { _eq: $yandexType } }
-          #           { paymentTypeId: { _eq: $returnType } }
-          #         ]
-          #       }
-          #     ]
-          #   }
-          # ) {
-          #   aggregate {
-          #     sum {
-          #       amount
-          #     }
-          #   }
-          # }
-          allSumEncashment: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $encashmentType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { parent: { paymentTypeId: { _eq: $encashmentType } } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          # terminalUg2: payments_aggregate(
-          #   where: {
-          #     _or: [
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeId: { _eq: $ug2Type } }
-          #         ]
-          #       }
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeBeforeReturnId: { _eq: $ug2Type } }
-          #           { paymentTypeId: { _eq: $returnType } }
-          #         ]
-          #       }
-          #     ]
-          #   }
-          # ) {
-          #   aggregate {
-          #     sum {
-          #       amount
-          #     }
-          #   }
-          # }
-          # tinkoff: payments_aggregate(
-          #   where: {
-          #     _or: [
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeId: { _eq: $tinkoffType } }
-          #         ]
-          #       }
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeBeforeReturnId: { _eq: $tinkoffType } }
-          #           { paymentTypeId: { _eq: $returnType } }
-          #         ]
-          #       }
-          #     ]
-          #   }
-          # ) {
-          #   aggregate {
-          #     sum {
-          #       amount
-          #     }
-          #   }
-          # }
-          # gazprom: payments_aggregate(
-          #   where: {
-          #     _or: [
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeId: { _eq: $gazpromType } }
-          #         ]
-          #       }
-          #       {
-          #         _and: [
-          #           { created_at: { _gte: $todayStartDate } }
-          #           { created_at: { _lte: $todayEndDate } }
-          #           { paymentTypeBeforeReturnId: { _eq: $gazpromType } }
-          #           { paymentTypeId: { _eq: $returnType } }
-          #         ]
-          #       }
-          #     ]
-          #   }
-          # ) {
-          #   aggregate {
-          #     sum {
-          #       amount
-          #     }
-          #   }
-          # }
-          expenses: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $expensesType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { parent: { paymentTypeId: { _eq: $expensesType } } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          allSumReturn: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $todayStartDate } }
-                    { created_at: { _lte: $todayEndDate } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          allSumPayCashPrevDay: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $prevStartDate } }
-                    { created_at: { _lte: $prevEndDate } }
-                    { paymentTypeId: { _eq: $cashType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $prevStartDate } }
-                    { created_at: { _lte: $prevEndDate } }
-                    { parent: { paymentTypeId: { _eq: $cashType } } }
-                    { paymentTypeId: { _eq: $returnType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-          allSumEncashmentPrevDay: payments_aggregate(
-            where: {
-              _or: [
-                {
-                  _and: [
-                    { created_at: { _gte: $prevStartDate } }
-                    { created_at: { _lte: $prevEndDate } }
-                    { paymentTypeId: { _eq: $encashmentType } }
-                  ]
-                }
-                {
-                  _and: [
-                    { created_at: { _gte: $prevStartDate } }
-                    { created_at: { _lte: $prevEndDate } }
-                    { parent: { paymentTypeId: { _eq: $encashmentType } } }
-                    { paymentTypeId: { _eq: $encashmentType } }
-                  ]
-                }
-              ]
-            }
-          ) {
-            aggregate {
-              sum {
-                amount
-              }
-            }
-          }
-        }
-      `,
-      variables: {
-        todayStartDate: startCurrentDate,
-        todayEndDate: endCurrentDate,
-        prevStartDate: startPrevDate,
-        prevEndDate: endPrevDate,
-        cashType: PaymentTypes.CASH,
-        terminalType: PaymentTypes.TERMINAL,
-        cardType: PaymentTypes.CARD,
-        yandexType: PaymentTypes.YANDEX,
-        returnType: PaymentTypes.RETURN,
-        encashmentType: PaymentTypes.COLLECTION,
-        ug2Type: PaymentTypes.UG2,
-        tinkoffType: PaymentTypes.TINKOFF,
-        gazpromType: PaymentTypes.GAZPROM,
-        expensesType: PaymentTypes.EXPENSES
-      },
-      update({
-        allSumPayCash: {
-          aggregate: {
-            sum: { amount: allSumPayCash }
-          }
-        },
-        // allSumPayTerminal: {
-        //   aggregate: {
-        //     sum: { amount: allSumPayTerminal }
-        //   }
-        // },
-        allSumPayCard: {
-          aggregate: {
-            sum: { amount: allSumPayCard }
-          }
-        },
-        // allSumPayYandex: {
-        //   aggregate: {
-        //     sum: { amount: allSumPayYandex }
-        //   }
-        // },
-        allSumEncashment: {
-          aggregate: {
-            sum: { amount: allSumEncashment }
-          }
-        },
-        // terminalUg2: {
-        //   aggregate: {
-        //     sum: { amount: terminalUg2 }
-        //   }
-        // },
-        // tinkoff: {
-        //   aggregate: {
-        //     sum: { amount: tinkoff }
-        //   }
-        // },
-        // gazprom: {
-        //   aggregate: {
-        //     sum: { amount: gazprom }
-        //   }
-        // },
-        expenses: {
-          aggregate: {
-            sum: { amount: expenses }
-          }
-        },
-        allSumPayCashPrevDay: {
-          aggregate: {
-            sum: { amount: allSumPayCashPrevDay }
-          }
-        },
-        allSumEncashmentPrevDay: {
-          aggregate: {
-            sum: { amount: allSumEncashmentPrevDay }
-          }
-        },
-        allSumReturn: {
-          aggregate: {
-            sum: { amount: allSumReturn }
-          }
-        }
-      }) {
-        this.allSumPayCashPrevDay = allSumPayCashPrevDay || 0;
-        this.allSumPayCash = allSumPayCash || 0;
-        // this.allSumPayTerminal = allSumPayTerminal || 0;
-        this.allSumPayCard = allSumPayCard || 0;
-        // this.allSumPayYandex = allSumPayYandex || 0;
-        this.allSumReturn = allSumReturn || 0;
-        this.allSumEncashmentPrevDay = allSumEncashmentPrevDay || 0;
-        this.allSumEncashment = allSumEncashment || 0;
-        // this.terminalUg2 = terminalUg2 || 0;
-        // this.tinkoff = tinkoff || 0;
-        // this.gazprom = gazprom || 0;
-        this.expenses = expenses || 0;
+  watch: {
+    upadate(val) {
+      if (val) {
+        this.getPaymentsList();
       }
-    },
-    walletsList: {
-      query: gql`
-        query {
-          walletsList: wallets (
-            order_by: {id: asc}
-          ) {
-            id
-            name
-            balance
-          }
-        }
-      `,
     },
   },
   computed: {
+    paymentTypesSum() {
+      return this.paymentTypesList.map((itemType) => {
+        let sum = 0;
+        const paymentsType = this.paymentsList.filter((item) => item.payment_type === itemType.id);
+
+        if (paymentsType) {
+          sum = paymentsType.reduce((total, item) => {
+            return total + item.amount;
+          }, 0);
+        }
+
+        return { sum: sum, ...itemType }
+      });
+    },
     cashNow() {
       return (
         // this.allSumPayCashPrevDay -
@@ -649,9 +289,46 @@ export default {
     }
   },
   methods: {
-    refreshPayments() {
-      this.$apollo.queries.queryValue.refetch();
-      this.$apollo.queries.walletsList.refetch();
+    getPaymentsList() {
+      const url = 'payments';
+
+      const startCurrentDate = new Date();
+      startCurrentDate.setHours(0, 0, 0, 0);
+      let dd = startCurrentDate.getDate();
+      if (dd < 10) dd = '0' + dd;
+      let mm = startCurrentDate.getMonth() + 1;
+      if (mm < 10) mm = '0' + mm;
+      let yy = startCurrentDate.getFullYear();
+      const startCurrentDateStr = `${yy}-${mm}-${dd}`;
+
+      const endCurrentDate = new Date();
+      endCurrentDate.setHours(0, 0, 0, 0);
+      endCurrentDate.setDate(endCurrentDate.getDate() + 1);
+      dd = endCurrentDate.getDate();
+      if (dd < 10) dd = '0' + dd;
+      mm = endCurrentDate.getMonth() + 1;
+      if (mm < 10) mm = '0' + mm;
+      yy = endCurrentDate.getFullYear();
+      const endCurrentDateStr = `${yy}-${mm}-${dd}`;
+
+
+      const propsItem = {
+        start_date: startCurrentDateStr,
+        end_date: endCurrentDateStr,
+      };
+
+      axios
+        .get(url, {
+          params: propsItem,
+        })
+        .then((response) => {
+          this.paymentsList = response.data;
+
+          this.$emit('updateComplete', true);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     closeDay() {
       const props = {
@@ -663,22 +340,22 @@ export default {
         const propsCloseDay = Object.assign({}, props);
         propsCloseDay.walletId = item.id;
 
-        this.$apollo.mutate({
-          mutation: gql`mutation closeDay (
-            $props: CloseDay
-          ) {
-            closeDay(input: $props) {
-              id
-            }
-          }`,
-          variables: {
-            props: propsCloseDay,
-          },
-        }).then(() => {
-          this.dialogCloseDay = false;
-        }).catch((error) => {
-          console.error(error);
-        });
+        // this.$apollo.mutate({
+        //   mutation: gql`mutation closeDay (
+        //     $props: CloseDay
+        //   ) {
+        //     closeDay(input: $props) {
+        //       id
+        //     }
+        //   }`,
+        //   variables: {
+        //     props: propsCloseDay,
+        //   },
+        // }).then(() => {
+        //   this.dialogCloseDay = false;
+        // }).catch((error) => {
+        //   console.error(error);
+        // });
       });
     },
     submit() {
@@ -696,28 +373,28 @@ export default {
           ],
         };
 
-        this.$apollo.mutate({
-          mutation: gql`mutation createService (
-            $props: NewService!
-          ) {
-            createService(input: $props) {
-              id
-            }
-          }`,
-          variables: {
-            props: propsService,
-          },
-        }).then(() => {
-          this.createdSuccess = true;
-          this.refreshPayments();
+        // this.$apollo.mutate({
+        //   mutation: gql`mutation createService (
+        //     $props: NewService!
+        //   ) {
+        //     createService(input: $props) {
+        //       id
+        //     }
+        //   }`,
+        //   variables: {
+        //     props: propsService,
+        //   },
+        // }).then(() => {
+        //   this.createdSuccess = true;
+        //   this.refreshPayments();
 
-          setTimeout(() => {
-            this.dialog = false;
-            this.createdSuccess = false;
-          }, 1000);
-        }).catch((error) => {
-          console.error(error);
-        });
+        //   setTimeout(() => {
+        //     this.dialog = false;
+        //     this.createdSuccess = false;
+        //   }, 1000);
+        // }).catch((error) => {
+        //   console.error(error);
+        // });
 
         // const itemParams = {
         //   type: "payments",
@@ -743,6 +420,9 @@ export default {
         // });
       }
     }
+  },
+  mounted() {
+    this.getPaymentsList();
   }
 };
 </script>

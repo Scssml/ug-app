@@ -173,7 +173,7 @@
             </td>
             <td>{{ props.item.amount }}</td>
             <td>
-              {{ props.item.payment_type && paymentTypes.find((item) => item.id === props.item.payment_type).name }}
+              {{ props.item.payment_type && (type = paymentTypes.find((item) => item.id === props.item.payment_type)) && type && type.name }}
             </td>
             <td>{{ props.item.created_by.name }}</td>
             <td>{{ props.item.comment }}</td>
@@ -304,27 +304,23 @@ export default {
       usersList: [],
       paymentTypes: [
         {
-          id: 'Комиссия',
-          name: 'Комиссия',
-        },
-        {
-          id: 'cashless',
+          id: 'gazprom',
           name: 'Газпром',
         },
         {
-          id: 'cashless',
+          id: 'tinkoff',
           name: 'Тинькофф',
         },
         {
-          id: 'terminal',
+          id: 'terminal_ug2',
           name: 'Терминал юг-2',
         },
         {
-          id: 'Расходы',
+          id: 'expenses',
           name: 'Расходы',
         },
         {
-          id: 'Инкассация',
+          id: 'collection',
           name: 'Инкассация',
         },
         {
@@ -350,6 +346,10 @@ export default {
         {
           id: 'cash',
           name: 'Наличные',
+        },
+        {
+          id: 'balance',
+          name: 'На баланс',
         },
       ],
       clientsList: [],

@@ -542,27 +542,23 @@ export default {
       },
       paymentTypesList: [
         {
-          id: 'Комиссия',
-          name: 'Комиссия',
-        },
-        {
-          id: 'cashless',
+          id: 'gazprom',
           name: 'Газпром',
         },
         {
-          id: 'cashless',
+          id: 'tinkoff',
           name: 'Тинькофф',
         },
         {
-          id: 'terminal',
+          id: 'terminal_ug2',
           name: 'Терминал юг-2',
         },
         {
-          id: 'Расходы',
+          id: 'expenses',
           name: 'Расходы',
         },
         {
-          id: 'Инкассация',
+          id: 'collection',
           name: 'Инкассация',
         },
         {
@@ -588,6 +584,10 @@ export default {
         {
           id: 'cash',
           name: 'Наличные',
+        },
+        {
+          id: 'balance',
+          name: 'На баланс',
         },
       ],
       tsList: [

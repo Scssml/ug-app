@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import io from "socket.io-client";
+// import io from "socket.io-client";
 
 export default {
   name: "App",
@@ -118,27 +118,27 @@ export default {
         this.$router.push("/login");
       });
 
-    const socketCouriersGps = io(window.location.origin, {
-      path: `${process.env.VUE_APP_API_PREFIX}zont-socket`,
-      transports: ["websocket"]
-    });
+    // const socketCouriersGps = io(window.location.origin, {
+    //   path: `${process.env.VUE_APP_API_PREFIX}zont-socket`,
+    //   transports: ["websocket"]
+    // });
 
-    socketCouriersGps.on("DEVICE_UPDATE", devices => {
-      this.$store.commit("setCouriersGps", devices);
-    });
+    // socketCouriersGps.on("DEVICE_UPDATE", devices => {
+    //   this.$store.commit("setCouriersGps", devices);
+    // });
 
-    const socketOrders = io(window.location.origin, {
-      path: `${process.env.VUE_APP_API_PREFIX}main-socket`,
-      transports: ["websocket"]
-    });
+    // const socketOrders = io(window.location.origin, {
+    //   path: `${process.env.VUE_APP_API_PREFIX}main-socket`,
+    //   transports: ["websocket"]
+    // });
 
-    socketOrders.on("update_order", () => {
-      this.$store.commit("setUpdateOrderList", true);
-    });
+    // socketOrders.on("update_order", () => {
+    //   this.$store.commit("setUpdateOrderList", true);
+    // });
 
-    socketOrders.on("new_order", () => {
-      this.$store.commit("setUpdateOrderList", true);
-    });
+    // socketOrders.on("new_order", () => {
+    //   this.$store.commit("setUpdateOrderList", true);
+    // });
   }
 };
 </script>

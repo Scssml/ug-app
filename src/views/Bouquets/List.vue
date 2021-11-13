@@ -185,7 +185,7 @@
               }}
               <br />{{
                 props.item.payments.map(p => {
-                  return (p.payment_type) ? paymentTypes.find((item) => item.id === p.payment_type).name : '';
+                  return (p.payment_type) ? ((type = paymentTypes.find((item) => item.id === p.payment_type)) ? type.name : '') : '';
                 }).join(", ")
               }}
             </td>
@@ -339,27 +339,23 @@ export default {
       ],
       paymentTypes: [
         {
-          id: 'Комиссия',
-          name: 'Комиссия',
-        },
-        {
-          id: 'cashless',
+          id: 'gazprom',
           name: 'Газпром',
         },
         {
-          id: 'cashless',
+          id: 'tinkoff',
           name: 'Тинькофф',
         },
         {
-          id: 'terminal',
+          id: 'terminal_ug2',
           name: 'Терминал юг-2',
         },
         {
-          id: 'Расходы',
+          id: 'expenses',
           name: 'Расходы',
         },
         {
-          id: 'Инкассация',
+          id: 'collection',
           name: 'Инкассация',
         },
         {
@@ -385,6 +381,10 @@ export default {
         {
           id: 'cash',
           name: 'Наличные',
+        },
+        {
+          id: 'balance',
+          name: 'На баланс',
         },
       ],
       dialogForm: false,

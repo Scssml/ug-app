@@ -118,21 +118,20 @@
                 ></v-select>
 
                 <v-autocomplete
-                  ref="clientSelect"
                   label="Клиент"
                   :items="clientsList"
-                  item-text="name"
+                  item-text="searchName"
                   item-value="id"
                   v-model.number="editedItem.client_id"
                   hide-details
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
+                  :search-input.sync="searchClients"
                   @change="
                     handleDirty();
                     setDataClient();
-                  "
-                  :search-input.sync="clientName"
+                  " 
                 ></v-autocomplete>
 
                 <v-select
@@ -197,7 +196,7 @@
                   label="Канал поступления предоплаты"
                   :items="paymentTypesList"
                   class="mb-4"
-                  v-model="editedItem.pay_channel"
+                  v-model="editedItem.payment_type_id"
                   item-value="id"
                   item-text="name"
                   :rules="[
@@ -318,7 +317,7 @@
                   class="mb-4"
                 ></v-checkbox>
 
-                <v-autocomplete
+                <!-- <v-autocomplete
                   ref="addresseeSelect"
                   label="Получатель"
                   :items="clientsList"
@@ -335,6 +334,24 @@
                   "
                   v-if="!editedItem.is_recipient_client"
                   :search-input.sync="addresseeName"
+                ></v-autocomplete> -->
+
+                <v-autocomplete
+                  label="Получатель"
+                  :items="recipientsList"
+                  item-text="searchName"
+                  item-value="id"
+                  v-model.number="editedItem.recipient_id"
+                  hide-details
+                  class="mb-4"
+                  no-data-text="Не надено"
+                  clearable
+                  v-if="!editedItem.is_recipient_client"
+                  :search-input.sync="searchRecipients"
+                  @change="
+                    handleDirty();
+                    setDataAddressee();
+                  " 
                 ></v-autocomplete>
 
                 <v-text-field
@@ -467,7 +484,7 @@
               <delivery-map
                 :delivery-time-of-day-list="[]"
                 :edited-item="editedItem"
-                :zones="deliveryZones"
+                :zones="[]"
                 :placemarks="[]"
               />
             </div>
@@ -505,6 +522,10 @@ export default {
   },
   data() {
     return {
+      searchClients: '',
+      timerClients: null,
+      searchRecipients: '',
+      timerRecipients: null,
       editedItem: {
         address: '',
         addressee_name: '',
@@ -529,62 +550,13 @@ export default {
         is_recipient_client: false,
         order_source_type: '',
         order_status: 'accepted',
-        pay_channel: '',
+        payment_type_id: 0,
         pre_payment: 0,
         recipient_id: 0,
         recipient_name: '',
         times_of_day: '',
       },
-      paymentTypesList: [
-        {
-          id: 'gazprom',
-          name: 'Газпром',
-        },
-        {
-          id: 'tinkoff',
-          name: 'Тинькофф',
-        },
-        {
-          id: 'terminal_ug2',
-          name: 'Терминал юг-2',
-        },
-        {
-          id: 'expenses',
-          name: 'Расходы',
-        },
-        {
-          id: 'collection',
-          name: 'Инкассация',
-        },
-        {
-          id: 'return',
-          name: 'Возврат',
-        },
-        {
-          id: 'cashless',
-          name: 'Безнал',
-        },
-        {
-          id: 'terminal',
-          name: 'Терминал',
-        },
-        {
-          id: 'cart',
-          name: 'Карта',
-        },
-        {
-          id: 'yandex',
-          name: 'Яндекс',
-        },
-        {
-          id: 'cash',
-          name: 'Наличные',
-        },
-        {
-          id: 'balance',
-          name: 'На баланс',
-        },
-      ],
+      paymentTypesList: [],
       tsList: [
         {
           id: 'phone',
@@ -693,7 +665,7 @@ export default {
       ],
       couriersList: [],
       clientsList: [],
-
+      recipientsList: [],
       createdSuccess: false,
       userInfo: {},
       dataPicker: false,
@@ -706,9 +678,39 @@ export default {
       skipQuery: true,
     };
   },
+  watch: {
+    searchClients(val) {
+      const findClient = this.clientsList.find((item) => item.searchName === val);
+      if (findClient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerClients) clearTimeout(this.timerClients);
+
+        this.timerClients = setTimeout(() => {
+          this.getClients(val, false);
+        }, 500);
+      } else {
+        this.clientsList = [];
+      }
+    },
+    searchRecipients(val) {
+      const findRecipient = this.recipientsList.find((item) => item.searchName === val);
+      if (findRecipient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerRecipients) clearTimeout(this.timerRecipients);
+
+        this.timerRecipients = setTimeout(() => {
+          this.getClients(val, true);
+        }, 500);
+      } else {
+        this.recipientsList = [];
+      }
+    },
+  },
   computed: {
     deliveryZones() {
-      return this.$store.state.deliveryZones;
+      return this.$store.state.deliveryZones['ZONES'];
     },
     placemarks() {
       return this.ordersList
@@ -720,14 +722,40 @@ export default {
     },
   },
   methods: {
-    getClients() {
+    getClients(searchVal, recipient = false) {
       const url = 'clients';
+
+      axios
+        .get(url, {
+          params: {
+            name_or_phone: searchVal,
+            page_limit: 10,
+          },
+        })
+        .then((response) => {
+          const items = response.data.map((item) => {
+            const client = item;
+            client.searchName = `${item.name} (${item.phone})`;
+            return client;
+          });
+
+          if (recipient) {
+            this.recipientsList = items;
+          } else {
+            this.clientsList = items;
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getPaymentTypesList() {
+      const url = 'payment-types';
 
       axios
         .get(url)
         .then((response) => {
-          const items = response.data;
-          this.clientsList = items;
+          this.paymentTypesList = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -772,7 +800,7 @@ export default {
     },
     setDataAddressee() {
       const clientId = this.editedItem.recipient_id;
-      const findClient = this.clientsList.find(item => item.id === clientId);
+      const findClient = this.recipientsList.find(item => item.id === clientId);
 
       if (findClient) {
         this.editedItem.addressee_name = findClient.name;
@@ -815,11 +843,15 @@ export default {
       if (data && data.geo[0] && data.geo[1] && this.editedItem) {
         this.editedItem.coordinates = data.geo;
         // this.editedItem.coordsMap = data.geo;
-        this.calculateAndSetDeliveryCost(data.geo);
+        // this.calculateAndSetDeliveryCost(data.geo);
       }
     },
     calculateAndSetDeliveryCost(geo) {
       for (const zone of this.deliveryZones) {
+        zone.coordinates = zone.PROPS.ZONE_COORDS.VALUE;
+        zone.priceForKm = zone.PROPS.PRICE_KM.VALUE;
+        zone.price = zone.PROPS.PRICE_FIX.VALUE;
+
         if (inside.polygon(zone.coordinates, geo)) {
           this.editedItem.delivery_cost = zone.priceForKm
             ? (getDistance(
@@ -962,7 +994,7 @@ export default {
     window.removeEventListener('beforeunload', this.handleBeforeUnload);
   },
   mounted() {
-    this.getClients();
+    this.getPaymentTypesList();
   },
 };
 </script>

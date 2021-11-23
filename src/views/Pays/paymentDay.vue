@@ -178,6 +178,10 @@ export default {
       default: false,
       type: Boolean,
     },
+    paymentTypesList: {
+      default: () => [],
+      type: Array,
+    },
   },
   data() {
     return {
@@ -204,56 +208,6 @@ export default {
       walletsList: [],
 
       paymentsList: [],
-      paymentTypesList: [
-        {
-          id: 'gazprom',
-          name: 'Газпром',
-        },
-        {
-          id: 'tinkoff',
-          name: 'Тинькофф',
-        },
-        {
-          id: 'terminal_ug2',
-          name: 'Терминал юг-2',
-        },
-        {
-          id: 'expenses',
-          name: 'Расходы',
-        },
-        {
-          id: 'collection',
-          name: 'Инкассация',
-        },
-        {
-          id: 'return',
-          name: 'Возврат',
-        },
-        {
-          id: 'cashless',
-          name: 'Безнал',
-        },
-        {
-          id: 'terminal',
-          name: 'Терминал',
-        },
-        {
-          id: 'cart',
-          name: 'Карта',
-        },
-        {
-          id: 'yandex',
-          name: 'Яндекс',
-        },
-        {
-          id: 'cash',
-          name: 'Наличные',
-        },
-        {
-          id: 'balance',
-          name: 'На баланс',
-        },
-      ],
     };
   },
   watch: {
@@ -267,7 +221,7 @@ export default {
     paymentTypesSum() {
       return this.paymentTypesList.map((itemType) => {
         let sum = 0;
-        const paymentsType = this.paymentsList.filter((item) => item.payment_type === itemType.id);
+        const paymentsType = this.paymentsList.filter((item) => item.payment_type_id === itemType.id);
 
         if (paymentsType) {
           sum = paymentsType.reduce((total, item) => {

@@ -39,6 +39,7 @@
       v-if="!loadingDialog"
       class="print-hidden"
       :upadate="upadatePayments"
+      :paymentTypesList="paymentTypesList"
       @updateComplete="upadatePayments = false"
     ></payment-day>
 
@@ -302,6 +303,13 @@ export default {
           color: 'blue-grey',
           id: 'goods',
         },
+        {
+          title: 'Получение типов оплат',
+          error: false,
+          loading: true,
+          color: 'blue-grey',
+          id: 'payment-types',
+        },
       ],
       offsetLeft: 0,
       propsBouquet: [
@@ -318,56 +326,7 @@ export default {
       ],
       cardsList: [],
       floristsList: [],
-      paymentTypesList: [
-        {
-          id: 'gazprom',
-          name: 'Газпром',
-        },
-        {
-          id: 'tinkoff',
-          name: 'Тинькофф',
-        },
-        {
-          id: 'terminal_ug2',
-          name: 'Терминал юг-2',
-        },
-        {
-          id: 'expenses',
-          name: 'Расходы',
-        },
-        {
-          id: 'collection',
-          name: 'Инкассация',
-        },
-        {
-          id: 'return',
-          name: 'Возврат',
-        },
-        {
-          id: 'cashless',
-          name: 'Безнал',
-        },
-        {
-          id: 'terminal',
-          name: 'Терминал',
-        },
-        {
-          id: 'cart',
-          name: 'Карта',
-        },
-        {
-          id: 'yandex',
-          name: 'Яндекс',
-        },
-        {
-          id: 'cash',
-          name: 'Наличные',
-        },
-        {
-          id: 'balance',
-          name: 'На баланс',
-        },
-      ],
+      paymentTypesList: [],
       goodsList: [],
       checkCardList: [],
       createdSuccess: false,
@@ -453,12 +412,35 @@ export default {
           console.log(error);
         });
     },
+    getPaymentTypesList() {
+      const loadData = this.loadingData.find(item => item.id === 'payment-types');
+      const url = 'payment-types';
+
+      axios
+        .get(url)
+        .then((response) => {
+          const items = response.data;
+          this.paymentTypesList = items;
+
+          loadData.title = 'Типы оплат получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения типов оплат!';
+          loadData.error = true;
+          console.log(error);
+        });
+    },
     getFloristsList() {
       const loadData = this.loadingData.find(item => item.id === 'florists');
       const url = 'users';
 
       axios
-        .get(url)
+        .get(url, {
+          params: {
+            group_id: 16,
+          },
+        })
         .then((response) => {
           const items = response.data;
           this.floristsList = items;
@@ -719,6 +701,7 @@ export default {
   mounted() {
     this.getGoodsList();
     this.getFloristsList();
+    this.getPaymentTypesList();
 
     this.$store.commit('setShowGoodsList', []);
 

@@ -93,6 +93,12 @@ export default new Router({
       beforeEnter: ifManager,
     },
     {
+      path: '/payment-types/',
+      name: 'payment-types',
+      component: () => import('./views/PaymentTypes/List.vue'),
+      beforeEnter: ifManager,
+    },
+    {
       path: '/pays/',
       name: 'pays',
       component: () => import('./views/Pays/List.vue'),

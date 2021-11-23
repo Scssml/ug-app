@@ -33,10 +33,20 @@
                 :items="typeClient"
                 item-text="name"
                 item-value="id"
-                v-model="filter.clientType"
+                v-model="filter.client_type"
                 @change="changeFilter()"
                 hide-details
               ></v-select>
+            </v-flex>
+
+            <v-flex xs4 class="px-3">
+              <v-text-field
+                label="Имя или телефон"
+                v-model="filter.name_or_phone"
+                hide-details
+                @change="changeFilter()"
+                prepend-icon="search"
+              ></v-text-field>
             </v-flex>
           </v-layout>
           <v-spacer></v-spacer>
@@ -179,7 +189,8 @@ export default {
         },
       ],
       filter: {
-        clientType: '',
+        client_type: '',
+        name_or_phone: null,
       },
       typeClient: [
         {
@@ -277,13 +288,20 @@ export default {
       const loadData = this.loadingData.find(item => item.id === 'clients');
       const url = 'clients';
 
+      const propsItem = {
+        page: this.page,
+        page_limit: this.take,
+      };
+
+      Object.keys(this.filter).forEach((key) => {
+        if (this.filter[key]) {
+          propsItem[key] = this.filter[key];
+        }
+      });
+
       axios
         .get(url, {
-          params: {
-            page: this.page,
-            page_limit: this.take,
-            client_type: this.filter.clientType,
-          },
+          params: propsItem,
         })
         .then((response) => {
           const items = response.data;

@@ -35,7 +35,7 @@
         ></v-text-field>
         <v-text-field
           label="Тип оплаты"
-          :value="(item.payment_type) ? ((type = paymentTypes.find((elem) => elem.id === item.payment_type)) ? type.name : '') : ''"
+          :value="(type = paymentTypes.find((elem) => elem.id === item.payment_type_id)) ? type.name : 'Неизвестный тип'"
           readonly
         ></v-text-field>
         <!-- <v-text-field
@@ -75,70 +75,20 @@
 </template>
 
 <script>
-import gql from "graphql-tag";
-import format from "date-fns/format";
-import { ru } from "date-fns/locale";
-
 export default {
   props: {
     item: {
       type: Object,
       required: true,
     },
+    paymentTypes: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
       createdSuccess: false,
-      paymentTypes: [
-        {
-          id: 'gazprom',
-          name: 'Газпром',
-        },
-        {
-          id: 'tinkoff',
-          name: 'Тинькофф',
-        },
-        {
-          id: 'terminal_ug2',
-          name: 'Терминал юг-2',
-        },
-        {
-          id: 'expenses',
-          name: 'Расходы',
-        },
-        {
-          id: 'collection',
-          name: 'Инкассация',
-        },
-        {
-          id: 'return',
-          name: 'Возврат',
-        },
-        {
-          id: 'cashless',
-          name: 'Безнал',
-        },
-        {
-          id: 'terminal',
-          name: 'Терминал',
-        },
-        {
-          id: 'cart',
-          name: 'Карта',
-        },
-        {
-          id: 'yandex',
-          name: 'Яндекс',
-        },
-        {
-          id: 'cash',
-          name: 'Наличные',
-        },
-        {
-          id: 'balance',
-          name: 'На баланс',
-        },
-      ],
     };
   },
   methods: {

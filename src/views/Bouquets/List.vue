@@ -94,25 +94,30 @@
               <v-flex xs2 class="px-2">
                 <v-select
                   label="Менеджер"
-                  :items="[{ id: null, name: 'Все' }].concat(usersList)"
+                  :items="usersList"
                   item-text="name"
                   item-value="id"
                   v-model="filter.manager_id"
                   hide-details
+                  clearable
+                  no-data-text="Не надено"
                   @change="customFilter()"
                 ></v-select>
               </v-flex>
 
               <v-flex xs3 class="px-2">
-                <v-select
+                <v-autocomplete
                   label="Клиент"
-                  :items="[{ id: null, name: 'Все' }].concat(clientsList)"
+                  :items="clientsList"
                   item-text="name"
                   item-value="id"
-                  v-model="filter.client_id"
+                  v-model.number="filter.client_id"
                   hide-details
+                  no-data-text="Не надено"
+                  clearable
+                  :search-input.sync="searchClients"
                   @change="customFilter()"
-                ></v-select>
+                ></v-autocomplete>
               </v-flex>
             </v-layout>
           </v-flex>
@@ -172,22 +177,13 @@
               {{ props.item.created_by.name }}
             </td>
             <td>
-              {{
-                props.item.payments.reduce((acc, item) => {
-                  return acc + item.amount;
-                }, 0)
-              }}р <br />{{
-                new Date(
-                  props.item.payments[
-                    props.item.payments.length - 1
-                  ].created_at
-                ).toLocaleString()
-              }}
-              <br />{{
-                props.item.payments.map(p => {
-                  return (p.payment_type) ? ((type = paymentTypes.find((item) => item.id === p.payment_type)) ? type.name : '') : '';
-                }).join(", ")
-              }}
+              <template v-for="(p, index) in props.item.payments">
+                <div :key="index">
+                  {{ (type = paymentTypes.find((item) => item.id === p.payment_type_id)) ? type.name : 'Неизвестный тип' }}
+                  <br>{{ p.amount }}
+                  <br>{{ new Date(p.created_at).toLocaleString() }}
+                </div>
+              </template>
             </td>
             <td class="text-xs-right" style="width: 200px;">
               <v-btn
@@ -290,7 +286,28 @@ export default {
           loading: true,
           color: "cyan",
           id: "bouquets"
-        }
+        },
+        {
+          title: "Получение менеджеров",
+          error: false,
+          loading: true,
+          color: "cyan",
+          id: "managers"
+        },
+        // {
+        //   title: "Получение клиентов",
+        //   error: false,
+        //   loading: true,
+        //   color: "cyan",
+        //   id: "clients"
+        // },
+        {
+          title: "Получение типов оплат",
+          error: false,
+          loading: true,
+          color: "cyan",
+          id: "payment-types"
+        },
       ],
       filter: {
         manager_id: null,
@@ -298,6 +315,8 @@ export default {
         end_date: null,
         client_id: null,
       },
+      searchClients: '',
+      timerClients: null,
       search: "",
       headersTable: [
         {
@@ -337,56 +356,7 @@ export default {
           value: "action"
         }
       ],
-      paymentTypes: [
-        {
-          id: 'gazprom',
-          name: 'Газпром',
-        },
-        {
-          id: 'tinkoff',
-          name: 'Тинькофф',
-        },
-        {
-          id: 'terminal_ug2',
-          name: 'Терминал юг-2',
-        },
-        {
-          id: 'expenses',
-          name: 'Расходы',
-        },
-        {
-          id: 'collection',
-          name: 'Инкассация',
-        },
-        {
-          id: 'return',
-          name: 'Возврат',
-        },
-        {
-          id: 'cashless',
-          name: 'Безнал',
-        },
-        {
-          id: 'terminal',
-          name: 'Терминал',
-        },
-        {
-          id: 'cart',
-          name: 'Карта',
-        },
-        {
-          id: 'yandex',
-          name: 'Яндекс',
-        },
-        {
-          id: 'cash',
-          name: 'Наличные',
-        },
-        {
-          id: 'balance',
-          name: 'На баланс',
-        },
-      ],
+      paymentTypes: [],
       dialogForm: false,
       editDialog: false,
       cancelDialog: false,
@@ -414,6 +384,22 @@ export default {
       dataEndPicker: false
     };
   },
+  watch: {
+    searchClients(val) {
+      const findClient = this.clientsList.find((item) => item.name === val);
+      if (findClient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerClients) clearTimeout(this.timerClients);
+
+        this.timerClients = setTimeout(() => {
+          this.getClients(val);
+        }, 500);
+      } else {
+        this.clientsList = [];
+      }
+    },
+  },
   computed: {
     loadingDialog: function loadingDialog() {
       const loadData = this.loadingData.filter(
@@ -423,25 +409,62 @@ export default {
     },
   },
   methods: {
-    getManagerList() {
-      const url = 'users';
+    getPaymentTypesList() {
+      const loadData = this.loadingData.find(item => item.id === 'payment-types');
+      const url = 'payment-types';
 
       axios
         .get(url)
         .then((response) => {
-          this.usersList = response.data;
+          const items = response.data;
+          this.paymentTypes = items;
+
+          loadData.title = 'Типы оплат получены!';
+          loadData.loading = false;
         })
         .catch((error) => {
+          loadData.title = 'Ошибка получения типов оплат!';
+          loadData.error = true;
           console.log(error);
         });
     },
-    getClients() {
+    getManagerList() {
+      const loadData = this.loadingData.find(item => item.id === 'managers');
+      const url = 'users';
+
+      axios
+        .get(url, {
+          params: { group_id: 14}
+        })
+        .then((response) => {
+          this.usersList = response.data;
+
+          loadData.title = 'Менеджеры получены!';
+          loadData.loading = false;
+        })
+        .catch((error) => {
+          loadData.title = 'Ошибка получения менеджеров!';
+          loadData.error = true;
+          console.log(error);
+        });
+    },
+    getClients(searchVal) {
       const url = 'clients';
 
       axios
-        .get(url)
+        .get(url, {
+          params: {
+            name_or_phone: searchVal,
+            page_limit: 10,
+          },
+        })
         .then((response) => {
-          this.clientsList = response.data;;
+          this.clientsList = response.data.map((item) => {
+            return {
+              name: `${item.name} (${item.phone})`,
+              id: item.id,
+            };
+          });
         })
         .catch((error) => {
           console.log(error);
@@ -529,7 +552,7 @@ export default {
   mounted() {
     this.getBouquetsList();
     this.getManagerList();
-    this.getClients();
+    this.getPaymentTypesList();
 
     const date = new Date();
     const dateEnd = date.toISOString().split("T")[0];

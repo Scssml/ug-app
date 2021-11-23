@@ -340,7 +340,7 @@ export default new Vuex.Store({
 
     getDeliveryZones({ state, commit }) {
       return new Promise((res, rej) => {
-        const url = `${state.apiUrl}delivery-zones`;
+        const url = `${state.apiUrl}zones`;
 
         axios
           .get(url)

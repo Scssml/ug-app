@@ -87,13 +87,6 @@
                 ></v-text-field>
               </v-flex>
               <v-flex xs3>
-                <!-- <v-text-field
-                  label="Компания"
-                  v-model="dataEdit.company"
-                  hide-details
-                  class="pr-4"
-                  :rules="[v => !!v || 'Заполните поле']"
-                ></v-text-field> -->
                 <v-autocomplete
                   label="Компания"
                   :items="clientsList"
@@ -105,6 +98,7 @@
                   class="mb-4"
                   no-data-text="Не надено"
                   clearable
+                  :search-input.sync="searchClients"
                 ></v-autocomplete>
               </v-flex>
               <v-flex xs2>
@@ -210,6 +204,8 @@ export default {
         operation_type: 'coming',
         revaluation: 0,
       },
+      searchClients: '',
+      timerClients: null,
       search: '',
       headersTable: [
         {
@@ -267,6 +263,22 @@ export default {
       page: 0,
       loading: true,
     };
+  },
+  watch: {
+    searchClients(val) {
+      const findClient = this.clientsList.find((item) => item.name === val);
+      if (findClient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerClients) clearTimeout(this.timerClients);
+
+        this.timerClients = setTimeout(() => {
+          this.getClients(val);
+        }, 500);
+      } else {
+        this.clientsList = [];
+      }
+    },
   },
   computed: {
     isSaveButtonDisabled() {
@@ -411,18 +423,24 @@ export default {
           console.log(error);
         });
     },
-    getClients() {
+    getClients(searchVal) {
       const url = 'clients';
 
       axios
         .get(url, {
           params: {
             client_type: 'legal',
+            name_or_phone: searchVal,
+            page_limit: 10,
           },
         })
         .then((response) => {
-          const items = response.data;
-          this.clientsList = items;
+          this.clientsList = response.data.map((item) => {
+            return {
+              name: `${item.name} (${item.phone})`,
+              id: item.id,
+            };
+          });
         })
         .catch((error) => {
           console.log(error);
@@ -431,7 +449,6 @@ export default {
   },
   mounted() {
     this.getItems();
-    this.getClients();
   },
 };
 </script>

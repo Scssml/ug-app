@@ -22,7 +22,23 @@
     </div>
     <v-divider></v-divider>
     <div class="px-0" style="height: 30px;">
-      <v-select
+      <v-autocomplete
+        label="Клиент"
+        :items="clientsList"
+        item-text="name"
+        item-value="id"
+        solo
+        flat
+        v-model.number="clientId"
+        hide-details
+        no-data-text="Не надено"
+        clearable
+        class="scs-small"
+        :search-input.sync="searchClients"
+        @change="handleClientChange()"
+      ></v-autocomplete>
+
+      <!-- <v-select
         label="Клиент"
         :items="clientsList"
         item-text="name"
@@ -34,7 +50,7 @@
         class="scs-small"
         no-data-text="Не найдено"
         @change="handleClientChange();"
-      ></v-select>
+      ></v-select> -->
     </div>
     <v-divider></v-divider>
     <v-layout row>
@@ -304,7 +320,7 @@
               label="Сумма"
               :rules="[v => validateTotalSum(v) || 'Заполните поле']"
               v-model="sumClient"
-              v-if="!isEmptySum && (partlyPayment || typePay === 'cash')"
+              v-if="!isEmptySum && (partlyPayment || typePay === 4)"
               @keyup="handleFirstSumChange"
               ref="firstSum"
             ></v-text-field>
@@ -345,7 +361,7 @@
               label="Сдача"
               readonly
               :value="sumChange"
-              v-if="!isEmptySum && (partlyPayment || typePay === 'cash')"
+              v-if="!isEmptySum && (partlyPayment || typePay === 4)"
             ></v-text-field>
           </v-card-text>
           <v-card-actions class="px-4 pb-4">
@@ -409,6 +425,8 @@ export default {
   },
   data() {
     return {
+      searchClients: '',
+      timerClients: null,
       sumPayCustom: 0,
       createdSuccess: false,
       florist: 0,
@@ -442,6 +460,22 @@ export default {
       skipClientsQuery: true,
       suggestions: []
     };
+  },
+  watch: {
+    searchClients(val) {
+      const findClient = this.clientsList.find((item) => item.name === val);
+      if (findClient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerClients) clearTimeout(this.timerClients);
+
+        this.timerClients = setTimeout(() => {
+          this.getClients(val);
+        }, 500);
+      } else {
+        this.clientsList = [];
+      }
+    },
   },
   computed: {
     prePayment() {
@@ -569,13 +603,44 @@ export default {
     }
   },
   methods: {
-    getClientsList() {
+    getClients(searchVal) {
       const url = 'clients';
+
+      axios
+        .get(url, {
+          params: {
+            name_or_phone: searchVal,
+            page_limit: 10,
+          },
+        })
+        .then((response) => {
+          this.clientsList = response.data.map((item) => {
+            return {
+              name: `${item.name} (${item.phone})`,
+              id: item.id,
+            };
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getClient() {
+      const url = `clients/${this.clientId}`;
 
       axios
         .get(url)
         .then((response) => {
-          this.clientsList = response.data;
+          const item = response.data;
+
+          if (item) {
+            this.clientsList = [
+              {
+                name: `${item.name} (${item.phone})`,
+                id: item.id,
+              },
+            ];
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -677,15 +742,15 @@ export default {
         }
 
         if (this.partlyPayment) {
-          props.payment.payment_type = this.typePay;
+          props.payment.payment_type_id = this.typePay;
           props.payment.comment = '';
           props.payment.amount = (this.typePay === 'cash') ? +this.sumClient - +this.sumChange : +this.sumClient;
 
-          props.second_payment.payment_type = this.secondTypePay;
+          props.second_payment.payment_type_id = this.secondTypePay;
           props.second_payment.comment = '';
           props.second_payment.amount = (this.secondTypePay === 'cash') ? +this.secondSumClient - +this.sumChange : +this.secondSumClient;
         } else {
-          props.payment.payment_type = this.typePay;
+          props.payment.payment_type_id = this.typePay;
           props.payment.comment = '';
           props.payment.amount = (+this.sumPay !== 0) ? +this.sumPay : +this.sumPayCustom;
 
@@ -803,6 +868,7 @@ export default {
         this.clientSaleCustom = this.propsDefault.salePercent;
 
         if (this.clientId) {
+          this.getClient();
           this.getOrdersList();
         }
       }
@@ -811,7 +877,6 @@ export default {
     }
   },
   created() {
-    this.getClientsList();
     this.setValueDefault();
   }
 };

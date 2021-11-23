@@ -113,24 +113,18 @@
               ></v-select>
             </v-flex>
             <v-flex xs2 class="px-2">
-              <v-select
+              <v-autocomplete
                 label="Клиент"
                 :items="clientsList"
                 item-text="name"
                 item-value="id"
-                v-model="filter.client_id"
+                v-model.number="filter.client_id"
                 hide-details
+                no-data-text="Не надено"
                 clearable
+                :search-input.sync="searchClients"
                 @change="customFilter()"
-              ></v-select>
-              <!-- <autosuggest
-                :suggestions="clientSuggestions"
-                placeholder="Клиенты"
-                :value="filter.client"
-                @onChange="onClientsInputChange"
-                @onSelect="onClientSelect"
-                class="view-filter"
-              /> -->
+              ></v-autocomplete>
             </v-flex>
 
             <v-flex
@@ -146,6 +140,7 @@
                 v-model="filter.user_id"
                 hide-details
                 clearable
+                no-data-text="Не надено"
                 @change="customFilter()"
               ></v-select>
             </v-flex>
@@ -471,6 +466,8 @@ export default {
         start_date: null,
         end_date: null,
       },
+      searchClients: '',
+      timerClients: null,
       loadingData: [
         {
           title: 'Получение заказов',
@@ -478,6 +475,13 @@ export default {
           loading: false,
           color: 'amber',
           id: 'orders',
+        },
+        {
+          title: "Получение менеджеров",
+          error: false,
+          loading: true,
+          color: "cyan",
+          id: "managers"
         },
       ],
       dateNowStr: '',
@@ -543,7 +547,7 @@ export default {
       pagination: {
         sortBy: "id",
         rowsPerPage: -1,
-        descending: false
+        descending: true
       },
       deliveryTimeOfDayFilter: [
         {
@@ -623,7 +627,21 @@ export default {
         this.$store.commit("setUpdateOrderList", false);
         this.getOrdersList(false);
       }
-    }
+    },
+    searchClients(val) {
+      const findClient = this.clientsList.find((item) => item.name === val);
+      if (findClient) return false;
+
+      if (val && val.length >= 3) {
+        if (this.timerClients) clearTimeout(this.timerClients);
+
+        this.timerClients = setTimeout(() => {
+          this.getClients(val);
+        }, 500);
+      } else {
+        this.clientsList = [];
+      }
+    },
   },
   computed: {
     updateOrderList() {
@@ -667,29 +685,46 @@ export default {
     }
   },
   methods: {
-    getClients() {
+    getClients(searchVal) {
       const url = 'clients';
 
       axios
-        .get(url)
+        .get(url, {
+          params: {
+            name_or_phone: searchVal,
+            page_limit: 10,
+          },
+        })
         .then((response) => {
-          const items = response.data;
-          this.clientsList = items;
+          this.clientsList = response.data.map((item) => {
+            return {
+              name: `${item.name} (${item.phone})`,
+              id: item.id,
+            };
+          });
         })
         .catch((error) => {
           console.log(error);
         });
     },
     getUsers() {
+      const loadData = this.loadingData.find(item => item.id === 'managers');
       const url = 'users';
 
       axios
-        .get(url)
+        .get(url, {
+          params: { group_id: 14}
+        })
         .then((response) => {
           const items = response.data;
           this.usersList = items;
+
+          loadData.title = 'Менеджеры получены!';
+          loadData.loading = false;
         })
         .catch((error) => {
+          loadData.title = 'Ошибка получения менеджеров!';
+          loadData.error = true;
           console.log(error);
         });
     },
@@ -948,7 +983,6 @@ export default {
   },
   mounted() {
     this.getOrdersList();
-    this.getClients();
     this.getUsers();
 
     const dateNow = new Date();
